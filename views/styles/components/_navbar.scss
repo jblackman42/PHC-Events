@@ -1,0 +1,223 @@
+$nav-background: var(--primary-bg-color);
+$close-btn-background: var(--secondary-bg-color);
+$hover-underline: var(--red-accent-color);
+$nav-text-color: var(--primary-font-color);
+
+nav {
+	.icon {
+		font-size: 2.75rem;
+	}
+	button {
+		border: none;
+		background-color: transparent;
+	}
+	.openButton {
+		font-size: 300%;
+		display: grid;
+		place-items: center;
+		position: fixed;
+		margin: 0;
+		padding: 0;
+		z-index: 2;
+
+		top: 1rem;
+		left: 1rem;
+		@media screen and (max-width: 512px) {
+			top: .5rem;
+			left: .5rem;
+		}
+		.icon {
+			margin-block: auto;
+			color: white;
+			cursor: pointer;
+			font-weight: bold;
+
+			text-shadow: 0 0 0.75rem rgb(79, 79, 79);
+		}
+		input {
+			position: absolute;
+			margin: 0;
+			inset: 0;
+			width: 100%;
+			height: 100%;
+
+			visibility: hidden;
+		}
+	}
+	.navContainer {
+		background-color: $nav-background;
+		position: fixed;
+		height: 100%;
+		max-width: 16.25rem;
+		top: 0;
+		left: 0;
+		z-index: 3;
+
+		display: flex;
+		flex-direction: column;
+		justify-content: space-between;
+
+		box-shadow: 0 0 15px #00000066;
+
+		transition: transform 300ms ease-in-out;
+		&.open {
+			transform: translateX(0%);
+			.closeButton {
+				transform: translateX(calc(50% + 2rem)) rotateZ(180deg);
+			}
+
+			.links ul li {
+				transform: translateX(0%);
+
+				@for $i from 1 through 50 {
+					&:nth-child(#{$i}) {
+						transition-delay: 100ms * $i;
+					}
+				}
+			}
+			.footer {
+				transform: translateY(0);
+			}
+		}
+		&.closed {
+			transform: translateX(
+				calc(-100% - 15px)
+			); //moves entirely off-screen plus 15px to hide box shadow
+		}
+		.closeButton {
+			position: absolute;
+			background-color: $close-btn-background;
+			display: grid;
+			place-items: center;
+			border-radius: 50%;
+			padding: 0.5rem;
+			top: calc(50% - 33px);
+			// left: calc(100% - 33px);
+			right: 2rem;
+			font-size: 300%;
+			cursor: pointer;
+
+			transition: transform 350ms ease-in-out;
+			.icon {
+				color: #fff;
+			}
+		}
+		.image-container {
+			width: 100%;
+			.logo {
+				max-width: 90%;
+				display: block;
+				margin: 0.5rem auto;
+
+				filter: drop-shadow(0 0 16px #FFFFFF66);
+			}
+		}
+        .welcome-message {
+            color: $nav-text-color;
+            font-size: 1.75rem;
+            text-align: center;
+            max-height: 96.5px;
+            p {
+                margin: 1rem;
+            }
+        }
+
+		.links {
+			font-size: 125%;
+			// height: 100%;
+			// padding-bottom: 5rem;
+			ul {
+				list-style-type: none;
+				height: 100%;
+				margin: 0;
+				padding: 0;
+
+				display: flex;
+				flex-direction: column;
+				justify-content: center;
+				li {
+					margin: 2rem 3rem;
+					// padding-inline: 4rem;
+					font-size: 1.5em;
+
+					transition: transform 450ms ease;
+					transform: translateX(-100%);
+
+					&#new-event-btn {
+						display: none;
+						visibility: hidden;
+					}
+					&#prayer-wall-btn {
+						display: none;
+						visibility: hidden;
+					}
+
+					a {
+						color: $nav-text-color;
+						font-weight: bold;
+						text-decoration: none;
+						position: relative;
+						&::after {
+							content: '';
+							position: absolute;
+							width: 100%;
+							height: 2px;
+							bottom: -3px;
+							left: 0;
+							background: $hover-underline;
+
+							transition: transform 150ms ease 50ms;
+
+							transform-origin: left;
+							transform: scaleX(0.1);
+						}
+						&:hover::after,
+						&:focus::after {
+							transform: scaleX(1);
+						}
+
+						#tasks-notification {
+							position: absolute;
+							display: grid;
+							place-items: center;
+							margin: 0;
+							top: 0;
+							right: 0;
+							transform: translate(100%, -50%);
+
+							border-radius: 50%;
+							box-sizing: border-box;
+							padding: .25rem;
+							font-weight: 300;
+							font-size: 16px;
+							width: 25px;
+							height: 25px;
+
+							background-color: $hover-underline;
+							color: #ffffff;
+						}
+					}
+				}
+			}
+		}
+		.footer {
+			font-size: 175%;
+			// position: absolute;
+			// bottom: 0;
+			width: 100%;
+
+			transform: translateY(100px);
+			transition: transform 500ms ease;
+			ul {
+				margin: 2rem;
+				padding: 0;
+				list-style-type: none;
+				display: flex;
+				justify-content: space-around;
+				li a {
+					color: $nav-text-color;
+				}
+			}
+		}
+	}
+}

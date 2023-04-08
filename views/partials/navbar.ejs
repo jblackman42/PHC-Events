@@ -1,0 +1,127 @@
+
+
+<nav class="navBar">
+    <button class="openButton">
+        <i class="material-icons icon">menu</i>
+    </button>
+    <div class="navContainer closed">
+        <button class="closeButton">
+            <i class="material-icons icon">close</i>
+        </button>
+        <!-- <div class="image-container">
+            <img class="logo" src="../assets/exampleLogo.png" alt="Company Name">
+        </div> -->
+        <div class="welcome-message">
+            <p id="userWelcomeMsg"></p>
+        </div>
+        <div class="links">
+            <ul>
+                <li><a href="/">Calendar</a></li>
+                <li id="new-event-btn"><a href="/create">New Event</a></li>
+                <li><a href="/my-tasks" id="tasks-link">My Tasks</a></li>
+                <li id="prayer-wall-btn"><a href="/prayer-wall">Prayer Wall</a></li>
+                <li><a href="/logout">Logout</a></li>
+            </ul>
+        </div>
+        <div class="footer">
+            <ul>
+                <!-- <li><a href="/"><i class='fab fa-facebook-square'></i></a></li>
+                <li><a href="/"><i class='fab fa-instagram'></i></a></li> -->
+                <!-- <li><a href="https://github.com/jblackman42/event-planner"><i class='fab fa-github-square'></i></a></li>` -->
+                <li class='toggle-switch'>
+                    <label class="switch" onclick="toggleColorScheme()">
+                        <input type="checkbox" id="toggle-color-scheme">
+                        <span class="slider round"></span>
+                    </label>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+<script>
+
+    const userWelcomeMsg = document.getElementById('userWelcomeMsg');
+
+    const openButtonDOM = document.querySelector('.openButton');
+    const closeButtonDOM = document.querySelector('.closeButton');
+    const toggleColorSchemeBtn = document.querySelector('#toggle-color-scheme');
+
+    const navContainerDOM = document.querySelector('.navContainer');
+
+    const newEventBtn = document.querySelector('#new-event-btn');
+    const prayerWallBtn = document.querySelector('#prayer-wall-btn')
+
+    openButtonDOM.addEventListener('click', () => {
+        navContainerDOM.classList.toggle('open');
+        navContainerDOM.classList.toggle('closed');
+    })
+
+    closeButtonDOM.addEventListener('click', () => {
+        navContainerDOM.classList.toggle('open');
+        navContainerDOM.classList.toggle('closed');
+    })
+
+    const getUserTasks = async () => {
+        const user = await getUser();
+        const userTaskData = await axios({
+            method: 'get',
+            url: `/api/mp/user-tasks?userID=${user.userid}`
+        })
+            .then(response => response.data)
+
+        return userTaskData
+    }
+
+    const checkDuplicates = (arr1, arr2) => [...new Set(arr1.concat(arr2))].length != arr1.concat(arr2).length;
+
+    const welcomeMsg = async () => {
+        const user = await getUser()
+
+        userWelcomeMsg.innerHTML = `Welcome, ${user.display_name.split(', ').reverse().join(' ')}`;
+    }
+    welcomeMsg();
+
+    const tasksLink = document.getElementById('tasks-link')
+    const getTasks = async () => {
+        const user = await getUser();
+        const { userid } = user;
+
+        const tasks = await getUserTasks(userid)
+        
+        if (!tasks.length) { return }
+        
+        const tasksNotification = document.createElement('p');
+        tasksNotification.id = 'tasks-notification';
+        tasksNotification.innerText = tasks.length;
+
+        tasksLink.appendChild(tasksNotification)
+    }
+    getTasks();
+
+    axios({
+        method: 'get',
+        url: '/api/oauth/user'
+    })
+        .then(response => response.data)
+        .then(user => {
+            const { roles } = user;
+            if (roles && roles.includes('Administrators')) {
+                const linksDOM = document.querySelector('.links');
+                const linksListDOM = linksDOM.children[0];
+                for (const linkElem of linksListDOM.children) {
+                    linkElem.style.display = 'block';
+                    linkElem.style.visibility = 'visible';
+                }
+            }
+        })
+
+    if (localStorage.getItem('colorScheme') == 'dark') {
+        toggleColorSchemeBtn.checked = true;
+    }
+
+    toggleColorSchemeBtn.addEventListener('change', () => {
+        toggleColorScheme();
+    })
+
+    
+</script>

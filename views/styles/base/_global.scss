@@ -1,0 +1,132 @@
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;900&display=swap');
+
+//default color scheme
+:root {
+	--backgroundColor: #e0dcdc;
+
+	--primary-font-color: #17161d;
+	--secondary-font-color: #f1f2f6;
+	--dark-font-color: #17161d;
+	--light-font-color: #f1f2f6;
+
+	--primary-bg-color: #cdc3c3;
+	--secondary-bg-color: #9f9696;
+
+	--red-accent-color: #e74c3c;
+	--blue-accent-color: #3498db;
+	--blue-accent-color2: #2980b9;
+	--arrow-button-color: #b2bec3;
+	--green-accent-color: #2ecc71;
+}
+
+body,
+html {
+	background-color: var(--backgroundColor);
+	font-family: 'Roboto', 'sans-serif';
+	min-height: 100vh;
+	width: 100%;
+	max-width: 100vw;
+    display: flex;
+    flex-direction: column;
+}
+
+.container {
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	align-items: center;
+	color: var(--primary-font-color);
+}
+.flex-container {
+	display: flex;
+	flex-direction: row;
+	justify-content: center;
+	align-items: center;
+	color: var(--primary-font-color);
+	 
+}
+
+.btn {
+	background-color: #13aa52 !important;
+	border: 1px solid #13aa52 !important;
+	border-radius: 4px !important;
+	box-shadow: rgba(0, 0, 0, .1) 0 2px 4px 0;
+	box-sizing: border-box;
+	color: #fff !important;
+	cursor: pointer;
+	font-size: 16px !important;
+	font-weight: 400 !important;
+	padding: 4px 15px !important;
+	text-align: center;
+	transform: translateY(0);
+	transition: transform 150ms, box-shadow 150ms;
+	user-select: none;
+	aspect-ratio: auto !important;
+	margin-left: auto;
+
+	&:hover {
+		box-shadow: rgba(0, 0, 0, .15) 0 3px 9px 0;
+		transform: translateY(-2px);
+	}
+
+	&:disabled {
+		opacity: .6;
+		&:hover {
+			transform: none;
+		}
+	}
+
+	@media (min-width: 768px) {
+		padding: 10px 30px;
+	}
+}
+
+.close-button {
+	position: absolute;
+	top: 0;
+	right: 0;
+	display: grid;
+	place-items: center;
+	border: none;
+	padding: .5rem;
+	background-color: transparent;
+	cursor: pointer;
+
+	i {
+		font-size: 2rem;
+	}
+}
+
+$filter-background: var(--primary-bg-color);
+$filter-text: var(--primary-font-color);
+$filter-dropdown-background: var(--secondary-bg-color);
+
+.filter-box {
+	position: relative;
+
+	select {
+		background-color: $filter-background;
+		max-width: 50vw;
+		color: $filter-text;
+		padding: 4px 45px 4px 8px;
+		border: none;
+		box-shadow: 0 5px 25px rgba(0, 0, 0, 0.2);
+		border-radius: 5px;
+		appearance: button;
+		-webkit-appearance: button;
+		-webkit-border-radius: 2px;
+		-webkit-box-shadow: 0px 1px 3px rgba(0, 0, 0, 0.1);
+		-webkit-user-select: none;
+		user-select: none;
+		font-size: inherit;
+		margin: 0;
+		// overflow: hidden;
+		// text-overflow: ellipsis;
+		// white-space: nowrap;
+
+		option {
+			border: none;
+		}
+	}
+
+}

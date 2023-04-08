@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link rel="shortcut icon" href="/assets/favicon.ico" type="image/x-icon">
+    <link rel="stylesheet" href="/styles/main.css">
+
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+
+    <script src="https://kit.fontawesome.com/e61ab9568e.js" crossorigin="anonymous"></script>
+    <title>PHC - Events | Login</title>
+
+    <script src="/scripts/axios.js"></script>
+    <script src="/scripts/MP_API_Functions.js"></script>
+    <script>
+        const root = document.querySelector(':root');
+
+        const updateColorScheme = () => {
+            var colorScheme = localStorage.getItem('colorScheme');
+            if (colorScheme == 'light') {
+                root.style.setProperty('--backgroundColor', '#e0dcdc');
+                root.style.setProperty('--primary-font-color', '#17161d');
+                root.style.setProperty('--secondary-font-color', '#f1f2f6');
+                root.style.setProperty('--primary-bg-color', '#cdc3c3');
+                root.style.setProperty('--secondary-bg-color', '#716868');
+                root.style.setProperty('--red-accent-color', '#e74c3c');
+                root.style.setProperty('--blue-accent-color', '#3498db');
+                root.style.setProperty('--blue-accent-color2', '#2980b9');
+                root.style.setProperty('--arrow-button-color', '#b2bec3');
+            } else if (colorScheme == 'dark') {
+                root.style.setProperty('--backgroundColor', 'hsl(200, 4%, 14%)');
+                root.style.setProperty('--primary-font-color', '#f1f2f6');
+                root.style.setProperty('--secondary-font-color', '#17161d');
+                root.style.setProperty('--primary-bg-color', 'hsl(0, 1%, 21%)');
+                root.style.setProperty('--secondary-bg-color', 'hsl(0, 1%, 36%)');
+                root.style.setProperty('--red-accent-color', '#e74c3c');
+                root.style.setProperty('--blue-accent-color', '#3498db');
+                root.style.setProperty('--blue-accent-color2', '#2980b9');
+                root.style.setProperty('--arrow-button-color', 'gray');
+            } else {
+                localStorage.setItem('colorScheme', 'light');
+                updateColorScheme();
+            }
+        }
+        updateColorScheme();
+
+        const toggleColorScheme = () => {
+            var colorScheme = localStorage.getItem('colorScheme');  
+
+            if (colorScheme == 'light') {
+                localStorage.setItem('colorScheme', 'dark');
+            } else {
+                localStorage.setItem('colorScheme', 'light');
+            }
+            updateColorScheme();
+        }
+    </script>
+</head>
+<body class="container">
+    <%- include('../partials/loading'); %>
+    <div class="forms-container">
+        <form id="loginForm" method="post" action="/api/auth/login">
+            <h1>Sign In</h1>
+            <div class="inputs">
+                <input type="text" name="username" id="username" autocomplete="on" placeholder="Username" required>
+                <input type="password" name="password" id="password" autocomplete="on" placeholder="Password" required>
+                <i class='far fa-eye-slash' id="togglePassword"></i>
+            </div>
+            <div class="row">
+                <div class="remember-input" title="Keeps you logged in on this device for 30 days">
+                    <input type="checkbox" name="remember" id="remember">
+                    <label for="remember">Keep Me Logged In</label>
+                </div>
+                <a href="https://my.pureheart.org/ministryplatformapi/oauth/reset">Forgot Password</a>
+            </div>
+            <button type="submit" class="login">Sign In</button>
+            <p class="help-msg">Sign In With Ministry Platform Credentials</p>
+            
+            <p class="form-error"><%- error %></p>
+        </form>
+    </div>
+      
+    </body>
+<script>
+    const loginForm = document.getElementById('loginForm');
+
+    loginForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const data = {
+            username: document.getElementById('username').value,
+            password: document.getElementById('password').value,
+            remember: document.getElementById('remember').checked
+        }
+
+        console.log(data)
+        loading();
+        await axios({
+            method: 'post',
+            url: '/api/oauth/login',
+            data: data
+        })
+            .then(response => {if (response.status >= 200 && response.status < 300) window.location = window.location.pathname == '/login' ? '/' : window.location.pathname})
+            .catch(err => {
+                console.error(err)
+                document.querySelector('.form-error').innerText = err.response.data ? err.response.data.error : 'internal server error';
+                doneLoading();
+            })
+    })
+
+    const togglePassword = document.querySelector("#togglePassword");
+    const password = document.querySelector("#password");
+
+    togglePassword.addEventListener("click", function () {
+        // toggle the type attribute
+        const type = password.getAttribute("type") === "password" ? "text" : "password";
+        password.setAttribute("type", type);
+        
+        // toggle the icon
+        this.classList.toggle("fa-eye-slash");
+        this.classList.toggle("fa-eye");
+    });
+</script>
+</html>

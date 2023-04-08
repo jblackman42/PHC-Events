@@ -1,0 +1,176 @@
+$recurring-container-bg: var(--primary-bg-color);
+$recurring-event-text: var(--primary-font-color);
+$input-background: var(--primary-bg-color);
+$recurring-header-bg: var(--secondary-bg-color);
+
+.recurring-event-container {
+    display: grid;
+    place-items: center;
+    position: fixed;
+    inset: 0;
+    background-color: #000000AA;
+    color: $recurring-event-text;
+    z-index: 999;
+
+    display: none;
+    visibility: hidden;
+
+    &.open {
+        display: grid;
+        visibility: visible;
+    }
+    @media screen and (min-width: 768px) {
+        &.open {
+            .recurring-event {animation: fade-in 200ms;}
+        }
+    }
+
+    @keyframes fade-in {
+        from {
+          opacity: 0;
+          transform: translate(0, 10%);
+        }
+        to {
+          opacity: 1;
+          transform: translate(0, 0);
+        }
+    }
+
+    .recurring-event {
+        background-color: $recurring-container-bg;
+        border-radius: 2.5px;
+        overflow: hidden;
+        position: relative;
+
+        width: 600px;
+        max-width: 90vw;
+        #recurring-warning-msg {
+            font-weight: bold;
+            color: $red-accent-color;
+            text-align: center;
+            margin: 0;
+            margin-bottom: 1rem;
+
+            display: none;
+            visibility: hidden;
+        }
+        .recurring-header {
+            // background-color: $recurring-header-bg;
+            border-bottom: 2px solid $recurring-header-bg;
+
+            p {
+                padding: 1rem;
+                margin: 0;
+                font-size: 1.5rem;
+            }
+            .close-button {
+                color: currentColor;
+            }
+        }
+
+        .nav-options ul {
+            list-style: none;
+            display: flex;
+            align-items: center;
+            justify-content: space-around;
+            margin: 0;
+            padding: 0;
+
+            li {
+                padding: 1rem;
+                width: 100%;
+                text-align: center;
+                cursor: pointer;
+
+                &.active {
+                    border-bottom: 2px solid var(--blue-accent-color);
+                }
+
+                &:hover {
+                    background-color: var(--secondary-bg-color);
+                }
+            }
+        }
+
+        .recurring-pattern {
+            padding: 1rem;
+            display: flex;
+            flex-direction: column;
+            border-bottom: 2px solid var(--secondary-bg-color);
+        }
+
+        .date-options {
+            padding: 1rem;
+
+            label {
+                min-width: 80px;
+                height: max-content;
+
+                &.title-label {
+                    margin: .5rem 0;
+                }
+            }
+
+
+        }
+
+        .inputs-list {
+            display: flex;
+            flex-wrap: wrap;
+            margin: 1rem 0;
+            .input {
+                width: 150px;
+            }
+        }
+        .input {
+            padding: .25rem;
+            display: flex;
+            gap: .5rem;
+
+
+            input {
+                padding: .25rem .5rem;
+                margin: 0 .5rem;
+                background-color: $input-background;
+                color: currentColor;
+                border-radius: 2.5px;
+                border: 1px solid var(--primary-font-color);
+            }
+
+            input[type="number"] {
+                max-width: 100px;
+            }
+            input[type="number"]:disabled, input[type="date"]:disabled {
+                opacity: .5;
+            }
+            select {
+                padding: .25rem .5rem;
+                margin: .25rem;
+                border: 1px solid currentColor;
+                background-color: $input-background;
+                color: currentColor;
+                border-radius: 2.5px;
+            }
+            p {
+                margin: .5rem 0;
+            }
+        }
+
+        .button-container {
+            display: flex;
+            justify-content: flex-end;
+            padding: 1rem;
+            gap: 1rem;
+            border-top: 2px solid $recurring-header-bg;
+
+            .btn {
+                margin: 0;
+
+                &.cancel {
+                    background-color: hsl(0, 1%, 36%) !important;
+                    border-color: $recurring-header-bg  !important;
+                }
+            }
+        }
+    }
+}
