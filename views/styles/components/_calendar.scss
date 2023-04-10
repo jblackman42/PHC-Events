@@ -8,6 +8,7 @@ $button-bg: var(--arrow-button-color);
     margin: 0 auto;
     width: 1000px;
     max-width: 90vw;
+
     @media screen and (max-width: 768px) {
         max-width: 95vw;
     }
@@ -22,6 +23,7 @@ $button-bg: var(--arrow-button-color);
     width: 100%;
 
     .calendar-day {
+        display: grid;
         width: 100%;
         aspect-ratio: 1 / 1;
         text-align: center;
@@ -37,9 +39,16 @@ $button-bg: var(--arrow-button-color);
         padding: 0;
         border: none;
 
-        display: grid;
+        cursor: pointer;
+        transition: background-color 250ms linear, color 250ms linear;
 
-        
+        &:hover {
+            transition: background-color 100ms linear, color 100ms linear;
+            background-color: $calendar-day-hover-bg;
+            color: $calendar-day-text;
+        }
+
+
         @media screen and (min-width: 768px) {
             opacity: 0;
             animation: calendar-fade 500ms ease-in-out 200ms 1 normal forwards;
@@ -47,7 +56,7 @@ $button-bg: var(--arrow-button-color);
 
         @for $i from 1 through 50 {
             &:nth-of-type(#{$i}) {
-              animation-delay: 20ms * $i;
+                animation-delay: 20ms * $i;
             }
         }
 
@@ -56,27 +65,11 @@ $button-bg: var(--arrow-button-color);
                 transform: translate(5%, 20%);
                 opacity: 0;
             }
+
             to {
                 transform: translate(0, 0);
                 opacity: 1;
             }
-        }
-
-        &.inactive {
-            visibility: hidden;
-        }
-
-        &.event {
-            cursor: pointer;
-            transition: background-color 250ms linear, color 250ms linear;
-            
-            &:hover {
-                transition: background-color 100ms linear, color 100ms linear;
-                background-color: $calendar-day-hover-bg;
-                color: $calendar-day-text;
-            }
-
-            
         }
 
         .progressBar {
@@ -168,14 +161,15 @@ $button-bg: var(--arrow-button-color);
         display: grid;
         place-items: center;
     }
+
     button {
         border: none;
     }
 
     #reset-btn {
         margin: 1.4rem;
-        background-color: $red-accent-color  !important;
-        border-color: $red-accent-color  !important;
+        background-color: $red-accent-color !important;
+        border-color: $red-accent-color !important;
 
         @media screen and (max-width: 612px) {
             position: static;
@@ -215,6 +209,7 @@ $button-bg: var(--arrow-button-color);
         width: 100%;
         height: max-content;
         max-width: 400px;
+
         #search {
             border-radius: 0;
             border-top-left-radius: 15px;
@@ -237,15 +232,18 @@ $button-bg: var(--arrow-button-color);
             height: 30px;
             width: 70px;
             cursor: pointer;
+
             &:active {
                 background-color: $calendar-day-hover-bg;
             }
+
             &:focus-visible {
                 outline: 2px solid white;
             }
         }
 
         position: relative;
+
         .search-results {
             position: absolute;
             top: 100%;
@@ -260,6 +258,7 @@ $button-bg: var(--arrow-button-color);
 
             display: none;
             visibility: hidden;
+
             .result {
                 display: flex;
                 justify-content: space-between;
@@ -267,8 +266,10 @@ $button-bg: var(--arrow-button-color);
                 background-color: $calendar-day-bg;
                 color: $calendar-day-text;
                 text-align: left;
+
                 &:not(.no-results) {
                     cursor: pointer;
+
                     &:hover {
                         background-color: $calendar-day-hover-bg;
                     }
@@ -277,6 +278,7 @@ $button-bg: var(--arrow-button-color);
                 .event-title {
                     max-width: 60%;
                 }
+
                 .event-date {
                     text-align: right;
                     max-width: 40%;
@@ -320,6 +322,7 @@ $button-bg: var(--arrow-button-color);
         .row {
             flex-direction: column;
         }
+
         .calendar-search {
             margin-inline: auto;
             margin-bottom: 1rem;

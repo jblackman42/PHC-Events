@@ -449,6 +449,7 @@ html {
   width: 100%;
 }
 #calendar .calendar-day {
+  display: grid;
   width: 100%;
   aspect-ratio: 1/1;
   text-align: center;
@@ -463,7 +464,13 @@ html {
   margin: 0;
   padding: 0;
   border: none;
-  display: grid;
+  cursor: pointer;
+  transition: background-color 250ms linear, color 250ms linear;
+}
+#calendar .calendar-day:hover {
+  transition: background-color 100ms linear, color 100ms linear;
+  background-color: var(--secondary-bg-color);
+  color: var(--primary-font-color);
 }
 @media screen and (min-width: 768px) {
   #calendar .calendar-day {
@@ -630,18 +637,6 @@ html {
     transform: translate(0, 0);
     opacity: 1;
   }
-}
-#calendar .calendar-day.inactive {
-  visibility: hidden;
-}
-#calendar .calendar-day.event {
-  cursor: pointer;
-  transition: background-color 250ms linear, color 250ms linear;
-}
-#calendar .calendar-day.event:hover {
-  transition: background-color 100ms linear, color 100ms linear;
-  background-color: var(--secondary-bg-color);
-  color: var(--primary-font-color);
 }
 #calendar .calendar-day .progressBar {
   position: absolute;
