@@ -720,15 +720,13 @@ html {
 #calendar-controls button {
   border: none;
 }
-#calendar-controls #reset-btn {
-  margin: 1.4rem;
+#calendar-controls #filter-reset {
+  margin: 1rem;
   background-color: #e74c3c !important;
   border-color: #e74c3c !important;
-  display: none;
-  visibility: hidden;
 }
 @media screen and (max-width: 612px) {
-  #calendar-controls #reset-btn {
+  #calendar-controls #filter-reset {
     position: static;
     margin: 0;
     margin-right: auto;
@@ -761,7 +759,7 @@ html {
   max-width: 400px;
   position: relative;
 }
-#calendar-controls .calendar-search #search {
+#calendar-controls .calendar-search #event-search-input {
   border-radius: 0;
   border-top-left-radius: 15px;
   border-bottom-left-radius: 15px;
@@ -828,7 +826,7 @@ html {
 #calendar-controls .filter-controls {
   display: flex;
   align-items: center;
-  gap: 1.5rem;
+  gap: 0 1.5rem;
   flex-wrap: wrap;
   max-width: 1000px;
   margin-inline: 14px;
@@ -1475,6 +1473,10 @@ nav .navContainer .footer ul li a {
   visibility: hidden;
   display: none;
   z-index: 999;
+}
+#date-picker-container.open {
+  visibility: visible;
+  display: grid;
 }
 
 #date-picker {

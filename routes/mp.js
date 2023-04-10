@@ -34,7 +34,7 @@ router.get('/events', ensureAuthenticated, async (req, res) => {
     method: 'get',
     url: 'https://my.pureheart.org/ministryplatformapi/tables/Events',
     params: {
-      $filter: `'${monthStart}'<=Event_End_Date AND '${monthEnd}'>=Event_Start_Date AND Cancelled=0`,
+      $filter: `Event_Start_Date BETWEEN '${monthStart}' AND '${monthEnd}' AND Cancelled=0`,
       $orderby: `Event_Start_Date`,
       $select: 'Event_ID, Event_Title, Event_Type_ID_Table.[Event_Type], Congregation_ID_Table.[Congregation_Name], Location_ID_Table.[Location_Name], Meeting_Instructions, Events.[Description], Program_ID_Table.[Program_Name], Primary_Contact_Table.[Display_Name], Participants_Expected, Minutes_for_Setup, Event_Start_Date, Event_End_Date, Minutes_for_Cleanup, Cancelled, Featured_On_Calendar'
     },
@@ -70,6 +70,27 @@ router.get('/event-rooms', ensureAuthenticated, async (req, res) => {
   res.send(rooms)
 })
 
+router.get('/filter-rooms', ensureAuthenticated, async (req, res) => {
+  const { eventIDs, roomIDs } = req.query;
+
+  const events = await axios({
+    method: 'post',
+    url: 'https://my.pureheart.org/ministryplatformapi/procs/api_PHCEventFilterRooms',
+    data: {
+      '@eventIDs': eventIDs.join(','),
+      '@roomIDs': roomIDs.join(',')
+    },
+    headers: {
+      'content-type': 'application/json',
+      'authorization': `Bearer ${req.session.access_token}`
+    }
+  })
+    .then(response => response.data[0])
+    .catch(err => console.log(err))
+
+  res.send(events)
+})
+
 router.get('/places', ensureAuthenticated, async (req, res) => {
   const places = await axios({
     method: 'get',
@@ -87,15 +108,22 @@ router.get('/places', ensureAuthenticated, async (req, res) => {
   .catch(err => console.log(err))
 
   const locations = [...new Set(places.map(place => place.Location_Name))]
-  const locationsArr = locations.map(location => {
+  const locationsArr = locations.map((location, locationID) => {
     const buildings = [...new Set(places.filter(place => place.Location_Name == location).map(place => place.Building_Name))]
     return {
       Location_Name: location,
-      Buildings: buildings.map(building => {
+      Location_ID: places.filter(place => place.Location_Name == location)[0].Location_ID,
+      Buildings: buildings.map((building, buildingID) => {
         const rooms = [...new Set(places.filter(place => place.Building_Name == building).map(place => place.Room_Name))]
         return {
           Building_Name: building,
-          Rooms: rooms
+          Building_ID: places.filter(place => place.Building_Name == building)[0].Building_ID,
+          Rooms: rooms.map((room, roomID) => {
+            return {
+              Room_Name: room,
+              Room_ID: places.filter(place => place.Room_Name == room)[0].Room_ID
+            }
+          })
         }
       })
     }

@@ -12,8 +12,13 @@ class PHC_Calendar extends HTMLElement {
     this.month = today.getMonth();
     this.year = today.getFullYear();
 
+    this.locationFilter = null;
+    this.buildingFilter = null;
+    this.roomFilter = null;
+
     this.update();
     this.createDetailsPopup();
+    this.createDatePicker();
   }
   
   update = async () => {
@@ -22,9 +27,6 @@ class PHC_Calendar extends HTMLElement {
     await this.getEvents();
     this.createCalendar();
     doneLoading();
-
-
-    console.log(this.events)
   }
 
   getPlaces = async () => {
@@ -74,6 +76,7 @@ class PHC_Calendar extends HTMLElement {
   }
 
   createCalendar = () => {
+    const events = this.filteredEvents || this.events;
     this.innerHTML = `
       <div id="calendar-controls">
           <div class="row">
@@ -83,7 +86,7 @@ class PHC_Calendar extends HTMLElement {
                   <button class="nav-buttons" id="next-month-btn"><i class="material-icons">keyboard_arrow_right</i></button>
               </div>
               <div class="calendar-search">
-                  <input type="text" id="search">
+                  <input type="text" id="event-search-input">
                   <button id="search-btn">Search</button>
                   <div class="search-results"></div>
               </div>
@@ -92,8 +95,13 @@ class PHC_Calendar extends HTMLElement {
               <div>
                   <label for="filter">Location: </label>
                   <div class="filter-box">
-                      <select name="filter" id="filter" onchange="handleFilterChange(event)">
+                      <select name="location-filter" id="location-filter">
                           <option value="0">All</option>
+                          ${this.places.map(place => {
+                            return `
+                              <option value="${place.Location_ID}">${place.Location_Name}</option>
+                            `
+                          }).join('')}
                       </select>
                   </div>
               </div>
@@ -101,8 +109,13 @@ class PHC_Calendar extends HTMLElement {
               <div>
                   <label for="building-filter">Building:</label>
                   <div class="filter-box">
-                      <select name="building-filter" id="building-filter" onchange="handleBuildingFilterChange(event)">
+                      <select name="building-filter" id="building-filter">
                           <option value="0">All</option>
+                          ${this.locationFilter ?this.locationFilter.Buildings.map(building => {
+                            return `
+                              <option value="${building.Building_ID}">${building.Building_Name}</option>
+                            `
+                          }).join('') : ''}
                       </select>
                   </div>
               </div>
@@ -112,13 +125,18 @@ class PHC_Calendar extends HTMLElement {
                   <div class="filter-box">
                       <select name="room-filter" id="room-filter">
                           <option value="0">All</option>
+                          ${this.locationFilter && this.buildingFilter  ? this.buildingFilter.Rooms.map(room => {
+                            return `
+                              <option value="${room.Room_ID}">${room.Room_Name}</option>
+                            `
+                          }).join('') : ''}
                       </select>
                   </div>
               </div>
 
               <div class="button-container">
-                  <button class="btn" id="reset-btn" onclick="handleReset()">Reset</button>
-                  <button class="btn" onclick="handleEvents()">Submit</button>
+                  <button class="btn" id="filter-reset">Reset</button>
+                  <button class="btn" id="filter-submit">Submit</button>
               </div>
           </div>
       </div>
@@ -137,11 +155,24 @@ class PHC_Calendar extends HTMLElement {
         ${this.monthArr.map(day => {
           const currDate = new Date(day);
           const endOfCurrDate = new Date(currDate.getTime() + 86399999)
-          const daysEvents = this.events.filter(event => currDate <= new Date(event.Event_End_Date) && endOfCurrDate >= new Date(event.Event_Start_Date));
+          const daysEvents = events.filter(event => currDate <= new Date(event.Event_End_Date) && endOfCurrDate >= new Date(event.Event_Start_Date));
+
+          const monthDate = parseInt(currDate.getDate())
+          let monthDaySuffix = 'th';
+          let monthDayLastDigit = monthDate.toString().split('')[monthDate.toString().split('').length - 1]
+          
+          if (monthDayLastDigit == 1 && monthDate != 11) {
+              monthDaySuffix = 'st'
+          } else if (monthDayLastDigit == 2 && monthDate != 12) {
+              monthDaySuffix = 'nd'
+          } else if (monthDayLastDigit == 3 && monthDate != 13) {
+              monthDaySuffix = 'rd'
+          }
+
           return `
-            <button class="calendar-day">
-              <p>${currDate.getDate()}<sup>th</sup></p>
-              <p class="eventsNumber">${daysEvents.length} Events</p>
+            <button class="calendar-day" ${daysEvents.length == 0 ? 'disabled' : ''}>
+              <p>${monthDate}<sup>${monthDaySuffix}</sup></p>
+              <p class="eventsNumber">${daysEvents.length} Event${daysEvents.length == 1 ? '' : 's'}</p>
               <div class="progressBar" style="max-width: ${Math.round((daysEvents.length / this.dayMaxEvents) * 100)}%"></div>
             </button>
           `
@@ -155,9 +186,30 @@ class PHC_Calendar extends HTMLElement {
     })
 
     const nextMonthBtnDOM = document.getElementById('next-month-btn');
-        nextMonthBtnDOM.onclick = this.nextMonth;
+      nextMonthBtnDOM.onclick = this.nextMonth;
     const prevMonthBtnDOM = document.getElementById('prev-month-btn');
-        prevMonthBtnDOM.onclick = this.prevMonth;
+      prevMonthBtnDOM.onclick = this.prevMonth;
+
+    const locationFilterDOM = document.getElementById('location-filter');
+      locationFilterDOM.onchange = this.handleLocationFilterChange;
+      locationFilterDOM.value = this.locationFilter ? this.locationFilter.Location_ID : 0;
+    const buildingFilterDOM = document.getElementById('building-filter');
+      buildingFilterDOM.onchange = this.handleBuildingFilterChange;
+      buildingFilterDOM.value = this.buildingFilter ? this.buildingFilter.Building_ID : 0;
+    const roomFilterDOM = document.getElementById('room-filter');
+      roomFilterDOM.value = this.roomFilter ? this.roomFilter.Room_ID : 0;
+
+    const filterSubmitBtn = document.getElementById('filter-submit');
+      filterSubmitBtn.onclick = this.handleFilterSubmit;
+    const filterResetBtn = document.getElementById('filter-reset');
+      filterResetBtn.onclick = this.handleFilterReset;
+
+    const dateLabelDOM = document.getElementById('date-label')
+      dateLabelDOM.onclick = this.showDatePicker;
+
+    const eventSearchDOM = document.getElementById('event-search-input');
+      eventSearchDOM.onchange = this.handleSearch;
+      eventSearchDOM.addEventListener('input', (e) => this.handleSearch(e))
   }
 
   nextMonth = () => {
@@ -192,9 +244,11 @@ class PHC_Calendar extends HTMLElement {
     this.hideDetailsPopup();
     loading();
 
+    const events = this.filteredEvents || this.events;
+
     const currDate = new Date(day);
     const endOfCurrDate = new Date(currDate.getTime() + 86399999)
-    const daysEvents = this.events.filter(event => currDate <= new Date(event.Event_End_Date) && endOfCurrDate >= new Date(event.Event_Start_Date));
+    const daysEvents = events.filter(event => currDate <= new Date(event.Event_End_Date) && endOfCurrDate >= new Date(event.Event_Start_Date));
 
     const daysEventsRooms = await axios({
       method: 'get',
@@ -282,6 +336,136 @@ class PHC_Calendar extends HTMLElement {
     eventDetailsPopupDOM.classList.remove('open');
   }
 
+  createDatePicker = () => {
+    const datePickerDOM = document.createElement('div');
+    datePickerDOM.id = 'date-picker-container';
+    datePickerDOM.innerHTML = `
+      <div id="date-picker">
+          <div class="date-picker-header">
+              <button class="btn" id="date-picker-submit">Submit</button>
+              <button class="close-button" id="date-picker-close"><i class="material-icons">close</i></button>
+          </div>
+          <div class="pickers">
+              <div class="month-picker"></div>
+              <div class="year-picker"></div>
+          </div>
+      </div>
+    `
+    document.body.appendChild(datePickerDOM)
+
+    document.getElementById('date-picker-submit').onclick = this.handleDatePickerSubmit;
+    document.getElementById('date-picker-close').onclick = this.hideDatePicker;
+  }
+
+  showDatePicker = () => {
+    const datePickerDOM = document.getElementById('date-picker-container');
+    datePickerDOM.classList.add('open');
+
+    const monthPickerDOM = document.querySelector('.month-picker');
+    const yearPickerDOM = document.querySelector('.year-picker');
+
+    monthPickerDOM.innerHTML = this.monthsList.map((month, i) => {
+        return `
+            <div class="choice">
+                <input type="radio" name="month" id="${month}" value="${i}" ${this.month == i ? 'checked' : ''}>
+                <label class="label" for="${month}">${month}</label>
+            </div>
+        `
+    }).join('')
+
+    const choiceHeight = document.querySelector('.choice').clientHeight;
+    monthPickerDOM.scroll({top: this.month * choiceHeight})
+
+    yearPickerDOM.innerHTML = [...new Array(50)].map((val, i) => {
+        const year = 1998 + i;
+        return `
+            <div class="choice">
+                <input type="radio" name="year" id="${year}" value="${year}" ${this.year == year ? 'checked' : ''}>
+                <label class="label" for="${year}">${year}</label>
+            </div>
+        `
+    }).join('')
+
+    yearPickerDOM.scroll({top: (this.year - 1998) * choiceHeight})
+  }
+
+  hideDatePicker = () => {
+    const datePickerDOM = document.getElementById('date-picker-container');
+    datePickerDOM.classList.remove('open');
+  }
+
+  handleDatePickerSubmit = () => {
+    const monthRadios = document.getElementsByName('month');
+    const yearRadios = document.getElementsByName('year');
+
+    for (let month of monthRadios) {
+        if (month.checked) {
+            // console.log(month.value)
+            this.month = parseInt(month.value);
+        }
+    }
+    for (let year of yearRadios) {
+        if (year.checked) {
+            // console.log(year.value)
+            this.year = parseInt(year.value);
+        }
+    }
+
+    this.hideDatePicker();
+    this.update();
+  }
+
+  handleSearch = (e) => {
+    const events = this.filteredEvents || this.events;
+    const searchResultsContainer = document.querySelector('.search-results')
+    const searchValue = e.target.value;
+    console.log(searchValue)
+
+    if (searchValue.length < 3) {
+      searchResultsContainer.style.display = 'none';
+      searchResultsContainer.style.visibility = 'hidden';
+      return;
+    };
+
+    const filteredSearchEvents = events.filter(e => e.Event_Title.toLowerCase().includes(searchValue.toLowerCase()))
+
+    filteredSearchEvents.filter((a,b) => a.Event_Start_Date - b.Event_Start_Date)
+    //trim results down to 10
+    if (filteredSearchEvents.length > 10) filteredSearchEvents.length = 10;
+    
+    if (!filteredSearchEvents.length) {
+      searchResultsContainer.innerHTML = `
+        <div class="result no-results">
+            <div class="event-title">No Results</div>
+        </div>
+      `
+      return;
+    }
+    
+    searchResultsContainer.innerHTML = filteredSearchEvents.map(event => {
+        const {Event_Title, Event_Start_Date, Event_ID} = event;
+        return `
+            <button class="result" id="result-${Event_ID}">
+                <div class="event-title">${Event_Title}</div>
+                <div class="event-date">${new Date(Event_Start_Date).toDateString()}</div>
+            </button>
+        `
+    }).join('')
+
+    filteredSearchEvents.forEach(event => {
+      const { Event_ID } = event;
+      document.getElementById(`result-${Event_ID}`).onclick = () => this.handleSearchResult(Event_ID);
+    })
+    
+
+    searchResultsContainer.style.display = 'flex';
+    searchResultsContainer.style.visibility = 'visible';
+  }
+
+  handleSearchResult = (eventID) => {
+    console.log(eventID)
+  }
+
   nextDay = (day) => {
     const nextDayIndex = this.monthArr.indexOf(day) + 1;
     const nextDay = this.monthArr[nextDayIndex];
@@ -291,6 +475,97 @@ class PHC_Calendar extends HTMLElement {
     const prevDayIndex = this.monthArr.indexOf(day) - 1;
     const prevDay = this.monthArr[prevDayIndex];
     if (prevDay) this.showDetailsPopup(prevDay)
+  }
+
+  handleLocationFilterChange = () => {
+    const locationFilterDOM = document.getElementById('location-filter');
+    const buildingFilterDOM = document.getElementById('building-filter');
+    const roomFilterDOM = document.getElementById('room-filter');
+
+    const { value: locationID } = locationFilterDOM;
+
+    buildingFilterDOM.innerHTML = '<option value="0">All</option>'
+    roomFilterDOM.innerHTML = '<option value="0">All</option>'
+
+    const buildings = this.places.filter(place => place.Location_ID == locationID)[0].Buildings;
+
+    const buildingsOptionsHTML = buildings.map(building => `<option value="${building.Building_ID}">${building.Building_Name}</option>`)
+    buildingsOptionsHTML.unshift('<option value="0">All</option>')
+    buildingFilterDOM.innerHTML = buildingsOptionsHTML.join('')
+  }
+
+  handleBuildingFilterChange = () => {
+    const locationFilterDOM = document.getElementById('location-filter');
+    const buildingFilterDOM = document.getElementById('building-filter');
+    const roomFilterDOM = document.getElementById('room-filter');
+
+    const { value: locationID } = locationFilterDOM; 
+    const { value: buildingID } = buildingFilterDOM;
+
+    if (buildingID === "0") return roomFilterDOM.innerHTML = '<option value="0">All</option>';
+
+    const rooms = this.places.filter(place => place.Location_ID == locationID)[0].Buildings.filter(building => building.Building_ID == buildingID)[0].Rooms;
+    
+    const roomsOptionsHTML = rooms.map(room => `<option value="${room.Room_ID}">${room.Room_Name}</option>`)
+    roomsOptionsHTML.unshift('<option value="0">All</option>')
+    roomFilterDOM.innerHTML = roomsOptionsHTML.join('')
+  }
+
+  handleFilterSubmit = async () => {
+    loading();
+    const locationFilterDOM = document.getElementById('location-filter');
+    const buildingFilterDOM = document.getElementById('building-filter');
+    const roomFilterDOM = document.getElementById('room-filter');
+    
+    const { value: locationID } = locationFilterDOM; 
+    const { value: buildingID } = buildingFilterDOM;
+    const { value: roomID } = roomFilterDOM;
+
+    this.locationFilter = parseInt(locationID) ? this.places.filter(place => place.Location_ID == locationID)[0] : null;
+    this.buildingFilter = parseInt(buildingID) ? this.locationFilter.Buildings.filter(building => building.Building_ID == buildingID)[0] : null;
+    this.roomFilter = parseInt(roomID) ? this.buildingFilter.Rooms.filter(room => room.Room_ID == roomID)[0] : null;
+
+    if (!this.buildingFilter && !this.roomFilter) {
+      this.filteredEvents = this.events.filter(event => event.Location_Name == this.locationFilter.Location_Name);
+      this.createCalendar();
+      doneLoading();
+
+      return;
+    }
+    
+
+    const filteredEventIds = await axios({
+      method: 'get',
+      url: '/api/mp/filter-rooms',
+      params: {
+        eventIDs: this.events.map(e => e.Event_ID),
+        roomIDs: this.roomFilter ? [this.roomFilter.Room_ID] : this.buildingFilter.Rooms.map(room => room.Room_ID)
+      }
+    })
+      .then(response => response.data.map(e => e.Event_ID))
+
+
+    this.filteredEvents = this.events.filter(e => filteredEventIds.includes(e.Event_ID));
+    this.createCalendar();
+
+    doneLoading();
+  }
+
+  handleFilterReset = () => {
+    const locationFilterDOM = document.getElementById('location-filter');
+    const buildingFilterDOM = document.getElementById('building-filter');
+    const roomFilterDOM = document.getElementById('room-filter');
+
+    this.locationFilter = null;
+    this.buildingFilter = null;
+    this.roomFilter = null;
+
+    locationFilterDOM.innerHTML = '<option value="0">All</option>'
+    buildingFilterDOM.innerHTML = '<option value="0">All</option>'
+    roomFilterDOM.innerHTML = '<option value="0">All</option>'
+    
+    this.filteredEvents = null;
+    this.createCalendar();
   }
 }
 

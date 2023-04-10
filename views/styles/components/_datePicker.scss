@@ -17,6 +17,11 @@ $date-picker-accent-2: var(--blue-accent-color2);
     visibility: hidden;
     display: none;
     z-index: 999;
+
+    &.open {
+        visibility: visible;
+        display: grid;
+    }
 }
 
 #date-picker {
