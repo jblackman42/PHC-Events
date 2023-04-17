@@ -81,6 +81,7 @@ $recurring-header-bg: var(--secondary-bg-color);
                 width: 100%;
                 text-align: center;
                 cursor: pointer;
+                border-bottom: 2px solid var(--secondary-bg-color);
 
                 &.active {
                     border-bottom: 2px solid var(--blue-accent-color);

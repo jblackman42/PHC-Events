@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <%- include('../partials/head'); %>
+    <title>PHC - Create Event</title>
+</head>
+<body>
+    <%- include('../partials/loading'); %>
+
+    <%- include('../partials/navbar'); %>
+    <%- include('../partials/recurring-event-popup'); %> 
+    <%- include('../partials/review-days'); %>
+
+    <div class="form-container">
+        <p>Event Creator: <span id="event-creator"></span></p>
+
+        <form id="create-form">
+            <div id="section-1" class="section">
+                <div class="input">
+                    <label for="event-name">Event Name:</label>
+                    <input type="text" name="event-name" id="event-name">
+                </div>
+                <div class="input">
+                    <label for="event-location">Event Location:</label>
+                    <select name="event-location" id="event-location"></select>
+                </div>
+                <div class="input">
+                    <label for="start-date">Event Date:</label>
+                    <input type="date" name="start-date" id="start-date">
+                </div>
+                <div class="input">
+                    <label for="start-time">Start Time:</label>
+                    <input type="time" name="start-time" id="start-time">
+                </div>
+                <div class="input">
+                    <label for="end-time">End Time:</label>
+                    <input type="time" name="end-time" id="end-time">
+                </div>
+                <div class="input">
+                    <label for="primary-contact">Primary Contact</label>
+                    <select name="primary-contact" id="primary-contact"></select>
+                </div>
+                <div class="input">
+                    <label for="event-type">Event Type:</label>
+                    <select name="event-type" id="event-type"></select>
+                </div>
+                <div class="input">
+                    <label for="attendance">Estimated Attendance:</label>
+                    <input type="number" name="attendance" id="attendance" value="0">
+                </div>
+                <div class="input">
+                    <label for="congregation">Congregation:</label>
+                    <select name="congregation" id="congregation"></select>
+                </div>
+                <div class="input">
+                    <label for="setup">Setup Time: (minutes)</label>
+                    <input type="number" name="setup" id="setup" value="0">
+                </div>
+                <div class="input">
+                    <label for="cleanup">Cleanup Time: (minutes)</label>
+                    <input type="number" name="cleanup" id="cleanup" value="0">
+                </div>
+                <div class="input">
+                    <label for="visibility">Display on Public Calendar:</label>
+                    <select name="visibility" id="visibility">
+                        <option value="1">No</option>
+                        <option value="4">Yes</option>
+                    </select>
+                </div>
+                <div class="input description">
+                    <label for="event-desc">Event Description:</label>
+                    <textarea name="event-desc" id="event-desc"></textarea>
+                </div>
+
+                <button type="button" class="btn" onclick="nextSection();">Next</button>
+            </div>
+            <div id="section-2" class="section">
+                <div class="input">
+                    <label for="registration">Needs Registration:</label>
+                    <select name="registration" id="registration">
+                        <option value="0">No</option>
+                        <option value="1">Yes</option>
+                    </select>
+                </div>
+                <div class="input">
+                    <label for="promotion">Needs Promotion:</label>
+                    <select name="promotion" id="promotion">
+                        <option value="0">No</option>
+                        <option value="1">Yes</option>
+                    </select>
+                </div>
+                <div class="input">
+                    <label for="av">Needs A/V:</label>
+                    <select name="av" id="av">
+                        <option value="0">No</option>
+                        <option value="1">Yes</option>
+                    </select>
+                </div>
+                <div class="input">
+                    <label for="facilities">Needs Facilities:</label>
+                    <select name="facilities" id="facilities">
+                        <option value="0">No</option>
+                        <option value="1">Yes</option>
+                    </select>
+                </div>
+                <div class="input facilities-input">
+                    <label for="facilities-person">Onsite Facilities Employee:</label>
+                    <select name="facilities-person" id="facilities-person">
+                        <option value="0">No</option>
+                        <option value="1">Yes</option>
+                    </select>
+                </div>
+                <div class="input facilities-input">
+                    <label for="facilities-equipment">Facilities Equipment:</label>
+                    <div id="facilities-equipment-input">
+                        <p id="equipment-label">Equipment</p>
+                        <button type="button" onclick="facilitiesPopupShow()"><i class='fas fa-ellipsis-h'></i></button>
+                    </div>
+                </div>
+                <div class="input">
+                    <label for="childcare">Needs Childcare:</label>
+                    <select name="childcare" id="childcare">
+                        <option value="0">No</option>
+                        <option value="1">Yes</option>
+                    </select>
+                </div>
+                <div class="input">
+                    <label for="recurring-event">Recurring Event</label>
+                    <div id="recurring-event-input">
+                        <p id="recurring-label">One Time Event</p>
+                        <button type="button" onclick="patternShow()"><i class='fas fa-ellipsis-h'></i></button>
+                    </div>
+                </div>
+                <div class="button-container">
+                    <button type="button" class="btn prev" onclick="prevSection()">Back</button>
+                    <button id="next-btn" type="button" class="btn" onclick="nextSection();loadRoomOptions()">Next</button>
+                </div>
+            </div>
+            <div id="section-3" class="section">
+                <div id="room-selectors">
+                </div>
+                <div class="button-container">
+                    <button type="button" class="btn prev" onclick="prevSection()">Back</button>
+                    <button class="btn">Submit</button>
+                </div>
+            </div>
+        </form>
+        <p id="warning-msg"></p>
+    </div>
+
+    <script src="../scripts/create.js"></script>
+</body>
+</html>

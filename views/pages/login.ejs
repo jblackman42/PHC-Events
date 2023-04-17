@@ -96,14 +96,13 @@
             remember: document.getElementById('remember').checked
         }
 
-        console.log(data)
         loading();
         await axios({
             method: 'post',
             url: '/api/oauth/login',
             data: data
         })
-            .then(response => {if (response.status >= 200 && response.status < 300) window.location = window.location.pathname == '/login' ? '/' : window.location.pathname})
+            .then(response => {if (response.status >= 200 && response.status < 300) window.location = window.location.pathname == '/login' ? '/' : window.location.pathname + window.location.search})
             .catch(err => {
                 console.error(err)
                 document.querySelector('.form-error').innerText = err.response.data ? err.response.data.error : 'internal server error';

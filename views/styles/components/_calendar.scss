@@ -56,7 +56,7 @@ $button-bg: var(--arrow-button-color);
 
         @for $i from 1 through 50 {
             &:nth-of-type(#{$i}) {
-                animation-delay: 20ms * $i;
+                animation-delay: 15ms * $i;
             }
         }
 
@@ -113,7 +113,6 @@ $button-bg: var(--arrow-button-color);
     grid-template-columns: repeat(7, 1fr);
     gap: 2px;
     color: $calendar-day-text;
-    margin-top: 1rem;
 
     p {
         width: 100%;

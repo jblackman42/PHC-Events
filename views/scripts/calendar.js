@@ -15,6 +15,7 @@ class PHC_Calendar extends HTMLElement {
     this.locationFilter = null;
     this.buildingFilter = null;
     this.roomFilter = null;
+    this.featuredFilter = 0;
 
     this.update();
     this.createDetailsPopup();
@@ -35,8 +36,10 @@ class PHC_Calendar extends HTMLElement {
       url: '/api/mp/places'
     })
       .then(response => response.data)
-
-    console.log(this.places)
+      .catch(err => {
+        console.error(err)
+        if (err.response.status == 403) window.location = 'login';
+      })
   }
 
   getEvents = async () => {
@@ -73,6 +76,10 @@ class PHC_Calendar extends HTMLElement {
       }
     })
       .then(response => response.data)
+      .catch(err => {
+        console.error(err)
+        if (err.response.status == 403) window.location = 'login';
+      })
   }
 
   createCalendar = () => {
@@ -131,6 +138,13 @@ class PHC_Calendar extends HTMLElement {
                             `
                           }).join('') : ''}
                       </select>
+                  </div>
+              </div>
+
+              <div>
+                  <label for="featured-filter">Featured:</label>
+                  <div class="filter-box">
+                        <input type="checkbox" id="featured-filter" ${this.featuredFilter ? 'checked' : ''}/>
                   </div>
               </div>
 
@@ -207,9 +221,10 @@ class PHC_Calendar extends HTMLElement {
     const dateLabelDOM = document.getElementById('date-label')
       dateLabelDOM.onclick = this.showDatePicker;
 
-    const eventSearchDOM = document.getElementById('event-search-input');
-      eventSearchDOM.onchange = this.handleSearch;
-      eventSearchDOM.addEventListener('input', (e) => this.handleSearch(e))
+    const featuredFilterDOM = document.getElementById('featured-filter');
+      featuredFilterDOM.onclick = this.handleFeaturedFilterChange;
+
+    searchBarSetup();
   }
 
   nextMonth = () => {
@@ -240,7 +255,7 @@ class PHC_Calendar extends HTMLElement {
     document.body.appendChild(eventDetailsPopupDOM)
   }
 
-  showDetailsPopup = async (day) => {
+  showDetailsPopup = async (day, eventID) => {
     this.hideDetailsPopup();
     loading();
 
@@ -249,6 +264,11 @@ class PHC_Calendar extends HTMLElement {
     const currDate = new Date(day);
     const endOfCurrDate = new Date(currDate.getTime() + 86399999)
     const daysEvents = events.filter(event => currDate <= new Date(event.Event_End_Date) && endOfCurrDate >= new Date(event.Event_Start_Date));
+    
+    if (daysEvents.length  == 0) {
+      doneLoading();
+      return;
+    };
 
     const daysEventsRooms = await axios({
       method: 'get',
@@ -258,6 +278,10 @@ class PHC_Calendar extends HTMLElement {
       }
     })
       .then(response => response.data)
+      .catch(err => {
+        console.error(err)
+        if (err.response.status == 403) window.location = 'login';
+      })
 
     const eventDetailsPopupDOM = document.getElementById('popup-container');
     eventDetailsPopupDOM.classList.add('open');
@@ -273,8 +297,9 @@ class PHC_Calendar extends HTMLElement {
           
           <ul id="events-list">
             ${daysEvents.map(event => {
-              const { Event_ID, Event_Title, Minutes_for_Setup, Minutes_for_Cleanup, Location_Name, Event_End_Date, Event_Start_Date } = event;
-              const eventsRooms = daysEventsRooms.filter(room => room.Event_ID == Event_ID)
+              const { Event_ID, Event_Title, Minutes_for_Setup, Minutes_for_Cleanup, Location_Name, Event_End_Date, Event_Start_Date, Display_Name, Event_Type, Participants_Expected, Featured_On_Calendar } = event;
+              
+              const eventsRooms = daysEventsRooms ? daysEventsRooms.filter(room => room.Event_ID == Event_ID) : null;
 
               const eventStartTime = new Date(Event_Start_Date).toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'});
               const eventEndTime = new Date(Event_End_Date).toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'});
@@ -285,7 +310,7 @@ class PHC_Calendar extends HTMLElement {
               const reservedTimeString = `${reservedStartTime} - ${reservedEndTime}`;
               
               return `
-                <li class="event" id="event-${Event_ID}">
+                <li class="event ${Featured_On_Calendar ? 'featured' : ''}" id="event-${Event_ID}">
                     <div style="flex-wrap:wrap;">
                         <h4 id="event-name">${Event_Title}</h4>
                     </div>
@@ -298,6 +323,20 @@ class PHC_Calendar extends HTMLElement {
                     <div>
                         <p id="label">Event Time:</p>
                         <p>${eventTimesString}</p>
+                    </div>
+                    ${Participants_Expected ? `
+                      <div>
+                          <p>Estimated Attendance:</p>
+                          <p>${Participants_Expected}</p>
+                      </div>
+                    `: ''}
+                    <div>
+                        <p id="label">Primary Contact:</p>
+                        <p>${Display_Name}</p>
+                    </div>
+                    <div>
+                        <p id="label">Event Type:</p>
+                        <p>${Event_Type}</p>
                     </div>
                     <div>
                         <p>Location:</p>
@@ -329,6 +368,28 @@ class PHC_Calendar extends HTMLElement {
     prevDayBtn.onclick = () => this.prevDay(day)
 
     doneLoading();
+
+    if (!eventID) return;
+
+    const eventsListDOM = document.getElementById('events-list');
+    const scrollToElem = document.getElementById(`event-${eventID}`);
+    const children = eventsListDOM.children;
+    let indexOfElem = 9999;
+    let scrollHeight = 0;
+    for (let i = 0; i < children.length; i ++) {
+        if (children[i].id == `event-${eventID}`) indexOfElem = i;
+
+        if (i < indexOfElem) scrollHeight += children[i].offsetHeight + 2
+    }
+
+    if (this.events[0].Event_ID != eventID) eventsListDOM.scrollTo({
+        top: scrollHeight,
+        behavior: 'smooth'
+    })
+    // scrollToElem.style.borderColor = '2px solid transparent'
+    scrollToElem.classList.add('highlight')
+    // scrollToElem.style.borderColor = 'lime'
+    // scrollToElem.style.transition = 'border-color 1s linear 1s'
   }
 
   hideDetailsPopup = () => {
@@ -415,66 +476,33 @@ class PHC_Calendar extends HTMLElement {
     this.update();
   }
 
-  handleSearch = (e) => {
-    const events = this.filteredEvents || this.events;
-    const searchResultsContainer = document.querySelector('.search-results')
-    const searchValue = e.target.value;
-    console.log(searchValue)
-
-    if (searchValue.length < 3) {
-      searchResultsContainer.style.display = 'none';
-      searchResultsContainer.style.visibility = 'hidden';
-      return;
-    };
-
-    const filteredSearchEvents = events.filter(e => e.Event_Title.toLowerCase().includes(searchValue.toLowerCase()))
-
-    filteredSearchEvents.filter((a,b) => a.Event_Start_Date - b.Event_Start_Date)
-    //trim results down to 10
-    if (filteredSearchEvents.length > 10) filteredSearchEvents.length = 10;
-    
-    if (!filteredSearchEvents.length) {
-      searchResultsContainer.innerHTML = `
-        <div class="result no-results">
-            <div class="event-title">No Results</div>
-        </div>
-      `
-      return;
-    }
-    
-    searchResultsContainer.innerHTML = filteredSearchEvents.map(event => {
-        const {Event_Title, Event_Start_Date, Event_ID} = event;
-        return `
-            <button class="result" id="result-${Event_ID}">
-                <div class="event-title">${Event_Title}</div>
-                <div class="event-date">${new Date(Event_Start_Date).toDateString()}</div>
-            </button>
-        `
-    }).join('')
-
-    filteredSearchEvents.forEach(event => {
-      const { Event_ID } = event;
-      document.getElementById(`result-${Event_ID}`).onclick = () => this.handleSearchResult(Event_ID);
-    })
-    
-
-    searchResultsContainer.style.display = 'flex';
-    searchResultsContainer.style.visibility = 'visible';
-  }
-
-  handleSearchResult = (eventID) => {
-    console.log(eventID)
-  }
-
   nextDay = (day) => {
     const nextDayIndex = this.monthArr.indexOf(day) + 1;
     const nextDay = this.monthArr[nextDayIndex];
-    if (nextDay) this.showDetailsPopup(nextDay)
+    if (!nextDay) return;
+    
+    const events = this.filteredEvents || this.events;
+    const currDate = new Date(nextDay);
+    const endOfCurrDate = new Date(currDate.getTime() + 86399999)
+    const daysEvents = events.filter(event => currDate <= new Date(event.Event_End_Date) && endOfCurrDate >= new Date(event.Event_Start_Date));
+
+    if (!daysEvents.length) return this.nextDay(nextDay)
+
+    this.showDetailsPopup(nextDay)
   }
   prevDay = (day) => {
     const prevDayIndex = this.monthArr.indexOf(day) - 1;
     const prevDay = this.monthArr[prevDayIndex];
-    if (prevDay) this.showDetailsPopup(prevDay)
+    if (!prevDay) return;
+    
+    const events = this.filteredEvents || this.events;
+    const currDate = new Date(prevDay);
+    const endOfCurrDate = new Date(currDate.getTime() + 86399999)
+    const daysEvents = events.filter(event => currDate <= new Date(event.Event_End_Date) && endOfCurrDate >= new Date(event.Event_Start_Date));
+
+    if (!daysEvents.length) return this.prevDay(prevDay)
+
+    this.showDetailsPopup(prevDay)
   }
 
   handleLocationFilterChange = () => {
@@ -511,22 +539,42 @@ class PHC_Calendar extends HTMLElement {
     roomFilterDOM.innerHTML = roomsOptionsHTML.join('')
   }
 
+  handleFeaturedFilterChange = () => {
+    const featuredFilterDOM = document.getElementById('featured-filter');
+    const { checked: isFeatured } = featuredFilterDOM;
+
+    this.featuredFilter = isFeatured;
+  }
+
   handleFilterSubmit = async () => {
     loading();
+    this.filteredEvents = null;
     const locationFilterDOM = document.getElementById('location-filter');
     const buildingFilterDOM = document.getElementById('building-filter');
     const roomFilterDOM = document.getElementById('room-filter');
+    const featuredFilterDOM = document.getElementById('featured-filter');
     
     const { value: locationID } = locationFilterDOM; 
     const { value: buildingID } = buildingFilterDOM;
     const { value: roomID } = roomFilterDOM;
+    const { checked: isFeatured } = featuredFilterDOM;
 
     this.locationFilter = parseInt(locationID) ? this.places.filter(place => place.Location_ID == locationID)[0] : null;
     this.buildingFilter = parseInt(buildingID) ? this.locationFilter.Buildings.filter(building => building.Building_ID == buildingID)[0] : null;
     this.roomFilter = parseInt(roomID) ? this.buildingFilter.Rooms.filter(room => room.Room_ID == roomID)[0] : null;
 
+    if (!this.locationFilter && !this.buildingFilter && !this.roomFilter) {
+      if (isFeatured) this.filteredEvents = this.events.filter(e => e.Featured_On_Calendar == true)
+      this.createCalendar();
+      doneLoading();
+
+      return;
+    }
+
+
     if (!this.buildingFilter && !this.roomFilter) {
       this.filteredEvents = this.events.filter(event => event.Location_Name == this.locationFilter.Location_Name);
+      if (isFeatured) this.filteredEvents = this.filteredEvents.filter(e => e.Featured_On_Calendar == true)
       this.createCalendar();
       doneLoading();
 
@@ -543,9 +591,14 @@ class PHC_Calendar extends HTMLElement {
       }
     })
       .then(response => response.data.map(e => e.Event_ID))
+      .catch(err => {
+        console.error(err)
+        if (err.response.status == 403) window.location = 'login';
+      })
 
 
     this.filteredEvents = this.events.filter(e => filteredEventIds.includes(e.Event_ID));
+    if (isFeatured) this.filteredEvents = this.filteredEvents.filter(e => e.Featured_On_Calendar == true)
     this.createCalendar();
 
     doneLoading();
@@ -555,14 +608,17 @@ class PHC_Calendar extends HTMLElement {
     const locationFilterDOM = document.getElementById('location-filter');
     const buildingFilterDOM = document.getElementById('building-filter');
     const roomFilterDOM = document.getElementById('room-filter');
+    const featuredFilterDOM = document.getElementById('featured-filter');
 
     this.locationFilter = null;
     this.buildingFilter = null;
     this.roomFilter = null;
+    this.featuredFilter = null;
 
     locationFilterDOM.innerHTML = '<option value="0">All</option>'
     buildingFilterDOM.innerHTML = '<option value="0">All</option>'
     roomFilterDOM.innerHTML = '<option value="0">All</option>'
+    featuredFilterDOM.checked = false;
     
     this.filteredEvents = null;
     this.createCalendar();

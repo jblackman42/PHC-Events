@@ -154,8 +154,11 @@ $input-color: var(--primary-font-color);
             padding: 1rem .5rem;
             box-sizing: border-box;
 
-            &.description textarea {
-                height: max-content;
+            &.description {
+                width: 100%;
+                textarea {
+                    height: max-content;
+                }
             }
 
             label {

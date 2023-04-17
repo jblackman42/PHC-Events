@@ -6,7 +6,13 @@ const { ensureAuthenticated } = require('../middleware/authorization.js')
 
 //home page
 navigation.get('/', ensureAuthenticated, (req, res) => {
-  res.render('pages/calendar', {error: null})
+  res.render('pages/calendar')
+})
+navigation.get('/print', ensureAuthenticated, (req, res) => {
+  res.render('pages/print')
+})
+navigation.get('/create', ensureAuthenticated, (req, res) => {
+  res.render('pages/create')
 })
 
 navigation.get('/login', (req, res) => {

@@ -114,8 +114,11 @@ $arrow-button-bg: var(--arrow-button-color);
 
                 transition: border-color 1s linear 2s;
                 border-color: #2ecc71;
-                &.hightlight {
+                &.highlight {
                     border: 3px solid transparent !important;
+                }
+                &.featured {
+                    border: 3px solid gold !important;
                 }
                 &:first-of-type {
                     margin-top: 0;
