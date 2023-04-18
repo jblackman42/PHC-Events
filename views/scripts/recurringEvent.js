@@ -13,6 +13,15 @@ const occurrenceNumDOM = document.getElementById('occurrence-num');
 const warningMsg = document.getElementById('recurring-warning-msg');
 
 const patternShow = () => {
+  // check required fields
+  const eventDate = document.getElementById('start-date');
+  const eventStartTime = document.getElementById('start-time');
+
+  if (!eventDate.value || !eventStartTime.value) {
+    alert('Please fill out required Fields:\nEvent Date,\nStart Time')
+    return;
+  }
+
   recurringEventContainer.classList.add('open')
 
   if (startDateDOM.value) {
@@ -22,8 +31,8 @@ const patternShow = () => {
 };
 const patternHide = () => recurringEventContainer.classList.remove('open');
 
-const cancel = () => {
-    const recurringLabel = document.getElementById('recurring-label');
+const cancelPattern = () => {
+  const recurringLabel = document.getElementById('recurring-label');
     recurringLabel.innerText = 'One Time Event';
     pattern = undefined;
     patternHide();
@@ -79,6 +88,10 @@ const toggleInputs = (disableInputIDs, enableInputIDs) => {
 
 const handleSave = async () => {
   const activeOption = document.querySelector('.active').id;
+  const recurringLabel = document.getElementById('recurring-label');
+
+  loading();
+  patternHide();
   
   switch (activeOption) {
     case 'Daily':
@@ -95,9 +108,14 @@ const handleSave = async () => {
       break;
   }
 
-  console.log(pattern)
-  patternHide();
+  if (pattern.length > 52) {
+    pattern.length = 52;
+    alert('Maximum Event Limit Reached\n\nYou Have reached the maximum event limit of 52. You cannot create more than 52 events at once.')
+  }
 
+  recurringLabel.innerText = `${pattern.length} Event${pattern.length == 1 ? '': 's'}`;
+
+  doneLoading();
   reviewShow();
 }
 

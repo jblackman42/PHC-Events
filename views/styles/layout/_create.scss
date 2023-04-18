@@ -43,11 +43,6 @@ $input-color: var(--primary-font-color);
             width: 600px;
             max-width: 85vw;
             flex-wrap: wrap;
-            
-            .facilities-input {
-                visibility: hidden;
-                display: none;
-            }
 
             &:first-of-type {
                 display: flex;

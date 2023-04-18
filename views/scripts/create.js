@@ -83,7 +83,12 @@ const loadForm = () => {
   }).join('')
 }
 
-const loadFormData = async () => {
+const toggleFormFields = (e) => {
+  console.log(e.target.value)
+}
+
+// load form data
+(async () => {
   user = await getUser();
 
   locations = await axios({
@@ -111,5 +116,4 @@ const loadFormData = async () => {
     .then(response => response.data);
 
   loadForm();
-}
-loadFormData();
+})()

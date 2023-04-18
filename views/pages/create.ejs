@@ -26,11 +26,11 @@
                 </div>
                 <div class="input">
                     <label for="start-date">Event Date:</label>
-                    <input type="date" name="start-date" id="start-date">
+                    <input type="date" name="start-date" id="start-date" onchange="cancelPattern()">
                 </div>
                 <div class="input">
                     <label for="start-time">Start Time:</label>
-                    <input type="time" name="start-time" id="start-time">
+                    <input type="time" name="start-time" id="start-time" onchange="cancelPattern()">
                 </div>
                 <div class="input">
                     <label for="end-time">End Time:</label>
@@ -98,19 +98,19 @@
                 </div>
                 <div class="input">
                     <label for="facilities">Needs Facilities:</label>
-                    <select name="facilities" id="facilities">
+                    <select name="facilities" id="facilities" onchange="toggleFormFields(event, ['onsite-facilities', 'facilities-equipment'])">
                         <option value="0">No</option>
                         <option value="1">Yes</option>
                     </select>
                 </div>
-                <div class="input facilities-input">
+                <div class="input hidden" id="onsite-facilities">
                     <label for="facilities-person">Onsite Facilities Employee:</label>
                     <select name="facilities-person" id="facilities-person">
                         <option value="0">No</option>
                         <option value="1">Yes</option>
                     </select>
                 </div>
-                <div class="input facilities-input">
+                <div class="input hidden" id="facilities-equipment">
                     <label for="facilities-equipment">Facilities Equipment:</label>
                     <div id="facilities-equipment-input">
                         <p id="equipment-label">Equipment</p>

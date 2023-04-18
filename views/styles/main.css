@@ -2407,10 +2407,6 @@ input:checked + .slider:before {
   max-width: 85vw;
   flex-wrap: wrap;
 }
-.form-container form div.section .facilities-input {
-  visibility: hidden;
-  display: none;
-}
 .form-container form div.section:first-of-type {
   display: flex;
   visibility: visible;

@@ -319,8 +319,6 @@ router.post('/generate-sequence', ensureApiAuthenticated, async (req, res) => {
   const { sequence } = req.body;
 
   if (!sequence) return res.status(400).send({err: 'no sequence provided'}).end();
-
-  console.log(sequence)
   
   const pattern = await axios({
     method: 'post',

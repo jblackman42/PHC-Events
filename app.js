@@ -33,9 +33,13 @@ app.use('/', require('./routes/index'))
 app.use('/api/oauth', require('./routes/oauth.js'))
 app.use('/api/mp', require('./routes/mp.js'))
 
+// delete me
+const { populate } = require('./populate.js');
+
 const start = async () => {
     try {
         app.listen(port, console.log(`\n server is listening on port ${port}\n http://localhost:${port}`));
+        // await populate();
 
     } catch (error) { console.log(error) }
 }

@@ -11,8 +11,8 @@
         </div>
         <!-- <p style="text-align: center">Warning: 10 Events will be created</p> -->
         <div class="btn-container">
-            <button class="btn cancel" onclick="reviewHide();patternShow();">Cancel</button>
-            <button id="review-confirm-btn" class="btn" onclick="reviewHide()">Confirm 0 Events</button>
+            <button class="btn cancel" onclick="reviewCancel();patternShow();">Cancel</button>
+            <button id="review-confirm-btn" class="btn" onclick="reviewConfirm()">Confirm 0 Events</button>
         </div>
     </div>
 </div>
@@ -26,7 +26,10 @@
     const loadDaysList = () => {
         const daysListHTML = pattern.map((day, id) => {
             const currDate = new Date(day);
-            return `<li>${id + 1}: ${currDate.toLocaleDateString()} @ ${currDate.toLocaleTimeString()}<input class="recurring-verify" id="${id}" type="checkbox" checked></input></li>`
+            return `<li>
+                        ${id + 1}: ${currDate.toLocaleDateString()} @ ${currDate.toLocaleTimeString()}
+                        <input class="recurring-verify" id="pattern-day-${id}" value="${day}" onclick="updatePattern();" type="checkbox" checked></input>
+                    </li>`
         }).join('')
         daysListDOM.innerHTML = daysListHTML;
         eventTitleDOM.innerText = eventNameDOM.value;
@@ -42,5 +45,26 @@
         reviewContainerDOM.style.visibility = 'visible';
 
         loadDaysList();
+    }
+
+    const updatePattern = () => {
+        const newPattern = [];
+        for (let i = 0; i < daysListDOM.children.length; i ++) {
+            const elem = document.getElementById(`pattern-day-${i}`);
+            if (elem.checked) newPattern.push(elem.value);
+        }
+        pattern = newPattern;
+        reviewConfirmBtnDOM.innerText = `Confirm ${pattern.length} Events`;
+        const recurringLabel = document.getElementById('recurring-label');
+        recurringLabel.innerText = `${pattern.length} Event${pattern.length == 1 ? '' : 's'}`;
+    }
+
+    const reviewConfirm = () => {
+        updatePattern();
+        reviewHide();
+    }
+    const reviewCancel = () => {
+        pattern = undefined;
+        reviewHide();
     }
 </script>
