@@ -148,6 +148,11 @@ $input-color: var(--primary-font-color);
             width: 50%;
             padding: 1rem .5rem;
             box-sizing: border-box;
+            
+            &.hidden {
+                display: none;
+                visibility: hidden;
+            }
 
             &.description {
                 width: 100%;

@@ -9,6 +9,7 @@
 
     <%- include('../partials/navbar'); %>
     <%- include('../partials/recurring-event-popup'); %> 
+    <%- include('../partials/facilities-equipment-popup'); %>
     <%- include('../partials/review-days'); %>
 
     <div class="form-container">
@@ -111,7 +112,7 @@
                     </select>
                 </div>
                 <div class="input hidden" id="facilities-equipment">
-                    <label for="facilities-equipment">Facilities Equipment:</label>
+                    <label for="facilities-equipment-input">Facilities Equipment:</label>
                     <div id="facilities-equipment-input">
                         <p id="equipment-label">Equipment</p>
                         <button type="button" onclick="facilitiesPopupShow()"><i class='fas fa-ellipsis-h'></i></button>

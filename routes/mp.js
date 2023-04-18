@@ -315,6 +315,26 @@ router.get('/congregations', ensureApiAuthenticated, async (req, res) => {
   res.send(congregations)
 })
 
+router.get('/equipment', ensureApiAuthenticated, async (req, res) => {
+  const equipment = await axios({
+    method: 'get',
+    url: 'https://my.pureheart.org/ministryplatformapi/tables/Equipment',
+    params: {
+      $filter: `Bookable=1 AND (Date_Retired IS NULL OR Date_Retired > GETDATE())`,
+      $select: 'Equipment_ID, Equipment_Name, Date_Acquired, Equipment_Type_ID_Table.[Equipment_Type], Quantity',
+      $orderby: 'Equipment_Type_ID_Table.[Equipment_Type]'
+    },
+    headers: {
+      'content-type': 'application/json',
+      'authorization': `Bearer ${await getAccessToken()}`
+    }
+  })
+    .then(response => response.data)
+    .catch(err => console.log(err))
+
+  res.send(equipment)
+})
+
 router.post('/generate-sequence', ensureApiAuthenticated, async (req, res) => {
   const { sequence } = req.body;
 

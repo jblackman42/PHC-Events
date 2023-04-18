@@ -33,8 +33,7 @@ app.use('/', require('./routes/index'))
 app.use('/api/oauth', require('./routes/oauth.js'))
 app.use('/api/mp', require('./routes/mp.js'))
 
-// delete me
-const { populate } = require('./populate.js');
+// const { populate } = require('./populate.js');
 
 const start = async () => {
     try {

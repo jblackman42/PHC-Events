@@ -83,8 +83,12 @@ const loadForm = () => {
   }).join('')
 }
 
-const toggleFormFields = (e) => {
-  console.log(e.target.value)
+const toggleFormFields = (e, elemIDs) => {
+  elemIDs.forEach(id => {
+    const elem = document.getElementById(id);
+    if (parseInt(e.target.value)) elem.classList.remove('hidden');
+    else elem.classList.add('hidden');
+  })
 }
 
 // load form data

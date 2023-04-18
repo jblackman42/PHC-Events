@@ -2124,7 +2124,7 @@ input:checked + .slider:before {
     transform: translate(0, 0);
   }
 }
-#facilities-equipment-container #facilities-equipment {
+#facilities-equipment-container #facilities-equipment-popup {
   background-color: var(--primary-bg-color);
   border-radius: 2.5px;
   overflow: hidden;
@@ -2132,22 +2132,22 @@ input:checked + .slider:before {
   width: 600px;
   max-width: 90vw;
 }
-#facilities-equipment-container #facilities-equipment .equipment-header {
+#facilities-equipment-container #facilities-equipment-popup .equipment-header {
   border-bottom: 2px solid var(--secondary-bg-color);
 }
-#facilities-equipment-container #facilities-equipment .equipment-header p {
+#facilities-equipment-container #facilities-equipment-popup .equipment-header p {
   padding: 1rem;
   margin: 0;
   font-size: 1.5rem;
 }
-#facilities-equipment-container #facilities-equipment .equipment-header .close-button {
+#facilities-equipment-container #facilities-equipment-popup .equipment-header .close-button {
   color: currentColor;
 }
-#facilities-equipment-container #facilities-equipment .equipment-items-container {
+#facilities-equipment-container #facilities-equipment-popup .equipment-items-container {
   display: flex;
   flex-wrap: wrap;
 }
-#facilities-equipment-container #facilities-equipment .equipment-items-container .equipment-item {
+#facilities-equipment-container #facilities-equipment-popup .equipment-items-container .equipment-item {
   display: flex;
   justify-content: flex-start;
   align-items: center;
@@ -2155,25 +2155,25 @@ input:checked + .slider:before {
   width: 50%;
   box-sizing: border-box;
 }
-#facilities-equipment-container #facilities-equipment .equipment-items-container .equipment-item .equipment-value-input {
+#facilities-equipment-container #facilities-equipment-popup .equipment-items-container .equipment-item .equipment-value-input {
   margin-left: auto;
   width: 25%;
 }
-#facilities-equipment-container #facilities-equipment .equipment-items-container .equipment-item label {
+#facilities-equipment-container #facilities-equipment-popup .equipment-items-container .equipment-item label {
   margin-inline: 1rem;
   width: 100%;
 }
-#facilities-equipment-container #facilities-equipment .button-container {
+#facilities-equipment-container #facilities-equipment-popup .button-container {
   display: flex;
   justify-content: flex-end;
   padding: 1rem;
   gap: 1rem;
   border-top: 2px solid var(--secondary-bg-color);
 }
-#facilities-equipment-container #facilities-equipment .button-container .btn {
+#facilities-equipment-container #facilities-equipment-popup .button-container .btn {
   margin: 0;
 }
-#facilities-equipment-container #facilities-equipment .button-container .btn.cancel {
+#facilities-equipment-container #facilities-equipment-popup .button-container .btn.cancel {
   background-color: hsl(0, 1%, 36%) !important;
   border-color: var(--secondary-bg-color) !important;
 }
@@ -2500,6 +2500,10 @@ input:checked + .slider:before {
   box-sizing: border-box;
   /* Chrome, Safari, Edge, Opera */
   /* Firefox */
+}
+.form-container form .input.hidden {
+  display: none;
+  visibility: hidden;
 }
 .form-container form .input.description {
   width: 100%;
