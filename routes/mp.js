@@ -174,6 +174,31 @@ router.get('/places', ensureApiAuthenticated, async (req, res) => {
   res.send(locationsArr)
 })
 
+router.get('/overlapped-rooms', ensureApiAuthenticated, async (req, res) => {
+  const { startDate, endDate } = req.query;
+
+  if (!startDate || !endDate) return res.status(400).send({err: 'no startDate or endDate provided'}).end();
+
+  const eventRooms = await axios({
+    method: 'get',
+    url: 'https://my.pureheart.org/ministryplatformapi/tables/Event_Rooms',
+    params: {
+      // $filter: `Event_Rooms.[Cancelled]=0 AND Room_ID_Table.[Bookable]=1 AND ((Event_ID_Table.[Event_Start_Date] < '${endDate}') AND (Event_ID_Table.[Event_End_Date] > '${startDate}'))`,
+      $filter: `Event_Rooms.[Cancelled]=0 AND Room_ID_Table.[Bookable]=1 AND ((DateAdd(n,Event_ID_Table.Minutes_For_Setup*-1,Event_ID_Table.Event_Start_Date) < '${endDate}') AND (DateAdd(n,Event_ID_Table.Minutes_For_Cleanup,Event_ID_Table.Event_End_Date) > '${startDate}'))`,
+      $select: `DateAdd(n,Event_ID_Table.Minutes_For_Setup*-1,Event_ID_Table.Event_Start_Date) AS [Reservation_Start], DateAdd(n,Event_ID_Table.Minutes_For_Cleanup,Event_ID_Table.Event_End_Date) AS [Reservation_End], '${startDate}' AS [New_Event_Start], '${endDate}' AS [New_Event_End], Event_Rooms.[Event_ID], Event_ID_Table.[Event_Title], Event_Rooms.[Room_ID], Room_ID_Table.[Room_Name], Event_ID_Table.[Event_Start_Date], Event_ID_Table.[Event_End_Date], Event_ID_Table.[Minutes_for_Setup], Event_ID_Table.[Minutes_for_Cleanup]`,
+      $distinct: true
+    },
+    headers: {
+      'content-type': 'application/json',
+      'authorization': `Bearer ${await getAccessToken()}`
+    }
+  })
+    .then(response => response.data)
+    .catch(err => console.log(err))
+
+  res.send(eventRooms)
+})
+
 router.get('/event-equipment', ensureApiAuthenticated, async (req, res) => {
   // monthStart <= eventEnd && monthEnd >= eventStart
   const { eventId } = req.query;

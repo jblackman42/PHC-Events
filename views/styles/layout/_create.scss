@@ -98,6 +98,10 @@ $input-color: var(--primary-font-color);
                         padding: 0;
                         overflow: hidden;
 
+                        & ~ .building-header {
+                            background-color: red;
+                        }
+
 
                         &.closed {
                             max-height: 0 !important;
