@@ -2455,6 +2455,8 @@ input:checked + .slider:before {
   margin-left: 1.5rem;
   padding: 0;
   overflow: hidden;
+  max-height: 450px;
+  transition: max-height 400ms ease-in-out;
 }
 .form-container form div.section #room-selectors .building .room-accordion ~ .building-header {
   background-color: red;

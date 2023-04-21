@@ -26,8 +26,9 @@
     const loadDaysList = () => {
         const daysListHTML = pattern.map((day, id) => {
             const currDate = new Date(day);
+            const endDateTime = new Date(`${startDateDOM.value}T${endTimeDOM.value}`);
             return `<li>
-                        ${id + 1}: ${currDate.toLocaleDateString()} @ ${currDate.toLocaleTimeString()}
+                        ${id + 1}: ${currDate.toLocaleDateString()} @ ${currDate.toLocaleTimeString()} - ${endDateTime.toLocaleTimeString('en-US', {hour: '2-digit', minute: '2-digit'})}
                         <input class="recurring-verify" id="pattern-day-${id}" value="${day}" onclick="updatePattern();" type="checkbox" checked></input>
                     </li>`
         }).join('')

@@ -255,7 +255,7 @@ router.get('/primary-contacts', ensureApiAuthenticated, async (req, res) => {
     url: 'https://my.pureheart.org/ministryplatformapi/tables/dp_User_User_Groups',
     params: {
       $filter: `dp_User_User_Groups.[User_ID] NOT IN (16129,14881,14746,10925,9709,9504,9429,9229,9092,6908,6800,6799,6798,6797,6796,6795,6745,6580,1276,7,6,5,2,1)`,
-      $select: 'dp_User_User_Groups.[User_ID], User_ID_Table.[Display_Name]',
+      $select: 'User_ID_Table.[Contact_ID], User_ID_Table.[Display_Name]',
       $distinct: true
     },
     headers: {
@@ -380,5 +380,89 @@ router.post('/generate-sequence', ensureApiAuthenticated, async (req, res) => {
   res.send(pattern)
 })
 
+// create event route
+
+router.post('/events', ensureApiAuthenticated, async (req, res) => {
+  const { events } = req.body;
+
+  if (!events || !events.length)  return res.status(400).send({err: 'no event provided'}).end();
+
+  const eventsData = await axios({
+    method: 'post',
+    url: 'https://my.pureheart.org/ministryplatformapi/tables/Events',
+    data: events,
+    headers: {
+      'content-type': 'application/json',
+      'authorization': `Bearer ${await getAccessToken()}`
+    }
+  })
+    .then(response => response.data)
+    .catch(err => console.log(err))
+
+  res.send(eventsData)
+})
+
+router.post('/event-rooms', ensureApiAuthenticated, async (req, res) => {
+  const { roomsToBook } = req.body;
+
+  if (!roomsToBook || !roomsToBook.length)  return res.status(400).send({err: 'no rooms to book provided'}).end();
+  
+  const roomData = await axios({
+    method: 'post',
+    url: 'https://my.pureheart.org/ministryplatformapi/tables/Event_Rooms',
+    data: roomsToBook,
+    headers: {
+      'content-type': 'application/json',
+      'authorization': `Bearer ${await getAccessToken()}`
+    }
+  })
+    .then(response => response.data)
+    .catch(err => console.log(err))
+
+  res.send(roomData)
+})
+
+router.post('/event-services', ensureApiAuthenticated, async (req, res) => {
+  const { servicesToBook } = req.body;
+
+  if (!servicesToBook || !servicesToBook.length)  return res.status(400).send({err: 'no rooms to book provided'}).end();
+  
+  const serviceData = await axios({
+    method: 'post',
+    url: 'https://my.pureheart.org/ministryplatformapi/tables/Event_Services',
+    data: servicesToBook,
+    headers: {
+      'content-type': 'application/json',
+      'authorization': `Bearer ${await getAccessToken()}`
+    }
+  })
+    .then(response => response.data)
+    .catch(err => console.log(err))
+
+  res.send(serviceData)
+})
+
+router.post('/event-sequences', ensureApiAuthenticated, async (req, res) => {
+  const { Event_IDs, Table_Name } = req.body;
+  
+  if (!Event_IDs || !Table_Name)  return res.status(400).send({err: 'no event id or table name provided'}).end();
+  console.log(Event_IDs.map(id => id).join(','))
+  const sequenceData = await axios({
+    method: 'post',
+    url: 'https://my.pureheart.org/ministryplatformapi/procs/api_PHCCreateSequence',
+    data: {
+      "@Record_IDs": Event_IDs.map(id => id).join(','),
+      "@Table_Name": Table_Name
+    },
+    headers: {
+      'content-type': 'application/json',
+      'authorization': `Bearer ${await getAccessToken()}`
+    }
+  })
+    .then(response => response.data[0])
+    .catch(err => console.log(err))
+
+  res.send(sequenceData)
+})
 
 module.exports = router;

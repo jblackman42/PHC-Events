@@ -11,6 +11,7 @@
     <%- include('../partials/recurring-event-popup'); %> 
     <%- include('../partials/facilities-equipment-popup'); %>
     <%- include('../partials/review-days'); %>
+    <%- include('../partials/overbook-popup'); %>
 
     <div class="form-container">
         <p>Event Creator: <span id="event-creator"></span></p>
@@ -85,7 +86,7 @@
                 </div>
                 <div class="input">
                     <label for="promotion">Needs Promotion:</label>
-                    <select name="promotion" id="promotion">
+                    <select name="promotion" id="promotion" class="event-service-request" data-service-id="18">
                         <option value="0">No</option>
                         <option value="1">Yes</option>
                     </select>
