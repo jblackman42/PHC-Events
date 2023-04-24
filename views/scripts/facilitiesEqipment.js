@@ -31,6 +31,10 @@ const loadEquipment = async () => {
 loadEquipment();
 
 const equipmentHandleSave = () => {
+    const equipmentLabelDOM = document.getElementById('equipment-label');
+    const numOfEquipments = [...document.querySelectorAll('.equipment-value-input')].filter(elem => elem.value > 0).length;
+
+    equipmentLabelDOM.innerText = `${numOfEquipments} Equipment${numOfEquipments <= 1 ? '' : 's'}`;
     selectedEquipment.length = 0;
     equipment.forEach(equipmentItem => {
         const {Equipment_ID, Equipment_Name, Quantity} = equipmentItem;
@@ -48,6 +52,17 @@ const equipmentHandleSave = () => {
             })
         }
     })
+
+    facilitiesPopupHide();
+}
+
+const facilitiesPopupCancel = () => {
+    const equipmentLabelDOM = document.getElementById('equipment-label');
+    equipmentLabelDOM.innerText = '0 Equipment';
+    
+    for (const elem of document.querySelectorAll('.equipment-value-input')) {
+        elem.value = 0;
+    }
 
     facilitiesPopupHide();
 }

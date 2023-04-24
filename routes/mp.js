@@ -426,7 +426,7 @@ router.post('/event-services', ensureApiAuthenticated, async (req, res) => {
   const { servicesToBook } = req.body;
 
   if (!servicesToBook || !servicesToBook.length)  return res.status(400).send({err: 'no rooms to book provided'}).end();
-  
+
   const serviceData = await axios({
     method: 'post',
     url: 'https://my.pureheart.org/ministryplatformapi/tables/Event_Services',
@@ -442,11 +442,31 @@ router.post('/event-services', ensureApiAuthenticated, async (req, res) => {
   res.send(serviceData)
 })
 
+router.post('/event-equipment', ensureApiAuthenticated, async (req, res) => {
+  const { equipmentToBook } = req.body;
+
+  if (!equipmentToBook || !equipmentToBook.length)  return res.status(400).send({err: 'no equipment to book provided'}).end();
+
+  const equipmentData = await axios({
+    method: 'post',
+    url: 'https://my.pureheart.org/ministryplatformapi/tables/Event_Equipment',
+    data: equipmentToBook,
+    headers: {
+      'content-type': 'application/json',
+      'authorization': `Bearer ${await getAccessToken()}`
+    }
+  })
+    .then(response => response.data)
+    .catch(err => console.log(err))
+
+  res.send(equipmentData)
+})
+
 router.post('/event-sequences', ensureApiAuthenticated, async (req, res) => {
   const { Event_IDs, Table_Name } = req.body;
   
   if (!Event_IDs || !Table_Name)  return res.status(400).send({err: 'no event id or table name provided'}).end();
-  console.log(Event_IDs.map(id => id).join(','))
+  
   const sequenceData = await axios({
     method: 'post',
     url: 'https://my.pureheart.org/ministryplatformapi/procs/api_PHCCreateSequence',

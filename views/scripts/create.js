@@ -298,9 +298,18 @@ const createEvent = async () => {
   })
     .then(response => response.data)
     .catch(err => alert('Something terrible has happened! It looks like we failed to create your events. Please reach out to the IT team.'))
-    
+  
+  bookRooms(createdEvents)
+  bookServices(createdEvents)
+  bookEquipment(createdEvents)
+  createSeries(createdEvents)
+
+  doneLoading();
+}
+const bookRooms = async (createdEvents) => {
+  loading();
+  // get rooms to book
   const roomsToBook = [];
-  const servicesToBook = [];
   for (const currEvent of createdEvents) {
     const { Event_ID } = currEvent;
 
@@ -312,6 +321,29 @@ const createEvent = async () => {
         Room_ID: parseInt(elem.value)
       })
     }
+  }
+  
+  // book rooms in MP
+  if (!roomsToBook.length) return;
+
+  await axios({
+    method: 'post',
+    url: '/api/mp/event-rooms',
+    data: {
+      roomsToBook: roomsToBook
+    }
+  })
+    .then(response => response.data)
+    .catch(err => alert('Something terrible has happened! It looks like we failed to book some rooms. Please reach out to the IT team.'))
+  
+  doneLoading();
+}
+
+const bookServices = async (createdEvents) => {
+  loading();
+  const servicesToBook = [];
+  for (const currEvent of createdEvents) {
+    const { Event_ID } = currEvent;
 
     // handle service requests
     for (const elem of document.querySelectorAll('.event-service-request')) {
@@ -321,51 +353,81 @@ const createEvent = async () => {
       servicesToBook.push({
         Event_ID: Event_ID,
         Service_ID: parseInt(serviceID),
-        Quantity: 1
+        Quantity: 1,
+        _Approved: false
       })
     }
-
   }
 
-  if (roomsToBook.length) {
-    await axios({
-      method: 'post',
-      url: '/api/mp/event-rooms',
-      data: {
-        roomsToBook: roomsToBook
-      }
-    })
-      .then(response => response.data)
-      .catch(err => alert('Something terrible has happened! It looks like we failed to book some rooms. Please reach out to the IT team.'))
-  }
-  if (servicesToBook.length) {
-    await axios({
-      method: 'post',
-      url: '/api/mp/event-services',
-      data: {
-        servicesToBook: servicesToBook
-      }
-    })
-      .then(response => response.data)
-      .catch(err => alert('Something terrible has happened! It looks like we failed to book some services. Please reach out to the IT team.'))
-  }
+  // book services in MP
+  if (!servicesToBook.length) return;
 
+  await axios({
+    method: 'post',
+    url: '/api/mp/event-services',
+    data: {
+      servicesToBook: servicesToBook
+    }
+  })
+    .then(response => response.data)
+    .catch(err => alert('Something terrible has happened! It looks like we failed to book some services. Please reach out to the IT team.'))
+  
+  doneLoading();
+}
+
+const bookEquipment = async (createdEvents) => {
+  loading();
+
+  const equipmentToBook = [];
+  for (const currEvent of createdEvents) {
+    const { Event_ID } = currEvent;
+
+    for (const elem of document.querySelectorAll('.equipment-value-input')) {
+      const Equipment_ID = elem.id.split('-')[1];
+      const Quantity = elem.value;
+
+      if (Quantity <= 0) continue;
+
+      equipmentToBook.push({
+        Event_ID: Event_ID,
+        Equipment_ID: Equipment_ID,
+        Quantity: Quantity
+      })
+    }
+  }
+  // book equipment in MP
+  if (!equipmentToBook.length) return;
+
+  await axios({
+    method: 'post',
+    url: '/api/mp/event-equipment',
+    data: {
+      equipmentToBook: equipmentToBook
+    }
+  })
+    .then(response => response.data)
+    .catch(err => alert('Something terrible has happened! It looks like we failed to book some equipment. Please reach out to the IT team.'))
+
+
+  doneLoading();
+}
+
+const createSeries = async (createdEvents) => {
+  loading();
+  if (pattern.length <= 1) return;
   // turn recurring event into series
-  if (pattern.length > 1) {
-    const eventIDs = createdEvents.map(event => event.Event_ID);
+  const eventIDs = createdEvents.map(event => event.Event_ID);
 
-    await axios({
-      method: 'post',
-      url: '/api/mp/event-sequences',
-      data: {
-        Event_IDs: eventIDs,
-        Table_Name: 'Events'
-      }
-    })
-      .then(response => response.data)
-      .catch(err => alert('Something terrible has happened! It looks like we failed to make your event into a series. Please reach out to the IT team.'))
-  }
-
-
+  await axios({
+    method: 'post',
+    url: '/api/mp/event-sequences',
+    data: {
+      Event_IDs: eventIDs,
+      Table_Name: 'Events'
+    }
+  })
+    .then(response => response.data)
+    .catch(err => alert('Something terrible has happened! It looks like we failed to make your recurring events into a series. Please reach out to the IT team.'))
+  
   doneLoading();
 }
