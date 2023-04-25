@@ -155,6 +155,10 @@ $input-color: var(--primary-font-color);
             padding: 1rem .5rem;
             box-sizing: border-box;
             
+            &.full-width {
+                width: 100%;
+            }
+
             &.hidden {
                 display: none;
                 visibility: hidden;

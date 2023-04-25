@@ -2506,6 +2506,9 @@ input:checked + .slider:before {
   /* Chrome, Safari, Edge, Opera */
   /* Firefox */
 }
+.form-container form .input.full-width {
+  width: 100%;
+}
 .form-container form .input.hidden {
   display: none;
   visibility: hidden;

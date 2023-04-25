@@ -79,7 +79,14 @@
             <div id="section-2" class="section">
                 <div class="input">
                     <label for="registration">Needs Registration:</label>
-                    <select name="registration" id="registration">
+                    <select name="registration" id="registration" class="event-service-request" data-service-id="19">
+                        <option value="0">No</option>
+                        <option value="1">Yes</option>
+                    </select>
+                </div>
+                <div class="input">
+                    <label for="childcare">Needs Childcare:</label>
+                    <select name="childcare" id="childcare" class="event-service-request" data-service-id="1">
                         <option value="0">No</option>
                         <option value="1">Yes</option>
                     </select>
@@ -93,40 +100,33 @@
                 </div>
                 <div class="input">
                     <label for="av">Needs A/V:</label>
-                    <select name="av" id="av">
+                    <select name="av" id="av" class="event-service-request" data-service-id="6">
                         <option value="0">No</option>
                         <option value="1">Yes</option>
                     </select>
                 </div>
-                <div class="input">
+                <!-- <div class="input">
                     <label for="facilities">Needs Facilities:</label>
                     <select name="facilities" id="facilities" onchange="toggleFormFields(event, ['onsite-facilities', 'facilities-equipment'])">
                         <option value="0">No</option>
                         <option value="1">Yes</option>
                     </select>
-                </div>
-                <div class="input hidden" id="onsite-facilities">
+                </div> -->
+                <div class="input" id="onsite-facilities">
                     <label for="facilities-person">Onsite Facilities Employee:</label>
-                    <select name="facilities-person" id="facilities-person">
+                    <select name="facilities-person" id="facilities-person" class="event-service-request" data-service-id="17">
                         <option value="0">No</option>
                         <option value="1">Yes</option>
                     </select>
                 </div>
-                <div class="input hidden" id="facilities-equipment">
+                <div class="input" id="facilities-equipment">
                     <label for="facilities-equipment-input">Facilities Equipment:</label>
                     <div id="facilities-equipment-input">
                         <p id="equipment-label">0 Equipment</p>
                         <button type="button" onclick="facilitiesPopupShow()"><i class='fas fa-ellipsis-h'></i></button>
                     </div>
                 </div>
-                <div class="input">
-                    <label for="childcare">Needs Childcare:</label>
-                    <select name="childcare" id="childcare">
-                        <option value="0">No</option>
-                        <option value="1">Yes</option>
-                    </select>
-                </div>
-                <div class="input">
+                <div class="input full-width">
                     <label for="recurring-event">Recurring Event</label>
                     <div id="recurring-event-input">
                         <p id="recurring-label">One Time Event</p>

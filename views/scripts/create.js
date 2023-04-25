@@ -121,26 +121,39 @@ const loadRoomOptions = async () => {
     // scheduleEndTime.setTime(scheduleEndTime.getTime() + (cleanupTimeDOM.value * 60000) - (scheduleEndTime.getTimezoneOffset() * 60000))
   const eventLength = eventEndDate.getTime() - eventStartDate.getTime();
   let tempPattern = pattern;
-  if (!tempPattern || !tempPattern.length) tempPattern = [eventStartDate.toISOString()]
-  
-  for (const startDate of tempPattern) {
+  if (!tempPattern || !tempPattern.length) tempPattern = [eventStartDate.toISOString()];
+
+  const datesToCheck = tempPattern.map(startDate => {
     const scheduleStartTime = new Date(startDate)
       scheduleStartTime.setTime(scheduleStartTime.getTime() - (setupTimeDOM.value * 60000) - (scheduleStartTime.getTimezoneOffset() * 60000))
     const scheduleEndTime = new Date(new Date(startDate).getTime() + eventLength + (cleanupTimeDOM.value * 60000) - (scheduleStartTime.getTimezoneOffset() * 60000));
 
+    return {
+      startDate: scheduleStartTime,
+      endDate: scheduleEndTime
+    }
+  })
 
-    const newBlockedRooms = await axios({
-      method: 'get',
-      url: '/api/mp/overlapped-rooms',
-      params: {
-        startDate: scheduleStartTime.toISOString(),
-        endDate: scheduleEndTime.toISOString()
-      }
-    })
-      .then(response => response.data)
+  blockedRooms = await axios({
+    method: 'post',
+    url: '/api/mp/overlapped-rooms',
+    data: {
+      dates: datesToCheck
+      // startDate: scheduleStartTime.toISOString(),
+      // endDate: scheduleEndTime.toISOString()
+    }
+  })
+    .then(response => response.data)
+  
+  // for (const startDate of tempPattern) {
+  //   const scheduleStartTime = new Date(startDate)
+  //     scheduleStartTime.setTime(scheduleStartTime.getTime() - (setupTimeDOM.value * 60000) - (scheduleStartTime.getTimezoneOffset() * 60000))
+  //   const scheduleEndTime = new Date(new Date(startDate).getTime() + eventLength + (cleanupTimeDOM.value * 60000) - (scheduleStartTime.getTimezoneOffset() * 60000));
+
+
     
-    blockedRooms = blockedRooms.concat(newBlockedRooms);
-  }
+  //   blockedRooms = blockedRooms.concat(newBlockedRooms);
+  // }
 
   const blockedRoomIDs = blockedRooms.map(room => room.Room_ID);
   
