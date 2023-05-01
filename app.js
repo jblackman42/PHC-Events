@@ -1,12 +1,24 @@
 const express = require('express');
 const app = express();
 var session = require('express-session');
+const enableWs = require('express-ws');
+
+// force https
+if(process.env.NODE_ENV === 'production') {
+    app.use((req, res, next) => {
+        if (req.header('x-forwarded-proto') !== 'https')
+        res.redirect(`https://${req.header('host')}${req.url}`)
+        else
+        next()
+    })
+}
 
 //middleware
 require('dotenv').config();
 
 app.use(express.json({limit: '50mb'}));
 app.use(express.urlencoded({limit: '50mb', extended: true}));
+enableWs(app);
 
 const oneDay = 1000 * 60 * 60 * 24;
 app.use(session({
@@ -25,13 +37,16 @@ app.use("/assets",express.static(__dirname + "/views/assets"));
 
 const port = process.env.PORT || 3000;
 
-
 //navigation routing
 app.use('/', require('./routes/index'))
 
 //api routing
+app.use('/api/helpdesk', require('./routes/helpdesk.js'))
 app.use('/api/oauth', require('./routes/oauth.js'))
 app.use('/api/mp', require('./routes/mp.js'))
+app.use('/api/prayer-wall', require('./routes/prayer-wall.js'))
+app.use('/websocket', require('./routes/websocket.js'))
+app.use('/api/widgets', require('./routes/widgets.js'))
 
 // const { populate } = require('./populate.js');
 

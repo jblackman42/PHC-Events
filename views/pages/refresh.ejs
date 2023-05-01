@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <link rel="shortcut icon" href="/assets/favicon.ico" type="image/x-icon">
+    <link rel="stylesheet" href="/styles/main.css">
+
+    <title>Red Button</title>
+    
+    <script src="/scripts/axios.js"></script>
+</head>
+<body>
+    
+    <div id="refresh-container">
+        <div id="btn-container">
+            <button id="refresh-btn" onclick="handleRefresh()"></button>
+        </div>
+    </div>
+</body>
+<script>
+    let count = 1;
+    function randomIntFromInterval(min, max) { // min and max included 
+        return Math.floor(Math.random() * (max - min + 1) + min)
+    }
+    const handleRefresh = async () => {
+        count ++;
+
+        const refreshBtnElem = document.getElementById('refresh-btn');
+        if (count > 11) {
+            while (true) {
+                console.log('crash')
+            }
+        } else if (count > 10)  {
+            refreshBtnElem.innerText = 'STOP! OR ELSE!'
+        } else if (count > 5) {
+            refreshBtnElem.innerText = 'SERIOUSLY STOP'
+        } else if (count > 2) {
+            refreshBtnElem.innerText = 'PLEASE STOP'
+        }
+
+        await axios({
+            method: 'get',
+            url: '/api/oauth/refresh'
+        })
+
+        if (randomIntFromInterval(0,100) == randomIntFromInterval(0,100)) {
+            window.location = 'https://www.youtube.com/watch?v=dQw4w9WgXcQ';
+        } else {
+            console.log('your\'re lucky')
+        }
+
+
+    }
+</script>
+</html>

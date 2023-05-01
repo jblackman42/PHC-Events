@@ -316,8 +316,12 @@ const createEvent = async () => {
   bookServices(createdEvents)
   bookEquipment(createdEvents)
   createSeries(createdEvents)
-
+ 
   doneLoading();
+
+  // go back to the calendar
+  window.location = '/';
+
 }
 const bookRooms = async (createdEvents) => {
   loading();

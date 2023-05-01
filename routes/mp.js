@@ -490,4 +490,19 @@ router.post('/event-sequences', ensureApiAuthenticated, async (req, res) => {
   res.send(sequenceData)
 })
 
+router.get('/prayer-requests', ensureApiAuthenticated, async (req, res) => {
+  const prayerRequestData = await axios({
+    method: 'get',
+    url: 'https://my.pureheart.org/ministryplatformapi/tables/Prayer_Requests?$filter=Prayer_Status_ID=1',
+    headers: {
+      'content-type': 'application/json',
+      'authorization': `Bearer ${await getAccessToken()}`
+    }
+  })
+    .then(response => response.data)
+    .catch(err => console.log(err))
+
+  res.send(prayerRequestData)
+})
+
 module.exports = router;

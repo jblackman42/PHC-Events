@@ -14,10 +14,19 @@ navigation.get('/print', ensureAuthenticated, (req, res) => {
 navigation.get('/create', ensureAuthenticated, (req, res) => {
   res.render('pages/create')
 })
+navigation.get('/my-tasks', ensureAuthenticated, (req, res) => {
+  res.render('pages/my-tasks')
+})
+navigation.get('/prayer-wall', ensureAuthenticated, (req, res) => {
+  res.render('pages/prayer-manager')
+})
 
 navigation.get('/login', (req, res) => {
   res.render('pages/login', {error: null})
 })
+
+
+
 
 
 navigation.get('/logout', (req, res) => {
@@ -26,9 +35,13 @@ navigation.get('/logout', (req, res) => {
       req.session.access_token = null;
       req.session.refresh_token = null;
       res.redirect('/')
-  } catch(err) {
+    } catch(err) {
       res.status(500).send({error: 'internal server error'})
   }
+})
+
+navigation.get('/dashboard', (req, res) => {
+  res.render('pages/helpdesk-dashboard')
 })
 
 module.exports = navigation;

@@ -167,7 +167,9 @@ const showEvent = async () => {
       ${servicesSectionHTML}
   ` : ''
 
-    doneLoading();
+  doneLoading();
+
+  print();
 }
 if (eventId) showEvent()
 else window.location.href = '/';
