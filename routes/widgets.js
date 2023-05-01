@@ -8,6 +8,23 @@ const fs = require('fs');
 // const StaffSchema = require('../models/Staff');
 // const SermonSchema = require('../models/Sermons');
 
+const getAccessToken = async () => {
+    const data = await axios({
+        method: 'post',
+        url: 'https://my.pureheart.org/ministryplatformapi/oauth/connect/token',
+        data: qs.stringify({
+            grant_type: "client_credentials",
+            scope: "http://www.thinkministry.com/dataplatform/scopes/all",
+            client_id: process.env.APP_CLIENT_ID,
+            client_secret: process.env.APP_CLIENT_SECRET
+        })
+    })
+        .then(response => response.data)
+    const {access_token, expires_in} = data;
+    const expiresDate = new Date(new Date().getTime() + (expires_in * 1000)).toISOString()
+    return access_token;
+}
+
 router.get('/files', (req, res) => {
     fs.readdir(path.join(__dirname, '../dist'), (err, files) => {
         res.send(files.filter(file => file !== 'styles')).status(200).end();
@@ -409,6 +426,52 @@ router.get('/group-register', async (req, res) => {
         const { Message } = data;
         res.status(response.status).send(Message).end();
     }
+})
+
+// custom forms for stored proc stuff
+
+router.get('/form', async (req, res) => {
+    const { Form_ID } = req.query;
+
+    if (!Form_ID) return res.status(400).send({err: 'no Form_ID'}).end();
+
+    const formData = await axios({
+        method: 'get',
+        url: 'https://my.pureheart.org/ministryplatformapi/tables/PHC_Forms',
+        params: {
+            '$filter': `PHC_Forms_ID=${Form_ID}`
+        },
+        headers: {
+            'Authorization': `Bearer ${await getAccessToken()}`,
+            'Content-Type': 'application/json'
+        }
+    })
+        .then(response => response.data[0])
+        .catch(err => console.error(err))
+
+    res.status(200).send(formData).end();
+})
+
+router.get('/form-fields', async (req, res) => {
+    const { Form_ID } = req.query;
+
+    if (!Form_ID) return res.status(400).send({err: 'no Form_ID'}).end();
+
+    const formData = await axios({
+        method: 'get',
+        url: 'https://my.pureheart.org/ministryplatformapi/tables/PHC_Form_Fields',
+        params: {
+            '$filter': `PHC_Forms_ID=${Form_ID}`
+        },
+        headers: {
+            'Authorization': `Bearer ${await getAccessToken()}`,
+            'Content-Type': 'application/json'
+        }
+    })
+        .then(response => response.data)
+        .catch(err => console.error(err))
+
+    res.status(200).send(formData).end();
 })
 
 module.exports = router;
