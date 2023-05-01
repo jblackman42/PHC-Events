@@ -274,6 +274,7 @@ const createEvent = async () => {
 
   const eventFields = [eventNameDOM.value, eventLocationDOM.value, startDateDOM.value, startTimeDOM.value, endTimeDOM.value, primaryContactDOM.value, eventTypeDOM.value, attendanceDOM.value, congregationDOM.value, setupTimeDOM.value, cleanupTimeDOM.value, visibilityLevelDOM.value, eventDescDOM.value, needsRegistrationDOM.value, needsPromotionDOM.value, needsAVDOM.value, needsFacilitiesDOM.value, needsFacilitiesEmployeeDOM.value, needsChildcareDOM.value];
   if (eventFields.filter(field => field == '').length) {
+    doneLoading();
     warningMsgDOM.innerText = 'Oops! Please complete all fields before submitting the form. Thank you'
     return;
   }
@@ -284,7 +285,9 @@ const createEvent = async () => {
   if (!pattern || !pattern.length) pattern = [eventStartDate.toISOString()]
   // create event in MP
   const eventsToCreate = pattern.map(startDate => {
-    const endDate = new Date(new Date(startDate).getTime() + eventLength).toISOString();
+    const scheduleStartTime = new Date(startDate)
+      scheduleStartTime.setTime(scheduleStartTime.getTime() - (scheduleStartTime.getTimezoneOffset() * 60000))
+    const scheduleEndTime = new Date(new Date(startDate).getTime() + eventLength - (scheduleStartTime.getTimezoneOffset() * 60000));
 
     return {
       Event_Title: eventNameDOM.value,
@@ -297,8 +300,8 @@ const createEvent = async () => {
       Participants_Expected: attendanceDOM.value,
       Minutes_for_Setup: setupTimeDOM.value,
       Minutes_for_Cleanup: cleanupTimeDOM.value,
-      Event_Start_Date: startDate,
-      Event_End_Date: endDate,
+      Event_Start_Date: scheduleStartTime.toISOString(),
+      Event_End_Date: scheduleEndTime.toISOString(),
       Visibility_Level_ID: visibilityLevelDOM.value
     }
   })
@@ -310,7 +313,10 @@ const createEvent = async () => {
     }
   })
     .then(response => response.data)
-    .catch(err => alert('Something terrible has happened! It looks like we failed to create your events. Please reach out to the IT team.'))
+    .catch(err => {
+      doneLoading();
+      alert('Something terrible has happened! It looks like we failed to create your events. Please reach out to the IT team.')
+    })
   
   bookRooms(createdEvents)
   bookServices(createdEvents)

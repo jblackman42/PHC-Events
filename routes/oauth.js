@@ -3,6 +3,23 @@ const router = express.Router();
 const qs = require('qs')
 const axios = require('axios');
 
+const getAccessToken = async () => {
+    const data = await axios({
+        method: 'post',
+        url: 'https://my.pureheart.org/ministryplatformapi/oauth/connect/token',
+        data: qs.stringify({
+            grant_type: "client_credentials",
+            scope: "http://www.thinkministry.com/dataplatform/scopes/all",
+            client_id: process.env.APP_CLIENT_ID,
+            client_secret: process.env.APP_CLIENT_SECRET
+        })
+    })
+        .then(response => response.data)
+    const {access_token, expires_in} = data;
+    const expiresDate = new Date(new Date().getTime() + (expires_in * 1000)).toISOString()
+    return access_token;
+  }
+
 router.post('/login', async (req, res) => {
     //this video explains this axios request
     //https://youtu.be/r5N8MrQedcg?t=155
@@ -40,6 +57,19 @@ router.post('/login', async (req, res) => {
         })
             .then(response => response.data)
             .catch(err => console.log(err))
+
+        const usersUserGroups = await axios({
+            method: 'get',
+            url: `https://my.pureheart.org/ministryplatformapi/tables/dp_User_User_Groups?$filter=User_ID=${user.userid}`,
+            headers: {
+                'Authorization': `${token_type} ${await getAccessToken()}`,
+                'Content-Type': 'application/json'
+            }
+        })
+            .then(response => response.data.map(group => group.User_Group_ID))
+            .catch(err => console.log(err))
+
+        user.user_groups = usersUserGroups;
 
         req.session.user = user;
         req.session.access_token = access_token;
