@@ -20,6 +20,9 @@ navigation.get('/my-tasks', ensureAuthenticated, (req, res) => {
 navigation.get('/prayer-wall', ensureAuthenticated, (req, res) => {
   res.render('pages/prayer-manager')
 })
+navigation.get('/refresh', ensureAuthenticated, (req, res) => {
+  res.render('pages/refresh')
+})
 
 navigation.get('/login', (req, res) => {
   res.render('pages/login', {error: null})
