@@ -1,21 +1,35 @@
 const express = require('express');
 const router = express.Router();
 const axios = require('axios');
+const qs = require('qs')
 
+
+
+const getAccessToken = async () => {
+    const data = await axios({
+        method: 'post',
+        url: 'https://my.pureheart.org/ministryplatformapi/oauth/connect/token',
+        data: qs.stringify({
+            grant_type: "client_credentials",
+            scope: "http://www.thinkministry.com/dataplatform/scopes/all",
+            client_id: process.env.APP_CLIENT_ID,
+            client_secret: process.env.APP_CLIENT_SECRET
+        })
+    })
+        .then(response => response.data)
+    const {access_token, expires_in} = data;
+    const expiresDate = new Date(new Date().getTime() + (expires_in * 1000)).toISOString()
+    return access_token;
+}
 
 const sendNotifications = async (req, res) => {
-    const access_token = await axios({
-        method: 'get',
-        url: `${process.env.DOMAIN_NAME}/api/oauth/authorize`
-    })
-    .then(response => response.data.access_token)
 
     const prayersToNotify = await axios({
         method: 'get',
         //gets all prayer requests that are to be scheduled for notification within the last 2 weeks
         url: 'https://my.pureheart.org/ministryplatformapi/tables/Prayer_Requests?$filter=Date_Created > dateadd(week,-2,getdate()) AND Notification_Scheduled=1',
         headers: {
-            'Authorization': `Bearer ${access_token}`
+            'Authorization': `Bearer ${await getAccessToken()}`
         }
     })
         .then(response => response.data)
@@ -33,7 +47,7 @@ const sendNotifications = async (req, res) => {
                 url: 'https://my.pureheart.org/ministryplatformapi/messages',
                 headers: {
                     'content-type': 'application/json',
-                    'authorization': `Bearer ${access_token}`
+                    'authorization': `Bearer ${await getAccessToken()}`
                 },
                 data: {
                     "FromAddress": { "DisplayName": "Prayer Wall", "Address": "noreply@pureheart.org" },
@@ -63,7 +77,7 @@ const sendNotifications = async (req, res) => {
                 method: 'put',
                 url: 'https://my.pureheart.org/ministryplatformapi/tables/Prayer_Requests',
                 headers: {
-                    'Authorization': `Bearer ${access_token}`
+                    'Authorization': `Bearer ${await getAccessToken()}`
                 },
                 data: [prayersToNotify[i]]
             })
@@ -88,11 +102,6 @@ router.get('/send-notifications', async (req, res) => {
 })
 
 router.get('/', async (req, res) => {
-    const access_token = await axios({
-        method: 'get',
-        url: `${process.env.DOMAIN_NAME}/api/oauth/authorize`
-    })
-    .then(response => response.data.access_token)
 
     const {skip} = req.query;
     
@@ -101,7 +110,7 @@ router.get('/', async (req, res) => {
         url: `https://my.pureheart.org/ministryplatformapi/tables/Prayer_Requests?%24filter=Prayer_Status_ID%3D2&%24orderby=Date_Created%20DESC&%24top=18&%24skip=${skip}`,
         // url: `https://my.pureheart.org/ministryplatformapi/tables/Prayer_Requests?$filter=Prayer_Status_ID=2&$top=18&$skip=${skip}`,
         headers: {
-            'Authorization': `Bearer ${access_token}`
+            'Authorization': `Bearer ${await getAccessToken()}`
         }
     })
     .then(response => response.data)
@@ -111,17 +120,12 @@ router.get('/', async (req, res) => {
 })
 
 router.get('/:id', async (req, res) => {
-    const access_token = await axios({
-        method: 'get',
-        url: `${process.env.DOMAIN_NAME}/api/oauth/authorize`
-    })
-    .then(response => response.data.access_token)
 
     const prayer_request = await axios({
         method: 'get',
         url: `https://my.pureheart.org/ministryplatformapi/tables/Prayer_Requests/${req.params.id}`,
         headers: {
-            'Authorization': `Bearer ${access_token}`
+            'Authorization': `Bearer ${await getAccessToken()}`
         }
     })
     .then(response => response.data[0])
@@ -131,18 +135,13 @@ router.get('/:id', async (req, res) => {
 })
 
 router.post('/', async (req, res) => {
-    const access_token = await axios({
-        method: 'get',
-        url: `${process.env.DOMAIN_NAME}/api/oauth/authorize`
-    })
-    .then(response => response.data.access_token)
     
     const response = await axios({
         method: 'post',
         url: 'https://my.pureheart.org/ministryplatformapi/tables/Prayer_Requests',
         headers: {
             'content-type': 'application/json',
-            'authorization': `Bearer ${access_token}`
+            'authorization': `Bearer ${await getAccessToken()}`
         },
         data: [req.body]
     })
@@ -153,18 +152,13 @@ router.post('/', async (req, res) => {
 })
 
 router.put('/', async (req, res) => {
-    const access_token = await axios({
-        method: 'get',
-        url: `${process.env.DOMAIN_NAME}/api/oauth/authorize`
-    })
-    .then(response => response.data.access_token)
 
     try {
         const data = await axios({
             method: 'put',
             url: 'https://my.pureheart.org/ministryplatformapi/tables/Prayer_Requests',
             headers: {
-                'Authorization': `Bearer ${access_token}`
+                'Authorization': `Bearer ${await getAccessToken()}`
             },
             data: [req.body]
         })
@@ -180,11 +174,6 @@ router.put('/', async (req, res) => {
 })
 
 router.post('/send-email', async (req, res) => {
-    const access_token = await axios({
-        method: 'get',
-        url: `${process.env.DOMAIN_NAME}/api/oauth/authorize`
-    })
-    .then(response => response.data.access_token)
 
     try {
         const {recipientName, recipientEmail, Prayer_Count} = req.body;
