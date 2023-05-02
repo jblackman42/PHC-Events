@@ -8,6 +8,23 @@ const fs = require('fs');
 // const StaffSchema = require('../models/Staff');
 // const SermonSchema = require('../models/Sermons');
 
+const getAccessToken = async () => {
+    const data = await axios({
+        method: 'post',
+        url: 'https://my.pureheart.org/ministryplatformapi/oauth/connect/token',
+        data: qs.stringify({
+            grant_type: "client_credentials",
+            scope: "http://www.thinkministry.com/dataplatform/scopes/all",
+            client_id: process.env.APP_CLIENT_ID,
+            client_secret: process.env.APP_CLIENT_SECRET
+        })
+    })
+        .then(response => response.data)
+    const {access_token, expires_in} = data;
+    const expiresDate = new Date(new Date().getTime() + (expires_in * 1000)).toISOString()
+    return access_token;
+}
+
 router.get('/files', (req, res) => {
     fs.readdir(path.join(__dirname, '../dist'), (err, files) => {
         res.send(files.filter(file => file !== 'styles')).status(200).end();
@@ -48,25 +65,12 @@ router.post('/staff', async (req, res) => {
     if (!Contact_ID_List) {
         res.status(403).send({msg: "Procedure or function 'api_Widget_GetStaff' expects parameter '@Contact_ID_List', which was not supplied."})
     }
-    
-    const accessToken = await axios({
-        method: 'post',
-        url: 'https://my.pureheart.org/ministryplatformapi/oauth/connect/token',
-        data: qs.stringify({
-            grant_type: "client_credentials",
-            scope: "http://www.thinkministry.com/dataplatform/scopes/all",
-            client_id: process.env.CLIENT_ID,
-            client_secret: process.env.CLIENT_SECRET
-        })
-    })
-        .then(response => response.data.access_token)
-        .catch(err => console.error(err))
 
     const data = await axios({
         method: 'post',
         url: `https://my.pureheart.org/ministryplatformapi/procs/api_Widget_GetStaff`,
         headers: {
-            'Authorization': `Bearer ${accessToken}`,
+            'Authorization': `Bearer ${await getAccessToken()}`,
             'Content-Type': 'application/json'
         },
         data: {
@@ -80,25 +84,12 @@ router.post('/staff', async (req, res) => {
 })
 
 router.get('/staff-ministries', async (req, res) => {
-    
-    const accessToken = await axios({
-        method: 'post',
-        url: 'https://my.pureheart.org/ministryplatformapi/oauth/connect/token',
-        data: qs.stringify({
-            grant_type: "client_credentials",
-            scope: "http://www.thinkministry.com/dataplatform/scopes/all",
-            client_id: process.env.CLIENT_ID,
-            client_secret: process.env.CLIENT_SECRET
-        })
-    })
-        .then(response => response.data.access_token)
-        .catch(err => console.error(err))
 
     const data = await axios({
         method: 'post',
         url: `https://my.pureheart.org/ministryplatformapi/procs/api_MPP_Widget_GetStaffByMinistry`,
         headers: {
-            'Authorization': `Bearer ${accessToken}`,
+            'Authorization': `Bearer ${await getAccessToken()}`,
             'Content-Type': 'application/json'
         }
     })
@@ -117,25 +108,12 @@ router.get('/series', async (req, res) => {
     if (!SeriesType) {
         SeriesType = 1;
     }
-    
-    const accessToken = await axios({
-        method: 'post',
-        url: 'https://my.pureheart.org/ministryplatformapi/oauth/connect/token',
-        data: qs.stringify({
-            grant_type: "client_credentials",
-            scope: "http://www.thinkministry.com/dataplatform/scopes/all",
-            client_id: process.env.CLIENT_ID,
-            client_secret: process.env.CLIENT_SECRET
-        })
-    })
-        .then(response => response.data.access_token)
-        .catch(err => console.error(err))
 
     const data = await axios({
         method: 'post',
         url: `https://my.pureheart.org/ministryplatformapi/procs/api_Widget_GetAllSeries`,
         headers: {
-            'Authorization': `Bearer ${accessToken}`,
+            'Authorization': `Bearer ${await getAccessToken()}`,
             'Content-Type': 'application/json'
         },
         data: {
@@ -155,25 +133,12 @@ router.get('/sermons', async (req, res) => {
     if (!SeriesID) {
         res.status(403).send({msg: "Procedure or function 'api_Widget_GetSeries' expects parameter '@Sermon_Series_ID', which was not supplied."})
     }
-    
-    const accessToken = await axios({
-        method: 'post',
-        url: 'https://my.pureheart.org/ministryplatformapi/oauth/connect/token',
-        data: qs.stringify({
-            grant_type: "client_credentials",
-            scope: "http://www.thinkministry.com/dataplatform/scopes/all",
-            client_id: process.env.CLIENT_ID,
-            client_secret: process.env.CLIENT_SECRET
-        })
-    })
-        .then(response => response.data.access_token)
-        .catch(err => console.error(err))
 
     const data = await axios({
         method: 'post',
         url: `https://my.pureheart.org/ministryplatformapi/procs/api_Widget_GetSeries`,
         headers: {
-            'Authorization': `Bearer ${accessToken}`,
+            'Authorization': `Bearer ${await getAccessToken()}`,
             'Content-Type': 'application/json'
         },
         data: {
@@ -191,19 +156,6 @@ router.get('/test', (req, res) => {
 })
 
 router.get('/featured-events', async (req, res) => {
-    console.log('hello world')
-    const accessToken = await axios({
-        method: 'post',
-        url: 'https://my.pureheart.org/ministryplatformapi/oauth/connect/token',
-        data: qs.stringify({
-            grant_type: "client_credentials",
-            scope: "http://www.thinkministry.com/dataplatform/scopes/all",
-            client_id: process.env.CLIENT_ID,
-            client_secret: process.env.CLIENT_SECRET
-        })
-    })
-        .then(response => response.data.access_token)
-        .catch(err => console.error(err))
 
     console.log(8)
     const data = await axios({
@@ -214,7 +166,7 @@ router.get('/featured-events', async (req, res) => {
             "@MONTHS_BACKWARD": 0
         },
         headers: {
-            'Authorization': `Bearer ${accessToken}`,
+            'Authorization': `Bearer ${await getAccessToken()}`,
             'Content-Type': 'application/json'
         },
     })
@@ -225,24 +177,12 @@ router.get('/featured-events', async (req, res) => {
 })
 
 router.get('/opportunities', async (req, res) => {
-    const accessToken = await axios({
-        method: 'post',
-        url: 'https://my.pureheart.org/ministryplatformapi/oauth/connect/token',
-        data: qs.stringify({
-            grant_type: "client_credentials",
-            scope: "http://www.thinkministry.com/dataplatform/scopes/all",
-            client_id: process.env.CLIENT_ID,
-            client_secret: process.env.CLIENT_SECRET
-        })
-    })
-        .then(response => response.data.access_token)
-        .catch(err => console.error(err))
 
     const data = await axios({
         method: 'post',
         url: `https://my.pureheart.org/ministryplatformapi/procs/api_Widget_Opportunities`,
         headers: {
-            'Authorization': `Bearer ${accessToken}`,
+            'Authorization': `Bearer ${await getAccessToken()}`,
             'Content-Type': 'application/json'
         },
     })
@@ -254,13 +194,6 @@ router.get('/opportunities', async (req, res) => {
 
 router.post('/opportunity-auto-place', async (req, res) => {
     //get access token for accessing database informatin
-    const accessToken = await axios({
-        method: 'get',
-        mode: 'cors',
-        url: 'https://phc.events/api/oauth/authorize'
-    })
-        .then(response => response.data.access_token)
-        .catch(err => console.error(err))
     try {
         const {id} = req.body;
         if (!id) return res.sendStatus(400)
@@ -273,7 +206,7 @@ router.post('/opportunity-auto-place', async (req, res) => {
             headers: {
                 'Accept': 'application/json',
                 'Content-Type': 'application/json',
-                'Authorization': 'Bearer ' + accessToken,
+                'Authorization': `Bearer ${await getAccessToken()}`,
             }
         })
             .then(response => response.data)
@@ -292,15 +225,6 @@ router.post('/email', async (req, res) => {
 
     const {Subject, Name, Email, Message, RecipientContactID} = req.body;
 
-    //get access token for accessing database informatin
-    const accessToken = await axios({
-        method: 'get',
-        mode: 'cors',
-        url: 'https://phc.events/api/oauth/authorize'
-    })
-        .then(response => response.data.access_token)
-        .catch(err => console.error(err))
-
     try {
         await axios({
             method: 'post',
@@ -308,7 +232,7 @@ router.post('/email', async (req, res) => {
             headers: {
                 'Accept': 'application/json',
                 'Content-Type': 'application/json',
-                'Authorization': 'Bearer ' + accessToken,
+                'Authorization': `Bearer ${await getAccessToken()}`,
             },
             data: {
                 "AuthorUserId": apiUserId,
@@ -333,20 +257,12 @@ router.get('/unsubscribe', async (req, res) => {
     const id = req.query.id;
 
     try {
-        //get access token for accessing database informatin
-        const accessToken = await axios({
-            method: 'get',
-            mode: 'cors',
-            url: 'https://phc.events/api/oauth/authorize'
-        })
-            .then(response => response.data.access_token)
-            .catch(err => console.error(err))
 
         await axios({
             method: 'put',
             url: 'https://my.pureheart.org/ministryplatformapi/tables/Prayer_Requests',
             headers: {
-                "Authorization": `Bearer ${accessToken}`,
+                "Authorization": `Bearer ${await getAccessToken()}`,
                 "Content-Type": "application/json"
             },
             data: [{
@@ -370,13 +286,7 @@ router.get('/group-register', async (req, res) => {
 
     try {
         //get access token for accessing database informatin
-        const accessToken = await axios({
-            method: 'get',
-            mode: 'cors',
-            url: 'https://phc.events/api/oauth/authorize'
-        })
-            .then(response => response.data.access_token)
-            .catch(err => console.error(err))
+        const accessToken = await getAccessToken();
 
         const formData = await axios({
             method: 'get',
