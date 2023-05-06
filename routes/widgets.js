@@ -332,6 +332,7 @@ router.get('/form', async (req, res) => {
         method: 'get',
         url: 'https://my.pureheart.org/ministryplatformapi/tables/PHC_Forms',
         params: {
+            '$select': 'API_Procedure_ID_Table.[Procedure_Name], Active, Add_to_Group, Form_Name, Instructions, PHC_Forms_ID, Primary_Contact',
             '$filter': `PHC_Forms_ID=${Form_ID}`
         },
         headers: {
@@ -354,7 +355,8 @@ router.get('/form-fields', async (req, res) => {
         method: 'get',
         url: 'https://my.pureheart.org/ministryplatformapi/tables/PHC_Form_Fields',
         params: {
-            '$filter': `PHC_Forms_ID=${Form_ID}`
+            '$filter': `PHC_Forms_ID=${Form_ID}`,
+            '$orderby': 'Field_Order'
         },
         headers: {
             'Authorization': `Bearer ${await getAccessToken()}`,
@@ -365,6 +367,52 @@ router.get('/form-fields', async (req, res) => {
         .catch(err => console.error(err))
 
     res.status(200).send(formData).end();
+})
+
+router.get('/validate-form-fields', async (req, res) => {
+    const { procedure } = req.query;
+
+    if (!procedure) return res.status(400).send({err: 'no procedure'}).end();
+    const procedureData = await axios({
+        method: 'get',
+        url: `https://my.pureheart.org/ministryplatformapi/procs?%24search=${procedure}`,
+        headers: {
+            'Authorization': `Bearer ${await getAccessToken()}`,
+            'Content-Type': 'application/json'
+        }
+    })
+        .then(response => response.data[0])
+        .catch(err => console.error(err))
+
+    res.status(200).send(procedureData.Parameters.filter(parameter => parameter.Name != '@GroupID')).end();
+})
+
+router.post('/form-submit', async (req, res) => {
+    const { params, procedure, group_id } = req.body;
+
+    if (!procedure || !params || !params.length) return res.status(400).send({err: 'missing fields'}).end();
+
+    const parametersData = {};
+    for (const item of params) {
+        parametersData[item.name] = item.value;
+    }
+    if (group_id) parametersData['@GroupID'] = group_id;
+
+    console.log(parametersData)
+
+    const procedureData = await axios({
+        method: 'post',
+        url: `https://my.pureheart.org/ministryplatformapi/procs/${procedure}`,
+        data: parametersData,
+        headers: {
+            'Authorization': `Bearer ${await getAccessToken()}`,
+            'Content-Type': 'application/json'
+        }
+    })
+        .then(response => response.data)
+        .catch(err => console.error(err))
+
+    res.status(200).send(procedureData).end();
 })
 
 module.exports = router;

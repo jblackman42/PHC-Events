@@ -161,15 +161,15 @@ class PrayerWall extends HTMLElement {
             loader.style.visibility = 'hidden';
         }
         
-
         for (let i = 0; i < prayer_requests.length; i ++) {
-            const {Author_Name, Date_Created, Prayer_Title, Prayer_Body, Prayer_Count, Prayer_Request_ID} = prayer_requests[i];
+
+            const {Author_Name, Date_Created, Prayer_Title, Prayer_Body, Prayer_Count, Prayer_Request_ID, Private } = prayer_requests[i];
             
             const prayerCard = document.createElement('div');
                 prayerCard.id = `prayer-${Prayer_Request_ID}`;
                 prayerCard.classList.add('prayer-card')
                 prayerCard.innerHTML = `
-                    <h2 class="name">${Author_Name || 'Anonymous'}</h2>
+                    <h2 class="name">${!Private ? Author_Name : 'Anonymous'}</h2>
                     <p class="date">${new Date(Date_Created).toLocaleDateString('en-us', {weekday:"long", year:"numeric", month:"short", day:"numeric"})}</p>
                     <div class="prayer-body">
                         ${Prayer_Title ? `<p class="prayer-title">${Prayer_Title}</p>` : ''}
