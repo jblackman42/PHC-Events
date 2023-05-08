@@ -151,7 +151,7 @@ router.post('/', async (req, res) => {
     res.sendStatus(response.status)
 })
 
-router.put('/', async (req, res) => {
+router.post('/prayed', async (req, res) => {
 
     try {
         const data = await axios({
