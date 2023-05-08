@@ -59,6 +59,7 @@ app.use('/api/mp', require('./routes/mp.js'))
 app.use('/api/prayer-wall', require('./routes/prayer-wall.js'))
 app.use('/websocket', require('./routes/websocket.js'))
 app.use('/api/widgets', require('./routes/widgets.js'))
+app.use('/api/twilio', require('./routes/twilio.js'))
 
 // const { populate } = require('./populate.js');
 

@@ -324,16 +324,16 @@ router.get('/group-register', async (req, res) => {
 // custom forms for stored proc stuff
 
 router.get('/form', async (req, res) => {
-    const { Form_ID } = req.query;
+    const { Form_GUID } = req.query;
 
-    if (!Form_ID) return res.status(400).send({err: 'no Form_ID'}).end();
+    if (!Form_GUID) return res.status(400).send({err: 'no Form_GUID'}).end();
 
     const formData = await axios({
         method: 'get',
-        url: 'https://my.pureheart.org/ministryplatformapi/tables/PHC_Forms',
+        url: 'https://my.pureheart.org/ministryplatformapi/tables/Forms',
         params: {
-            '$select': 'API_Procedure_ID_Table.[Procedure_Name], Active, Add_to_Group, Form_Name, Instructions, PHC_Forms_ID, Primary_Contact',
-            '$filter': `PHC_Forms_ID=${Form_ID}`
+            '$select': 'Form_ID, Form_Title, Instructions, Get_Contact_Info, Get_Address_Info, Primary_Contact',
+            '$filter': `Form_GUID='${Form_GUID}'`
         },
         headers: {
             'Authorization': `Bearer ${await getAccessToken()}`,
@@ -353,9 +353,9 @@ router.get('/form-fields', async (req, res) => {
 
     const formData = await axios({
         method: 'get',
-        url: 'https://my.pureheart.org/ministryplatformapi/tables/PHC_Form_Fields',
+        url: 'https://my.pureheart.org/ministryplatformapi/tables/Form_Fields',
         params: {
-            '$filter': `PHC_Forms_ID=${Form_ID}`,
+            '$filter': `Form_ID=${Form_ID}`,
             '$orderby': 'Field_Order'
         },
         headers: {
