@@ -104,8 +104,8 @@
             loading();
             const prayer = this.prayers[ this.currentIndex];
             await axios({
-                method: 'put',
-                url: '/api/prayer-wall',
+                method: 'post',
+                url: '/api/prayer-wall/prayed',
                 data: {
                     Prayer_Request_ID: prayer.Prayer_Request_ID,
                     Prayer_Status_ID: statusID,
