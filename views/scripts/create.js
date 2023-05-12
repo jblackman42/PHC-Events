@@ -272,6 +272,8 @@ document.getElementById('create-form').addEventListener('submit', (e) => {
 const createEvent = async () => {
   loading();
 
+  const user = await getUser();
+
   const eventFields = [eventNameDOM.value, eventLocationDOM.value, startDateDOM.value, startTimeDOM.value, endTimeDOM.value, primaryContactDOM.value, eventTypeDOM.value, attendanceDOM.value, congregationDOM.value, setupTimeDOM.value, cleanupTimeDOM.value, visibilityLevelDOM.value, eventDescDOM.value, needsRegistrationDOM.value, needsPromotionDOM.value, needsAVDOM.value, needsFacilitiesDOM.value, needsFacilitiesEmployeeDOM.value, needsChildcareDOM.value];
   if (eventFields.filter(field => field == '').length) {
     doneLoading();
@@ -302,7 +304,8 @@ const createEvent = async () => {
       Minutes_for_Cleanup: cleanupTimeDOM.value,
       Event_Start_Date: scheduleStartTime.toISOString(),
       Event_End_Date: scheduleEndTime.toISOString(),
-      Visibility_Level_ID: visibilityLevelDOM.value
+      Visibility_Level_ID: visibilityLevelDOM.value,
+      Created_By_User: user.userid
     }
   })
   const createdEvents = await axios({
