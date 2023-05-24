@@ -105,14 +105,24 @@ const toggleFormFields = (e, elemIDs) => {
 
 const loadRoomOptions = async () => {
   loading();
+  const roomSelectorsDOM = document.getElementById('room-selectors');
 
-  const currBuildings = places.filter(place => place.Location_ID == eventLocationDOM.value)[0].Buildings.sort((a, b) => {
+  const currPlace = places.filter(place => place.Location_ID == eventLocationDOM.value)[0];
+
+  if (!currPlace || currPlace.hasOwnProperty('Buildings')) {
+    roomSelectorsDOM.innerHTML = `
+      <h3 style="text-align:center; width:100%;">No buildings available.</h4>
+    `
+    doneLoading();
+    return;
+  }
+
+  const currBuildings = currPlace.Buildings.sort((a, b) => {
     let fa = a.Building_Name.toLowerCase(),
         fb = b.Building_Name.toLowerCase();
 
     return fa < fb ? -1 : fa > fb ? 1 : 0;
   });
-  const roomSelectorsDOM = document.getElementById('room-selectors');
 
   // get blocked rooms from overbooking
   
