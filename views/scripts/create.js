@@ -109,7 +109,7 @@ const loadRoomOptions = async () => {
 
   const currPlace = places.filter(place => place.Location_ID == eventLocationDOM.value)[0];
 
-  if (!currPlace || currPlace.hasOwnProperty('Buildings')) {
+  if (!currPlace || !currPlace.hasOwnProperty('Buildings')) {
     roomSelectorsDOM.innerHTML = `
       <h3 style="text-align:center; width:100%;">No buildings available.</h4>
     `
