@@ -107,7 +107,7 @@ const loadRoomOptions = async () => {
   loading();
   const roomSelectorsDOM = document.getElementById('room-selectors');
 
-  const currPlace = places.find(place => place.Location_ID === eventLocationDOM.value);
+  const currPlace = places.find(place => place.Location_ID == eventLocationDOM.value);
 
   if (!currPlace) {
     roomSelectorsDOM.innerHTML = `
