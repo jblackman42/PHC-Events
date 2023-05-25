@@ -109,7 +109,7 @@ const loadRoomOptions = async () => {
 
   const currPlace = places.find(place => place.Location_ID == eventLocationDOM.value);
 
-  if (!currPlace) {
+  if (currPlace == null) {
     roomSelectorsDOM.innerHTML = `
       <h3 style="text-align:center; width:100%;">No buildings available.</h4>
     `
@@ -126,12 +126,12 @@ const loadRoomOptions = async () => {
 
   // get blocked rooms from overbooking
   
-  const eventStartDate = new Date(`${startDateDOM.value}T${startTimeDOM.value}:00`);
-  const eventEndDate = new Date(`${startDateDOM.value}T${endTimeDOM.value}:00`);
-    // scheduleEndTime.setTime(scheduleEndTime.getTime() + (cleanupTimeDOM.value * 60000) - (scheduleEndTime.getTimezoneOffset() * 60000))
+  const eventStartDate = (startDateDOM.value && startTimeDOM) ? new Date(`${startDateDOM.value}T${startTimeDOM.value}:00`) : new Date();
+  const eventEndDate = (startDateDOM.value && endTimeDOM) ? new Date(`${startDateDOM.value}T${endTimeDOM.value}:00`) : new Date();
+  
   const eventLength = eventEndDate.getTime() - eventStartDate.getTime();
   let tempPattern = pattern;
-  if (!tempPattern || !tempPattern.length) tempPattern = [eventStartDate.toISOString()];
+  if (!tempPattern || tempPattern.length === 0) tempPattern = [eventStartDate.toISOString()];
 
   const datesToCheck = tempPattern.map(startDate => {
     const scheduleStartTime = new Date(startDate)
@@ -154,6 +154,11 @@ const loadRoomOptions = async () => {
     }
   })
     .then(response => response.data)
+    .catch(err => {
+      alert(JSON.stringify(err));
+      console.error(err);
+      doneLoading();
+    })
   
   // for (const startDate of tempPattern) {
   //   const scheduleStartTime = new Date(startDate)
@@ -294,7 +299,7 @@ const createEvent = async () => {
   const eventStartDate = new Date(`${startDateDOM.value}T${startTimeDOM.value}:00`);
   const eventEndDate = new Date(`${startDateDOM.value}T${endTimeDOM.value}:00`);
   const eventLength = eventEndDate.getTime() - eventStartDate.getTime();
-  if (!pattern || !pattern.length) pattern = [eventStartDate.toISOString()]
+  if (!pattern.length) pattern = [eventStartDate.toISOString()]
   // create event in MP
   const eventsToCreate = pattern.map(startDate => {
     const scheduleStartTime = new Date(startDate)

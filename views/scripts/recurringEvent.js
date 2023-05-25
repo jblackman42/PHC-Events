@@ -1,4 +1,4 @@
-let pattern;
+let pattern = [];
 const eventCreateLimit = 52;
 const recurringEventContainer = document.querySelector('.recurring-event-container');
 
