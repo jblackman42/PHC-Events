@@ -321,4 +321,100 @@ router.get('/group-register', async (req, res) => {
     }
 })
 
+
+
+router.get('/ministry-question', async (req, res) => {
+    const { ministryQuestionID } = req.query;
+    
+    if (!ministryQuestionID) return res.status(400).send({err: 'no ministry question id'}).end();
+
+    try {
+        //get access token for accessing database informatin
+        const accessToken = await getAccessToken();
+
+        const data = await axios({
+            method: 'get',
+            url: `https://my.pureheart.org/ministryplatformapi/tables/Ministry_Questions/${ministryQuestionID}`,
+            headers: {
+              'Authorization': `Bearer ${accessToken}`,
+              'Content-Type': 'Application/JSON'
+            }
+          })
+            .then(response => response.data[0])
+
+        res.send(data);
+    } catch (e) {
+        const { response } = e;
+        const { data } = response;
+        const { Message } = data;
+        console.log(e)
+        res.status(response.status).send(Message).end();
+    }
+})
+
+router.get('/ministry-answers-weekly', async (req, res) => {
+    const { ministryQuestionID } = req.query;
+    
+    if (!ministryQuestionID) return res.status(400).send({err: 'no ministry question id'}).end();
+
+    try {
+        //get access token for accessing database informatin
+        const accessToken = await getAccessToken();
+
+        const data = await axios({
+            method: 'get',
+            url: `https://my.pureheart.org/ministryplatformapi/tables/Ministry_Answers`,
+            params: {
+              $filter: `Ministry_Question_ID = ${ministryQuestionID}`,
+              $select: `Ministry_Week_ID_Table.[Ministry_Week_Start], Ministry_Answer_ID, Ministry_Answers.[Ministry_Week_ID], Ministry_Question_ID, Numerical_Value, Ministry_Answers.[Congregation_ID], Congregation_ID_Table.[Congregation_Name], Ministry_ID, Program_ID, Type`,
+              $orderby: `Ministry_Week_ID_Table.[Ministry_Week_Start]`
+            },
+            headers: {
+              'Authorization': `Bearer ${accessToken}`,
+              'Content-Type': 'Application/JSON'
+            }
+          })
+          .then(response => response.data)
+
+        res.send(data);
+    } catch (e) {
+        const { response } = e;
+        const { data } = response;
+        const { Message } = data;
+        res.status(response.status).send(Message).end();
+    }
+})
+
+router.get('/ministry-answers-monthly', async (req, res) => {
+    const { ministryQuestionID } = req.query;
+    
+    if (!ministryQuestionID) return res.status(400).send({err: 'no ministry question id'}).end();
+
+    try {
+        //get access token for accessing database informatin
+        const accessToken = await getAccessToken();
+
+        const data = await axios({
+            method: 'get',
+            url: `https://my.pureheart.org/ministryplatformapi/tables/Fiscal_Period_Answers`,
+            params: {
+                $filter: `Ministry_Question_ID = ${ministryQuestionID}`,
+                $select: `Fiscal_Period_ID_Table.[Fiscal_Period_Start], Fiscal_Period_Answer_ID, Fiscal_Period_Answers.[Fiscal_Period_ID], Ministry_Question_ID, Numerical_Value, Fiscal_Period_Answers.[Congregation_ID], Congregation_ID_Table.[Congregation_Name], Ministry_ID, Program_ID, Type`,
+                $orderby: `Fiscal_Period_ID_Table.[Fiscal_Period_Start]`
+            },
+            headers: {
+                'Authorization': `Bearer ${accessToken}`,
+                'Content-Type': 'Application/JSON'
+            }
+        })
+            .then(response => response.data)
+
+        res.send(data);
+    } catch (e) {
+        const { response } = e;
+        const { data } = response;
+        const { Message } = data;
+        res.status(response.status).send(Message).end();
+    }
+})
 module.exports = router;
