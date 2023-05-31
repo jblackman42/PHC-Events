@@ -299,7 +299,7 @@ const createEvent = async () => {
   const eventStartDate = new Date(`${startDateDOM.value}T${startTimeDOM.value}:00`);
   const eventEndDate = new Date(`${startDateDOM.value}T${endTimeDOM.value}:00`);
   const eventLength = eventEndDate.getTime() - eventStartDate.getTime();
-  if (!pattern.length) pattern = [eventStartDate.toISOString()]
+  if (!pattern || !pattern.length) pattern = [eventStartDate.toISOString()]
   // create event in MP
   const eventsToCreate = pattern.map(startDate => {
     const scheduleStartTime = new Date(startDate)

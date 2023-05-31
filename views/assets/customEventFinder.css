@@ -111,9 +111,45 @@
 
 .mppw-card--grid .mpp-card {
   box-shadow: none;
+  border-radius: 0;
 }
 
 .mppw-card--grid .mpp-card .mpp-card--footer {
+  display: none;
+  visibility: hidden;
+}
+
+.mppw-card--grid .mpp-card .mpp-card--body {
+  padding: 0;
+}
+
+.mppw-card--grid .mpp-card .mpp-card--body .text--container {
+  display: flex;
+  flex-direction: column;
+}
+
+.mppw-card--grid .mpp-card .mpp-card--body .mpp-card--title {
+  order: 2;
+}
+.mppw-card--grid .mpp-card .mpp-card--body .mpp-card--subtitle.event-date-range {
+  order: 3;
+}
+.mppw-card--grid .mpp-card .mpp-card--body .mpp-card--subtitle.event-location {
+  order: 1;
+  position: relative;
+  margin: 0 1rem;
+}
+.mppw-card--grid .mpp-card .mpp-card--body .mpp-card--subtitle.event-location::after {
+  font-family: "Font Awesome 6 Free";
+  content: '\f124';
+  position: absolute;
+  color: #3498db;
+  top: 0;
+  left: 0;
+  transform: translateX(-100%);
+}
+
+.mppw-card--grid .mpp-card .mpp-card--body .mpp-card--description {
   display: none;
   visibility: hidden;
 }
