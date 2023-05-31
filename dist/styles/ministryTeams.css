@@ -84,11 +84,11 @@
 
 @media screen and (max-width: 1024px) {
   .ministry-team-row {
-    max-width: 95vw;
+    max-width: 80vw;
     justify-content: center;
   }
   .ministry-team-container.open .ministry-team-label {
-    width: 95vw;
+    width: 80vw;
   }
 
 }
@@ -121,8 +121,9 @@ team-widget {
   flex-direction: column;
   width: -webkit-max-content;
   width: -moz-max-content;
-  width: max-content;
-  max-width: 250px;
+  /* width: max-content; */
+  /* max-width: 250px; */
+  width: 250px;
   height: 100%;
   margin-inline: auto;
 }

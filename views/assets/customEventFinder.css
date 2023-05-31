@@ -1,0 +1,119 @@
+/* STYLING FOR EVENTS SEARCH FORM */
+
+
+/* get rid of event finder title */
+.mppw-form-wrapper > h1 {
+  display: none;
+  visibility: hidden;
+}
+
+/* puts filter inputs in a horizontal line instead of stacked */
+.mppw-form {
+  display: flex;
+  position: relative;
+  justify-content: space-between;
+  margin-bottom: 48px;
+}
+
+/* hide keyword input and month inputs */
+.mppw-form .mppw-form-field:has(#keywordSearchText), .mppw-form .mppw-form-field:has(#monthId) {
+  display: none;
+  visibility: hidden;
+}
+
+/* always show advanced options */
+.mppw-form #advancedSearchSection {
+  display: flex !important;
+  width: 100%;
+  margin-left: 1rem;
+  gap: 1rem;
+}
+
+/* hide show advanced button */
+.mppw-right:has(#advancedSearchLink) {
+  display: none;
+  visibility: hidden;
+}
+
+/* set width of input options and their black border when you click on them */
+.mppw-form-field {
+  width: 100%;
+  border: 2px solid transparent;
+  border-radius: 6px;
+  margin: 0;
+}
+.mppw-form-field:focus-within {
+  border: 2px solid black;
+}
+
+/* make inputs labels always black text (otherwise blue when you click on them) */
+.mppw-form-field label {
+  color: black !important;
+}
+
+/* get rid of default shadow, border, and outline */
+.mppw-form-field input, .mppw-form-field select {
+  outline: none;
+  border: none;
+  box-shadow: none !important;
+}
+
+/* position 'search events' button */
+.mppw-form .mppw-centered:has(#searchButton) {
+  width: 100%;
+  text-align: right;
+  position: absolute;
+  right: 0;
+  top: calc(100% + 1rem);
+}
+
+/* set width of 'search events' button to match inputs above it */
+.mppw-form #searchButton {
+  width: calc((50% / 3) - 1rem);
+  box-shadow: none;
+  margin: 0;
+}
+
+@media screen and (max-width: 1180px) {
+  /* stack filter form sections */
+  .mppw-form {
+    flex-direction: column;
+    gap: 1rem;
+  }
+  /* remove left side margin */
+  .mppw-form #advancedSearchSection {
+    margin: 0;
+  }
+  
+  /* set search events button width to match button above */
+  .mppw-form #searchButton {
+    width: calc((100% / 3) - 1rem);
+  }
+}
+
+@media screen and (max-width: 768px) {
+  /* stack all inputs in a column */
+  .mppw-form #advancedSearchSection {
+    flex-direction: column;
+  }
+}
+
+
+
+
+/* EVENT CARD STYLING */
+
+.mppw-card--grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  padding: 1rem 0;
+}
+
+.mppw-card--grid .mpp-card {
+  box-shadow: none;
+}
+
+.mppw-card--grid .mpp-card .mpp-card--footer {
+  display: none;
+  visibility: hidden;
+}
