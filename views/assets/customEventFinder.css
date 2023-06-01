@@ -3,6 +3,7 @@
 .mppw-component-container {
   --form-btn-primary-bgcolor: #7B2D26;
   --form-btn-primary-hover: #a83d33;
+  --form-btn-primary-active: #7B2D26;
   --border-radius: 8px;
 }
 
@@ -22,20 +23,40 @@
   position: relative;
   justify-content: space-between;
   margin-bottom: 48px;
+  gap: 1rem;
+}
+
+.mppw-form .mppw-form-field {
+  background-color: var(--form-field-bgcolor--active);
+}
+
+.mppw-form .mppw-form-field * {
+  background-color: transparent;
+  border: none;
 }
 
 /* hide keyword input and month inputs */
-.mppw-form .mppw-form-field:has(#keywordSearchText), .mppw-form .mppw-form-field:has(#monthId) {
+.mppw-form .mppw-form-field:has(#monthId) {
   display: none;
   visibility: hidden;
+}
+
+.mppw-form .mppw-form-field:has(#congregationId), .mppw-form .mppw-form-field:has(#keywordSearchText) {
+  width: 20%;
+}
+.mppw-form .mppw-form-field:has(#keywordSearchText) {
+  order: 1;
+}
+.mppw-form .mppw-form-field:has(#congregationId) {
+  order: 2;
 }
 
 /* always show advanced options */
 .mppw-form #advancedSearchSection {
   display: flex !important;
-  width: 100%;
-  margin-left: 1rem;
+  width: 60%;
   gap: 1rem;
+  order: 3;
 }
 
 /* hide show advanced button */
@@ -92,6 +113,15 @@
   /* remove left side margin */
   .mppw-form #advancedSearchSection {
     margin: 0;
+  }
+
+  .mppw-form .mppw-form-field:has(#congregationId), .mppw-form .mppw-form-field:has(#keywordSearchText) {
+    width: 100%;
+  }
+  .mppw-form #advancedSearchSection {
+    display: flex !important;
+    width: 100%;
+    gap: 1rem;
   }
   
   /* set search events button width to match button above */
