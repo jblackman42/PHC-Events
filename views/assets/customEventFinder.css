@@ -180,6 +180,7 @@
   position: relative;
   bottom: .5rem;
   box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
+  aspect-ratio: 16/9;
 }
 
 .mppw-card--grid .mpp-card .mpp-card--header .mpp-card--badge.featured {
