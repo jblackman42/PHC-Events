@@ -53,6 +53,18 @@ class MinistryTeams extends HTMLElement {
   draw = () => {
     const ministries = [...new Set(this.staff.map(staff => staff.Team_Name))]
 
+    // find the index of 'Board'
+    let index = ministries.indexOf('Board');
+
+    // if 'Board' is in the array
+    if (index !== -1) {
+        // remove 'Board' from its current position
+        ministries.splice(index, 1);
+        // add 'Board' to the beginning
+        ministries.push('Board');
+    }
+
+
     for (const ministry of ministries) {
       const currTeam = this.staff.filter(staff => staff.Team_Name == ministry);
       this.innerHTML += `

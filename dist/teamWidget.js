@@ -9,7 +9,6 @@ class TeamWidget extends HTMLElement {
         if (!contact_ids) return;
 
         this.staff = await this.getStaff(contact_ids);
-        console.log(this.staff)
 
         if (this.staff.length <= 3) {
             this.style.gridTemplateColumns = new Array(this.staff.length).fill('1fr').join(' ');
@@ -22,7 +21,6 @@ class TeamWidget extends HTMLElement {
                 continue
             };
             const {Last_Name, Nickname, Job_Title, Unique_Name, Contact_ID, Bio} = currStaff;
-            console.log(currStaff)
 
             const staffMemberDOM = document.createElement('div');
                 staffMemberDOM.classList.add('staff-member');
@@ -171,8 +169,7 @@ class TeamWidget extends HTMLElement {
             method: 'post',
             url: 'https://phc.events/api/widgets/email',
             headers: {
-                "Content-Type": "application/json",
-                "Auth-Key": "bowling-pins-are-cool"
+                "Content-Type": "application/json"
             },
             data: {
                 "Name": name,

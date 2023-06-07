@@ -321,98 +321,100 @@ router.get('/group-register', async (req, res) => {
     }
 })
 
-// custom forms for stored proc stuff
 
-router.get('/form', async (req, res) => {
-    const { Form_GUID } = req.query;
 
-    if (!Form_GUID) return res.status(400).send({err: 'no Form_GUID'}).end();
+router.get('/ministry-question', async (req, res) => {
+    const { ministryQuestionID } = req.query;
+    
+    if (!ministryQuestionID) return res.status(400).send({err: 'no ministry question id'}).end();
 
-    const formData = await axios({
-        method: 'get',
-        url: 'https://my.pureheart.org/ministryplatformapi/tables/Forms',
-        params: {
-            '$select': 'Form_ID, Form_Title, Instructions, Get_Contact_Info, Get_Address_Info, Primary_Contact',
-            '$filter': `Form_GUID='${Form_GUID}'`
-        },
-        headers: {
-            'Authorization': `Bearer ${await getAccessToken()}`,
-            'Content-Type': 'application/json'
-        }
-    })
-        .then(response => response.data[0])
-        .catch(err => console.error(err))
+    try {
+        //get access token for accessing database informatin
+        const accessToken = await getAccessToken();
 
-    res.status(200).send(formData).end();
-})
+        const data = await axios({
+            method: 'get',
+            url: `https://my.pureheart.org/ministryplatformapi/tables/Ministry_Questions/${ministryQuestionID}`,
+            headers: {
+              'Authorization': `Bearer ${accessToken}`,
+              'Content-Type': 'Application/JSON'
+            }
+          })
+            .then(response => response.data[0])
 
-router.get('/form-fields', async (req, res) => {
-    const { Form_ID } = req.query;
-
-    if (!Form_ID) return res.status(400).send({err: 'no Form_ID'}).end();
-
-    const formData = await axios({
-        method: 'get',
-        url: 'https://my.pureheart.org/ministryplatformapi/tables/Form_Fields',
-        params: {
-            '$filter': `Form_ID=${Form_ID}`,
-            '$orderby': 'Field_Order'
-        },
-        headers: {
-            'Authorization': `Bearer ${await getAccessToken()}`,
-            'Content-Type': 'application/json'
-        }
-    })
-        .then(response => response.data)
-        .catch(err => console.error(err))
-
-    res.status(200).send(formData).end();
-})
-
-router.get('/validate-form-fields', async (req, res) => {
-    const { procedure } = req.query;
-
-    if (!procedure) return res.status(400).send({err: 'no procedure'}).end();
-    const procedureData = await axios({
-        method: 'get',
-        url: `https://my.pureheart.org/ministryplatformapi/procs?%24search=${procedure}`,
-        headers: {
-            'Authorization': `Bearer ${await getAccessToken()}`,
-            'Content-Type': 'application/json'
-        }
-    })
-        .then(response => response.data[0])
-        .catch(err => console.error(err))
-
-    res.status(200).send(procedureData.Parameters.filter(parameter => parameter.Name != '@GroupID')).end();
-})
-
-router.post('/form-submit', async (req, res) => {
-    const { params, procedure, group_id } = req.body;
-
-    if (!procedure || !params || !params.length) return res.status(400).send({err: 'missing fields'}).end();
-
-    const parametersData = {};
-    for (const item of params) {
-        parametersData[item.name] = item.value;
+        res.send(data);
+    } catch (e) {
+        const { response } = e;
+        const { data } = response;
+        const { Message } = data;
+        console.log(e)
+        res.status(response.status).send(Message).end();
     }
-    if (group_id) parametersData['@GroupID'] = group_id;
-
-    console.log(parametersData)
-
-    const procedureData = await axios({
-        method: 'post',
-        url: `https://my.pureheart.org/ministryplatformapi/procs/${procedure}`,
-        data: parametersData,
-        headers: {
-            'Authorization': `Bearer ${await getAccessToken()}`,
-            'Content-Type': 'application/json'
-        }
-    })
-        .then(response => response.data)
-        .catch(err => console.error(err))
-
-    res.status(200).send(procedureData).end();
 })
 
+router.get('/ministry-answers-weekly', async (req, res) => {
+    const { ministryQuestionID } = req.query;
+    
+    if (!ministryQuestionID) return res.status(400).send({err: 'no ministry question id'}).end();
+
+    try {
+        //get access token for accessing database informatin
+        const accessToken = await getAccessToken();
+
+        const data = await axios({
+            method: 'get',
+            url: `https://my.pureheart.org/ministryplatformapi/tables/Ministry_Answers`,
+            params: {
+              $filter: `Ministry_Question_ID = ${ministryQuestionID}`,
+              $select: `Ministry_Week_ID_Table.[Ministry_Week_Start], Ministry_Answer_ID, Ministry_Answers.[Ministry_Week_ID], Ministry_Question_ID, Numerical_Value, Ministry_Answers.[Congregation_ID], Congregation_ID_Table.[Congregation_Name], Ministry_ID, Program_ID, Type`,
+              $orderby: `Ministry_Week_ID_Table.[Ministry_Week_Start]`
+            },
+            headers: {
+              'Authorization': `Bearer ${accessToken}`,
+              'Content-Type': 'Application/JSON'
+            }
+          })
+          .then(response => response.data)
+
+        res.send(data);
+    } catch (e) {
+        const { response } = e;
+        const { data } = response;
+        const { Message } = data;
+        res.status(response.status).send(Message).end();
+    }
+})
+
+router.get('/ministry-answers-monthly', async (req, res) => {
+    const { ministryQuestionID } = req.query;
+    
+    if (!ministryQuestionID) return res.status(400).send({err: 'no ministry question id'}).end();
+
+    try {
+        //get access token for accessing database informatin
+        const accessToken = await getAccessToken();
+
+        const data = await axios({
+            method: 'get',
+            url: `https://my.pureheart.org/ministryplatformapi/tables/Fiscal_Period_Answers`,
+            params: {
+                $filter: `Ministry_Question_ID = ${ministryQuestionID}`,
+                $select: `Fiscal_Period_ID_Table.[Fiscal_Period_Start], Fiscal_Period_Answer_ID, Fiscal_Period_Answers.[Fiscal_Period_ID], Ministry_Question_ID, Numerical_Value, Fiscal_Period_Answers.[Congregation_ID], Congregation_ID_Table.[Congregation_Name], Ministry_ID, Program_ID, Type`,
+                $orderby: `Fiscal_Period_ID_Table.[Fiscal_Period_Start]`
+            },
+            headers: {
+                'Authorization': `Bearer ${accessToken}`,
+                'Content-Type': 'Application/JSON'
+            }
+        })
+            .then(response => response.data)
+
+        res.send(data);
+    } catch (e) {
+        const { response } = e;
+        const { data } = response;
+        const { Message } = data;
+        res.status(response.status).send(Message).end();
+    }
+})
 module.exports = router;

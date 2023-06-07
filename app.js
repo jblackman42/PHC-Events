@@ -71,7 +71,6 @@ app.use('/api/prayer-wall', require('./routes/prayer-wall.js'))
 app.use('/websocket', require('./routes/websocket.js'))
 app.use('/api/widgets', require('./routes/widgets.js'))
 
-app.use('/api/kanban', require('./routes/helpdesk-kanban.js'));
 // Starting the server
 const port = process.env.PORT || 3000;
 (async () => {
@@ -79,4 +78,3 @@ const port = process.env.PORT || 3000;
     app.listen(port, console.log(`\n Server is listening on port ${port}\n http://localhost:${port}`));
   } catch (error) { console.log(error) }
 })();
-

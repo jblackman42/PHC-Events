@@ -105,23 +105,33 @@ const toggleFormFields = (e, elemIDs) => {
 
 const loadRoomOptions = async () => {
   loading();
+  const roomSelectorsDOM = document.getElementById('room-selectors');
 
-  const currBuildings = places.filter(place => place.Location_ID == eventLocationDOM.value)[0].Buildings.sort((a, b) => {
+  const currPlace = places.find(place => place.Location_ID == eventLocationDOM.value);
+
+  if (currPlace == null) {
+    roomSelectorsDOM.innerHTML = `
+      <h3 style="text-align:center; width:100%;">No buildings available.</h4>
+    `
+    doneLoading();
+    return;
+  }
+
+  const currBuildings = currPlace.Buildings.sort((a, b) => {
     let fa = a.Building_Name.toLowerCase(),
         fb = b.Building_Name.toLowerCase();
 
     return fa < fb ? -1 : fa > fb ? 1 : 0;
   });
-  const roomSelectorsDOM = document.getElementById('room-selectors');
 
   // get blocked rooms from overbooking
   
-  const eventStartDate = new Date(`${startDateDOM.value}T${startTimeDOM.value}:00`);
-  const eventEndDate = new Date(`${startDateDOM.value}T${endTimeDOM.value}:00`);
-    // scheduleEndTime.setTime(scheduleEndTime.getTime() + (cleanupTimeDOM.value * 60000) - (scheduleEndTime.getTimezoneOffset() * 60000))
+  const eventStartDate = (startDateDOM.value && startTimeDOM) ? new Date(`${startDateDOM.value}T${startTimeDOM.value}:00`) : new Date();
+  const eventEndDate = (startDateDOM.value && endTimeDOM) ? new Date(`${startDateDOM.value}T${endTimeDOM.value}:00`) : new Date();
+  
   const eventLength = eventEndDate.getTime() - eventStartDate.getTime();
   let tempPattern = pattern;
-  if (!tempPattern || !tempPattern.length) tempPattern = [eventStartDate.toISOString()];
+  if (!tempPattern || tempPattern.length === 0) tempPattern = [eventStartDate.toISOString()];
 
   const datesToCheck = tempPattern.map(startDate => {
     const scheduleStartTime = new Date(startDate)
@@ -144,6 +154,11 @@ const loadRoomOptions = async () => {
     }
   })
     .then(response => response.data)
+    .catch(err => {
+      alert(JSON.stringify(err));
+      console.error(err);
+      doneLoading();
+    })
   
   // for (const startDate of tempPattern) {
   //   const scheduleStartTime = new Date(startDate)
@@ -272,6 +287,8 @@ document.getElementById('create-form').addEventListener('submit', (e) => {
 const createEvent = async () => {
   loading();
 
+  const user = await getUser();
+
   const eventFields = [eventNameDOM.value, eventLocationDOM.value, startDateDOM.value, startTimeDOM.value, endTimeDOM.value, primaryContactDOM.value, eventTypeDOM.value, attendanceDOM.value, congregationDOM.value, setupTimeDOM.value, cleanupTimeDOM.value, visibilityLevelDOM.value, eventDescDOM.value, needsRegistrationDOM.value, needsPromotionDOM.value, needsAVDOM.value, needsFacilitiesDOM.value, needsFacilitiesEmployeeDOM.value, needsChildcareDOM.value];
   if (eventFields.filter(field => field == '').length) {
     doneLoading();
@@ -302,7 +319,8 @@ const createEvent = async () => {
       Minutes_for_Cleanup: cleanupTimeDOM.value,
       Event_Start_Date: scheduleStartTime.toISOString(),
       Event_End_Date: scheduleEndTime.toISOString(),
-      Visibility_Level_ID: visibilityLevelDOM.value
+      Visibility_Level_ID: visibilityLevelDOM.value,
+      Created_By_User: user.userid
     }
   })
   const createdEvents = await axios({

@@ -8,6 +8,9 @@ const { ensureAuthenticated } = require('../middleware/authorization.js')
 navigation.get('/', ensureAuthenticated, (req, res) => {
   res.render('pages/calendar')
 })
+navigation.get('/calendar', ensureAuthenticated, (req, res) => {
+  res.render('pages/calendar')
+})
 navigation.get('/print', ensureAuthenticated, (req, res) => {
   res.render('pages/print')
 })

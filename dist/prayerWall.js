@@ -3,6 +3,7 @@ class PrayerWall extends HTMLElement {
         super();
         this.prayerRequests = [];
         this.requestURL = 'https://phc.events'
+        // this.requestURL = 'http://localhost:3000'
 
         this.draw();
     }
@@ -161,9 +162,9 @@ class PrayerWall extends HTMLElement {
             loader.style.visibility = 'hidden';
         }
         
-        for (let i = 0; i < prayer_requests.length; i ++) {
 
-            const {Author_Name, Date_Created, Prayer_Title, Prayer_Body, Prayer_Count, Prayer_Request_ID, Private } = prayer_requests[i];
+        for (let i = 0; i < prayer_requests.length; i ++) {
+            const {Author_Name, Date_Created, Prayer_Title, Prayer_Body, Prayer_Count, Prayer_Request_ID, Private} = prayer_requests[i];
             
             const prayerCard = document.createElement('div');
                 prayerCard.id = `prayer-${Prayer_Request_ID}`;
@@ -203,8 +204,8 @@ class PrayerWall extends HTMLElement {
         if (Prayer_Notify) prayerRequest.Notification_Scheduled = 1;
 
         await axios({
-            method: 'put',
-            url: `${this.requestURL}/api/prayer-wall`,
+            method: 'post',
+            url: `${this.requestURL}/api/prayer-wall/prayed`,
             data: {
                 "Prayer_Request_ID": prayerRequest.Prayer_Request_ID,
                 "Prayer_Count": prayerRequest.Prayer_Count,
@@ -214,7 +215,7 @@ class PrayerWall extends HTMLElement {
         .then(response => response.data)
         .catch(err => console.error(err))
 
-        const {Author_Name, Author_Email, Date_Created, Prayer_Title, Prayer_Body, Prayer_Count, Prayer_Request_ID} = prayerRequest;
+        const {Author_Name, Author_Email, Date_Created, Prayer_Title, Prayer_Body, Prayer_Count, Prayer_Request_ID, Private} = prayerRequest;
 
         // console.log(Author_Email)
         // await axios({
@@ -233,7 +234,7 @@ class PrayerWall extends HTMLElement {
         // })
         const currPrayerCard = document.getElementById(`prayer-${id}`);
         currPrayerCard.innerHTML = `
-            <h2 class="name">${Author_Name}</h2>
+            <h2 class="name">${!Private ? Author_Name : 'Anonymous'}</h2>
             <p class="date">${new Date(Date_Created).toLocaleDateString('en-us', {weekday:"long", year:"numeric", month:"short", day:"numeric"})}</p>
             <div class="prayer-body">
                 ${Prayer_Title ? `<p class="prayer-title">${Prayer_Title}</p>` : ''}
