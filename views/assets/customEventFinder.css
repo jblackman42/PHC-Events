@@ -36,20 +36,23 @@
 }
 
 /* hide keyword input and month inputs */
-.mppw-form .mppw-form-field:has(#monthId) {
+.mppw-form #advancedSearchSection .mppw-form-field:nth-of-type(1) {
   display: none;
   visibility: hidden;
 }
 
-.mppw-form .mppw-form-field:has(#congregationId), .mppw-form .mppw-form-field:has(#keywordSearchText) {
+.mppw-form > .mppw-form-field:nth-of-type(1), .mppw-form > .mppw-form-field:nth-of-type(2) {
   width: 20%;
 }
-.mppw-form .mppw-form-field:has(#keywordSearchText) {
+/* .mppw-form #advancedSearchSection .mppw-form-field:nth-of-type(2) {
   order: 1;
 }
-.mppw-form .mppw-form-field:has(#congregationId) {
+.mppw-form #advancedSearchSection .mppw-form-field:nth-of-type(3) {
   order: 2;
 }
+.mppw-form #advancedSearchSection .mppw-form-field:nth-of-type(4) {
+  order: 3;
+} */
 
 /* always show advanced options */
 .mppw-form #advancedSearchSection {
@@ -60,7 +63,7 @@
 }
 
 /* hide show advanced button */
-.mppw-right:has(#advancedSearchLink) {
+.mppw-right {
   display: none;
   visibility: hidden;
 }
@@ -89,7 +92,7 @@
 }
 
 /* position 'search events' button */
-.mppw-form .mppw-centered:has(#searchButton) {
+.mppw-form .mppw-centered {
   width: 100%;
   text-align: right;
   position: absolute;
@@ -115,7 +118,7 @@
     margin: 0;
   }
 
-  .mppw-form .mppw-form-field:has(#congregationId), .mppw-form .mppw-form-field:has(#keywordSearchText) {
+  .mppw-form .mppw-form-field.mppw-form-field:nth-of-type(1), .mppw-form .mppw-form-field:nth-of-type(2) {
     width: 100%;
   }
   .mppw-form #advancedSearchSection {
