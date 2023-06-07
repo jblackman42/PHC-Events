@@ -9,6 +9,50 @@
 
     <%- include('../partials/navbar'); %>
 
-    <h1>Hello World</h1>
+    <div id="helpdesk-container">
+      <div id="kanban-container"></div>
+    </div>
+
+
+
+    <script>
+
+      const getKanbanColumns = async () => {
+        try {
+          return await axios({
+            method: 'get',
+            url: '/api/kanban/statuses'
+          })
+          .then(response => response.data)
+        } catch (err) {
+          console.error(err);
+          return [];
+        }
+      }
+
+      const loadKanbanColumns = async () => {
+        const kanbanContainerDOM = document.getElementById('kanban-container');
+        const columns = await getKanbanColumns();
+
+        kanbanContainerDOM.innerHTML = columns.map(status => {
+          const { Ticket_Status_ID, Status } = status;
+          return `
+            <div class="status-column" id="status-${Ticket_Status_ID}">
+              <h1>${Status}</h1>
+              <div class="ticket-container" id="ticket-container-${Ticket_Status_ID}"></div>
+            </div>
+          `
+        }).join('')
+
+        console.log(columns)
+      }
+
+
+
+      (async () => {
+        loadKanbanColumns()
+      })()
+
+    </script>
 </body>
 </html>
