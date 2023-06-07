@@ -23,6 +23,9 @@ navigation.get('/prayer-wall', ensureAuthenticated, (req, res) => {
 navigation.get('/refresh', ensureAuthenticated, (req, res) => {
   res.render('pages/refresh')
 })
+navigation.get('/helpdesk', ensureAuthenticated, (req, res) => {
+  res.render('pages/helpdesk-kanban')
+})
 
 navigation.get('/login', (req, res) => {
   res.render('pages/login', {error: null})
