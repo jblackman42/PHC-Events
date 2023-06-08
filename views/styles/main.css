@@ -3215,4 +3215,112 @@ helpdesk-dashboard .total-stats-container .stats-container .data .label {
 }
 .chat-container #input-form button:active {
   transform: scale(0.96);
+}
+
+#helpdesk-container {
+  margin-top: 5rem;
+}
+#helpdesk-container #kanban-container {
+  display: flex;
+  gap: 1rem;
+  width: clamp(50vw, 1600px, 90vw);
+  margin: 0 auto;
+  min-height: 400px;
+}
+#helpdesk-container #kanban-container .status-column {
+  width: 100%;
+  height: 100%;
+}
+#helpdesk-container #kanban-container .status-column .column-title {
+  text-align: center;
+  background-color: #17161d;
+  color: #f1f2f6;
+  margin: 0;
+  padding: 1rem;
+}
+#helpdesk-container #kanban-container .status-column .ticket-container {
+  margin: 1rem 0;
+  display: grid;
+  gap: 1rem;
+}
+#helpdesk-container #kanban-container .status-column .ticket {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 1.5rem;
+  color: #f1f2f6;
+  display: flex;
+  flex-direction: column;
+  border-radius: 0.5rem;
+  border: 4px solid transparent;
+  background-color: rgba(255, 255, 255, 0.0666666667);
+}
+#helpdesk-container #kanban-container .status-column .ticket .ticket-header {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+  width: 100%;
+}
+#helpdesk-container #kanban-container .status-column .ticket .ticket-header h3, #helpdesk-container #kanban-container .status-column .ticket .ticket-header p {
+  margin: 0;
+}
+#helpdesk-container #kanban-container .status-column .ticket .ticket-header h3 {
+  text-align: center;
+  grid-column: 1/3;
+}
+#helpdesk-container #kanban-container .status-column .ticket .ticket-header .requestor {
+  grid-column: 1/2;
+}
+#helpdesk-container #kanban-container .status-column .ticket .ticket-header .date {
+  grid-column: 2/3;
+  text-align: right;
+}
+#helpdesk-container #kanban-container .status-column .ticket .ticket-details {
+  display: flex;
+  flex-direction: column;
+  margin-top: 1.5rem;
+  gap: 0.5rem;
+}
+#helpdesk-container #kanban-container .status-column .ticket .ticket-details .detail {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+}
+#helpdesk-container #kanban-container .status-column .ticket .ticket-details .detail .label {
+  font-weight: bold;
+}
+#helpdesk-container #kanban-container .status-column .ticket .ticket-details p {
+  margin: 0;
+}
+#helpdesk-container #kanban-container .status-column .ticket .btn-container {
+  display: flex;
+  width: 100%;
+  justify-content: space-between;
+  margin-top: 1.5rem;
+  gap: 1rem;
+}
+#helpdesk-container #kanban-container .status-column .ticket .btn-container button {
+  border: none;
+  background-color: white;
+  color: black;
+  font-weight: bold;
+  padding: 0.5rem 2rem;
+  border-radius: 0.25rem;
+  cursor: pointer;
+  transition: transform 100ms linear;
+}
+#helpdesk-container #kanban-container .status-column .ticket .btn-container button.info-btn {
+  width: 100%;
+}
+#helpdesk-container #kanban-container .status-column .ticket .btn-container button.mp-btn {
+  padding: 0 1rem;
+}
+#helpdesk-container #kanban-container .status-column .ticket .btn-container button:hover {
+  transform: scale(1.02);
+}
+#helpdesk-container #kanban-container .status-column .ticket .btn-container button:active {
+  transform: scale(0.98);
+}
+#helpdesk-container #kanban-container .status-column .ticket .btn-container button img {
+  width: 24px;
+  aspect-ratio: 1;
 }/*# sourceMappingURL=main.css.map */

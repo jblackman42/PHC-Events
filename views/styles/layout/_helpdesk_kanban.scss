@@ -1,0 +1,119 @@
+#helpdesk-container {
+  margin-top: 5rem;
+  #kanban-container {
+    display: flex;
+    gap: 1rem;
+    // width: 1600px;
+    // width: 50%;
+    // width: 90%;
+    width: clamp(50vw, 1600px, 90vw);
+    margin: 0 auto;
+
+    min-height: 400px;
+    // outline: 1px solid lime;
+
+    .status-column {
+      width: 100%;
+      height: 100%;
+      // outline: 1px solid blue;
+      .column-title {
+        text-align: center;
+        background-color: $primary-font-color;
+        color: $secondary-font-color;
+        margin: 0;
+        padding: 1rem;
+      }
+
+      .ticket-container {
+        margin: 1rem 0;
+        display: grid;
+        gap: 1rem;
+      }
+
+      .ticket {
+        width: 100%;
+        box-sizing: border-box;
+        padding: 1.5rem;
+        color: $secondary-font-color;
+        display: flex;
+        flex-direction: column;
+
+        border-radius: .5rem;
+        border: 4px solid transparent;
+        background-color: #FFFFFF11;
+        .ticket-header {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: .5rem;
+          width: 100%;
+          h3, p {
+            margin: 0;
+          }
+          h3 {
+            text-align: center;
+            grid-column: 1 / 3;
+          }
+          .requestor {
+            grid-column: 1 / 2;
+          }
+          .date {
+            grid-column: 2 / 3;
+            text-align: right;
+          }
+        }
+        .ticket-details {
+          display: flex;
+          flex-direction: column;
+          margin-top: 1.5rem;
+          gap: .5rem;
+          .detail {
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            .label {
+              font-weight: bold;
+            }
+          }
+          p {
+            margin: 0;
+          }
+        }
+        .btn-container {
+          display: flex;
+          width: 100%;
+          justify-content: space-between;
+          margin-top: 1.5rem;
+          gap: 1rem;
+          button {
+            border: none;
+            background-color: white;
+            color: black;
+            font-weight: bold;
+            padding: .5rem 2rem;
+            border-radius: .25rem;
+            cursor: pointer;
+            transition: transform 100ms linear;
+            &.info-btn {
+              width: 100%;
+            }
+            &.mp-btn {
+              padding: 0 1rem;
+            }
+
+            &:hover {
+              transform: scale(1.02);
+            }
+            &:active {
+              transform: scale(.98);
+            }
+
+            img {
+              width: 24px;
+              aspect-ratio: 1;
+            }
+          }
+        }
+      }
+    }
+  }
+}

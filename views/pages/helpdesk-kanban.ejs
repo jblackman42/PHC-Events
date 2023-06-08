@@ -14,14 +14,41 @@
     </div>
 
 
-
     <script>
+      const agentColors = ['#1abc9c', '#c0392b', '#f1c40f']
+      let agents = [];
 
       const getKanbanColumns = async () => {
         try {
           return await axios({
             method: 'get',
             url: '/api/kanban/statuses'
+          })
+          .then(response => response.data)
+        } catch (err) {
+          console.error(err);
+          return [];
+        }
+      }
+
+      const getHelpdeskTickets = async () => {
+        try {
+          return await axios({
+            method: 'get',
+            url: '/api/kanban/tickets'
+          })
+          .then(response => response.data)
+        } catch (err) {
+          console.error(err);
+          return [];
+        }
+      }
+
+      const getAgents = async () => {
+        try {
+          return await axios({
+            method: 'get',
+            url: '/api/kanban/agents'
           })
           .then(response => response.data)
         } catch (err) {
@@ -38,19 +65,58 @@
           const { Ticket_Status_ID, Status } = status;
           return `
             <div class="status-column" id="status-${Ticket_Status_ID}">
-              <h1>${Status}</h1>
+              <h1 class="column-title">${Status}</h1>
               <div class="ticket-container" id="ticket-container-${Ticket_Status_ID}"></div>
             </div>
           `
         }).join('')
+      }
 
-        console.log(columns)
+      const loadHelpdeskTickets = async () => {
+        const tickets = await getHelpdeskTickets();
+        console.log(agents);
+
+        tickets.forEach(ticket => {
+          const { Agent_ID, Agent_Name, Description, IT_Help_Ticket_ID, Priority_ID, Priority_Name, Request_Date, Request_Title, Resolve_Date, Status_ID, Status_Name, Tag_ID, Tag_Name, Ticket_Requestor_Contact_ID, Ticket_Requestor_Display_Name } = ticket;
+          const ticketColumnDOM = document.getElementById(`ticket-container-${Status_ID}`);
+          if (!ticketColumnDOM) return;
+          ticketColumnDOM.innerHTML += `
+            <div class="ticket" style="border-color: ${agents.indexOf(Agent_Name) >= 0 ? agentColors[agents.indexOf(Agent_Name)] + 'AA' : '#00000066'}">
+              <div class="ticket-header">
+                <h3>${Request_Title}</h3>
+                <p class="requestor">${Ticket_Requestor_Display_Name}</p>
+                <p class="date">${new Date(Request_Date).toLocaleDateString()}</p>
+              </div>
+              <div class="ticket-details">
+                <div class="detail">
+                  <p class="label">Agent:</p>
+                  <p class="value">${Agent_Name || 'Unknown'}</p>
+                </div>
+                <div class="detail">
+                  <p class="label">Tag:</p>
+                  <p class="value">${Tag_Name || 'Unknown'}</p>
+                </div>
+                <div class="detail">
+                  <p class="label">Priority:</p>
+                  <p class="value">${Priority_Name || 'Unknown'}</p>
+                </div>
+              </div>
+              <div class="btn-container">
+                <button class="drag-btn" id="drag-btn-${IT_Help_Ticket_ID}"><i class='fas fa-arrows-alt'></i></button>
+                <button class="info-btn" id="info-btn-${IT_Help_Ticket_ID}">More Info</button>
+                <button class="mp-btn" title="View on MP" onclick="window.location='https://my.pureheart.org/mp/331-3315/${IT_Help_Ticket_ID}'"><img src="/assets/MPLogo.png" alt="View On MP"></button>
+              </div>
+            </div>
+          `
+        })
       }
 
 
 
       (async () => {
-        loadKanbanColumns()
+        agents = [...await getAgents()].map(agent => agent.First_Name);
+        loadKanbanColumns();
+        loadHelpdeskTickets();
       })()
 
     </script>
