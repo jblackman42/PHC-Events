@@ -7,6 +7,8 @@
 <body>
     <%- include('../partials/loading'); %>
 
+    <dialog id="ticket-fullscreen"></dialog>
+
     <dialog id="ticket-viewer">
     </dialog>
 
@@ -92,7 +94,7 @@
           const ticketColumnDOM = document.getElementById(`ticket-container-${Status_ID}`);
           if (!ticketColumnDOM) return;
           ticketColumnDOM.innerHTML += `
-            <div class="ticket" style="border-color: ${agents.indexOf(Agent_Name) >= 0 ? agentColors[agents.indexOf(Agent_Name)] + 'AA' : '#00000066'}">
+            <div class="ticket" draggable="true" style="border-color: ${agents.indexOf(Agent_Name) >= 0 ? agentColors[agents.indexOf(Agent_Name)] + 'AA' : '#00000066'}" >
               <div class="ticket-header">
                 <h3>${Request_Title}</h3>
                 <p class="requestor">${Ticket_Requestor_Display_Name}</p>
@@ -158,8 +160,8 @@
             <div class="ticket-column" style="background-color: white; color: black;">
               <div class="ticket-description-container">
                 <div>${Description || 'No Description Found'}</div>
-                <button class="kanban-btn fullscreen-btn"><i class="material-icons">fullscreen</i></button>
               </div>
+              <button class="kanban-btn fullscreen-btn" onclick="openTicketFullscreen(${ticketIndex})"><i class="material-icons">fullscreen</i></button>
             </div>
           </div>
 
@@ -178,6 +180,25 @@
         ticketViewerDOM.close();
       }
 
+      const ticketFullscreenDOM = document.getElementById('ticket-fullscreen');
+      const openTicketFullscreen = (ticketIndex) => {
+        const { Agent_ID, Agent_Name, Description, IT_Help_Ticket_ID, Priority_ID, Priority_Name, Request_Date, Request_Title, Resolve_Date, Status_ID, Status_Name, Tag_ID, Tag_Name, Ticket_Requestor_Contact_ID, Ticket_Requestor_Display_Name } = tickets[ticketIndex];
+        ticketFullscreenDOM.innerHTML = `
+          <div class="ticket-title-bar">
+            <h1 class="ticket-title">${Request_Title}</h1>
+            <button class="close-btn" onclick="closeTicketFullscreen()"><i class="material-icons">close</i></button>
+          </div>
+          <div>
+            ${Description}
+          </div>
+        `;
+
+        ticketFullscreenDOM.showModal();
+      }
+
+      const closeTicketFullscreen = () => {
+        ticketFullscreenDOM.close();
+      }
 
 
       (async () => {
