@@ -76,7 +76,7 @@ router.get('/events', ensureApiAuthenticated, async (req, res) => {
     method: 'get',
     url: 'https://my.pureheart.org/ministryplatformapi/tables/Events',
     params: {
-      $filter: `Event_Start_Date BETWEEN '${monthStart}' AND '${monthEnd}' AND Cancelled=0`,
+      $filter: `Event_Start_Date BETWEEN '${monthStart}' AND '${monthEnd}'`,
       $orderby: `Event_Start_Date`,
       $select: 'Event_ID, Event_Title, Event_Type_ID_Table.[Event_Type], Congregation_ID_Table.[Congregation_Name], Location_ID_Table.[Location_Name], Meeting_Instructions, Events.[Description], Program_ID_Table.[Program_Name], Primary_Contact_Table.[Display_Name], Participants_Expected, Minutes_for_Setup, Event_Start_Date, Event_End_Date, Minutes_for_Cleanup, Cancelled, Featured_On_Calendar'
     },
