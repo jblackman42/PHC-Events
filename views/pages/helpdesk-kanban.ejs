@@ -1,11 +1,14 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <title>Helpdesk Kanban</title>
     <%- include('../partials/head'); %>
-    <title>PHC - Print Event</title>
 </head>
 <body>
     <%- include('../partials/loading'); %>
+
+    <dialog id="ticket-viewer">
+    </dialog>
 
     <%- include('../partials/navbar'); %>
 
@@ -17,6 +20,7 @@
     <script>
       const agentColors = ['#1abc9c', '#c0392b', '#f1c40f']
       let agents = [];
+      let tickets = [];
 
       const getKanbanColumns = async () => {
         try {
@@ -73,10 +77,17 @@
       }
 
       const loadHelpdeskTickets = async () => {
-        const tickets = await getHelpdeskTickets();
-        console.log(agents);
+        tickets = [...await getHelpdeskTickets()].sort((a,b) => {
+          if (a.Priority_Name === null) return -1;
+          if (b.Priority_Name === null) return 1;
+          
+          if (a.Priority_Name < b.Priority_Name) return -1;
+          if (a.Priority_Name > b.Priority_Name) return 1;
+          
+          return 0;
+        });
 
-        tickets.forEach(ticket => {
+        tickets.forEach((ticket, i) => {
           const { Agent_ID, Agent_Name, Description, IT_Help_Ticket_ID, Priority_ID, Priority_Name, Request_Date, Request_Title, Resolve_Date, Status_ID, Status_Name, Tag_ID, Tag_Name, Ticket_Requestor_Contact_ID, Ticket_Requestor_Display_Name } = ticket;
           const ticketColumnDOM = document.getElementById(`ticket-container-${Status_ID}`);
           if (!ticketColumnDOM) return;
@@ -102,13 +113,69 @@
                 </div>
               </div>
               <div class="btn-container">
-                <button class="drag-btn" id="drag-btn-${IT_Help_Ticket_ID}"><i class='fas fa-arrows-alt'></i></button>
-                <button class="info-btn" id="info-btn-${IT_Help_Ticket_ID}">More Info</button>
-                <button class="mp-btn" title="View on MP" onclick="window.location='https://my.pureheart.org/mp/331-3315/${IT_Help_Ticket_ID}'"><img src="/assets/MPLogo.png" alt="View On MP"></button>
+                <button class="drag-btn kanban-btn small" id="drag-btn-${IT_Help_Ticket_ID}"><i class='fas fa-arrows-alt'></i></button>
+                <button class="kanban-btn" id="info-btn-${IT_Help_Ticket_ID}" onclick="openTicketViewer(${i})">More Info</button>
+                <a class="mp-btn kanban-btn" title="View on MP" href="https://my.pureheart.org/mp/331-3315/${IT_Help_Ticket_ID}" target="_blank"><img src="/assets/MPLogo.png" alt="View On MP"></a>
               </div>
             </div>
           `
         })
+      }
+
+
+      const ticketViewerDOM = document.getElementById('ticket-viewer');
+      const openTicketViewer = (ticketIndex) => {
+        const { Agent_ID, Agent_Name, Description, IT_Help_Ticket_ID, Priority_ID, Priority_Name, Request_Date, Request_Title, Resolve_Date, Status_ID, Status_Name, Tag_ID, Tag_Name, Ticket_Requestor_Contact_ID, Ticket_Requestor_Display_Name } = tickets[ticketIndex];
+        ticketViewerDOM.innerHTML = `
+          <div class="ticket-title-bar">
+            <h1 class="ticket-title">${Request_Title}</h1>
+            <button class="close-btn" onclick="closeTicketViewer()"><i class="material-icons">close</i></button>
+          </div>
+
+          <div class="ticket-body">
+            <div class="ticket-column">
+              <div class="detail">
+                <p class="label">Requestor:</p>
+                <p class="value">${Ticket_Requestor_Display_Name}</p>
+              </div>
+              <div class="detail">
+                <p class="label">Request Date:</p>
+                <p class="value">${new Date(Request_Date).toDateString()}</p>
+              </div>
+              <div class="detail">
+                <p class="label">Agent:</p>
+                <p class="value">${Agent_Name || 'Unknown'}</p>
+              </div>
+              <div class="detail">
+                <p class="label">Tag:</p>
+                <p class="value">${Tag_Name || 'Unknown'}</p>
+              </div>
+              <div class="detail">
+                <p class="label">Priority:</p>
+                <p class="value">${Priority_Name || 'Unknown'}</p>
+              </div>
+            </div>
+            <div class="ticket-column" style="background-color: white; color: black;">
+              <div class="ticket-description-container">
+                <div>${Description || 'No Description Found'}</div>
+                <button class="kanban-btn fullscreen-btn"><i class="material-icons">fullscreen</i></button>
+              </div>
+            </div>
+          </div>
+
+          <div class="ticket-footer">
+            <a class="mp-btn kanban-btn" title="View on MP" href="https://my.pureheart.org/mp/331-3315/${IT_Help_Ticket_ID}" target="_blank"><img src="/assets/MPLogo.png" alt="View On MP"></a>
+            <button class="kanban-btn blue small">Edit</button>
+            <button class="delete-btn kanban-btn red small">Delete</button>
+            <button class="complete-btn kanban-btn green">Complete</button>
+          </div>
+        `
+
+
+        ticketViewerDOM.showModal();
+      }
+      const closeTicketViewer = () => {
+        ticketViewerDOM.close();
       }
 
 
@@ -117,6 +184,8 @@
         agents = [...await getAgents()].map(agent => agent.First_Name);
         loadKanbanColumns();
         loadHelpdeskTickets();
+
+        // openTicketViewer()
       })()
 
     </script>
