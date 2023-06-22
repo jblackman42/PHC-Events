@@ -135,7 +135,7 @@ router.get('/refreshAnswers', async (req, res) => {
 // NAVIGATION ROUTES
 
 router.get('/test', toolMiddleware, async (req, res) => {
-  res.render('pages/tools/test')
+  res.render('pages/tools/updateAnswers')
 })
 
 module.exports = router;
