@@ -134,7 +134,7 @@ router.get('/refreshAnswers', async (req, res) => {
 
 // NAVIGATION ROUTES
 
-router.get('/test', toolMiddleware, async (req, res) => {
+router.get('/updateAnswers', toolMiddleware, async (req, res) => {
   res.render('pages/tools/updateAnswers')
 })
 
