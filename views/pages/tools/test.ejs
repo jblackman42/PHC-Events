@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <%- include('../../partials/head'); %>
+  <title>Test Tool</title>
+</head>
+<body>
+  <%- include('../../partials/loading'); %>
+
+  <div class="container tool-container">
+    <select id="ministry-question-select">
+      <option value="-1">Please Select A Question...</option>
+    </select>
+    <button onclick="refreshAnswers(false)">Refresh Answers</button>
+    <button class="red" onclick="refreshAnswers(true)">Delete & Refresh All Answers</button>
+  </div>
+
+  <script>
+    const urlParams = new URLSearchParams(window.location.search);
+    // loading();
+    (async () => {
+
+      const ministryQuestions = await axios({
+        method: 'get',
+        url: '/api/tools/ministryQuestions'
+      })
+      .then(response => response.data.ministryQuestions);
+
+      const ministryQuestionSelectDOM = document.getElementById('ministry-question-select');
+      ministryQuestionSelectDOM.innerHTML += ministryQuestions.map(question => {
+        const { Ministry_Question_ID, Question_Header, Question_Title } = question;
+        return `
+          <option value="${Ministry_Question_ID}">${Question_Header}</option>
+        `
+      }).join('')
+
+      const currQuestionID = parseInt(urlParams.get('recordID'));
+      if (currQuestionID >= 0) ministryQuestionSelectDOM.value = currQuestionID;
+    })()
+
+    const refreshAnswers = async (deleteAnswers) => {
+      loading();
+      const ministryQuestionSelectDOM = document.getElementById('ministry-question-select');
+      const currQuestionID = ministryQuestionSelectDOM.value;
+
+      if (currQuestionID < 0) {
+        return alert('Please Select A Question')
+      }
+
+      if (deleteAnswers) {
+        await axios({
+          method: 'delete',
+          url: '/api/tools/deleteAnswers',
+          params: {
+            'MinistryQuestionID': currQuestionID
+          }
+        })
+      }
+
+
+      try {
+        await axios({
+          method: 'get',
+          url: '/api/tools/refreshAnswers',
+          params: {
+            'MinistryQuestionID': currQuestionID
+          }
+        })
+
+        alert('update successful');
+      } catch (error) {
+        alert('something went wrong, please try again.')
+      }
+
+      doneLoading();
+    }
+  </script>
+</body>
+</html>
