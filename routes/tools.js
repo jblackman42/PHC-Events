@@ -67,7 +67,7 @@ router.get('/ministryQuestions', async (req, res) => {
       method: 'get',
       url: 'https://my.pureheart.org/ministryplatformapi/tables/Ministry_Questions',
       params: {
-        '$select': `Ministry_Question_ID, Question_Title, Question_Header`
+        '$select': `Ministry_Question_ID, Question_Title, Question_Header, Never_Delete_Answers`
       },
       headers: {
         'Authorization': `Bearer ${req.session.access_token}`,
@@ -85,7 +85,6 @@ router.get('/ministryQuestions', async (req, res) => {
 router.delete('/deleteAnswers', async (req, res) => {
   try {
     const { MinistryQuestionID } = req.query;
-    console.log(MinistryQuestionID)
     await axios({
       method: 'post',
       url: 'https://my.pureheart.org/ministryplatformapi/procs/DeleteAnswers',
@@ -110,7 +109,6 @@ router.delete('/deleteAnswers', async (req, res) => {
 router.get('/refreshAnswers', async (req, res) => {
   try {
     const { MinistryQuestionID } = req.query;
-    console.log(MinistryQuestionID)
     await axios({
       method: 'post',
       url: 'https://my.pureheart.org/ministryplatformapi/procs/service_ministry_QA_insert_single_answers',

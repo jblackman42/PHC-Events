@@ -24,6 +24,7 @@
     const urlParams = new URLSearchParams(window.location.search);
     const statusMessageDOM = document.getElementById('status');
     const ministryQuestionSelectDOM = document.getElementById('ministry-question-select');
+    const NeverDeleteAnswersDict = {};
     // loading();
     (async () => {
 
@@ -34,7 +35,8 @@
       .then(response => response.data.ministryQuestions);
 
       ministryQuestionSelectDOM.innerHTML += ministryQuestions.map(question => {
-        const { Ministry_Question_ID, Question_Header, Question_Title } = question;
+        const { Ministry_Question_ID, Question_Header, Question_Title, Never_Delete_Answers } = question;
+        NeverDeleteAnswersDict[Ministry_Question_ID] = Never_Delete_Answers;
         return `
           <option value="${Ministry_Question_ID}">${Question_Header}</option>
         `
@@ -46,23 +48,38 @@
 
     const refreshAnswers = async (deleteAnswers) => {
       loading();
+        statusMessageDOM.textContent = '';
+
       const currQuestionID = ministryQuestionSelectDOM.value;
 
       if (currQuestionID < 0) {
         statusMessageDOM.textContent = 'Please select a question';
         statusMessageDOM.classList.add('red');
         statusMessageDOM.classList.remove('green');
-        return
+        return doneLoading();
       }
 
-      if (deleteAnswers) {
-        await axios({
-          method: 'delete',
-          url: '/api/tools/deleteAnswers',
-          params: {
-            'MinistryQuestionID': currQuestionID
-          }
-        })
+      if (deleteAnswers && !NeverDeleteAnswersDict[currQuestionID]) {
+        try {
+          await axios({
+            method: 'delete',
+            url: '/api/tools/deleteAnswers',
+            params: {
+              'MinistryQuestionID': currQuestionID
+            }
+          })
+        } catch (error) {
+          console.error(error);
+          statusMessageDOM.textContent = 'Something went wrong, please try again.';
+          statusMessageDOM.classList.add('red');
+          statusMessageDOM.classList.remove('green');
+        }
+      } else if (deleteAnswers) {
+        statusMessageDOM.textContent = 'Deleting Answers Not Allowed';
+        statusMessageDOM.classList.add('red');
+        statusMessageDOM.classList.remove('green');
+
+        return doneLoading();
       }
 
 
@@ -79,6 +96,7 @@
         statusMessageDOM.classList.remove('red');
         statusMessageDOM.classList.add('green');
       } catch (error) {
+        console.error(error);
         statusMessageDOM.textContent = 'Something went wrong, please try again.';
         statusMessageDOM.classList.add('red');
         statusMessageDOM.classList.remove('green');
