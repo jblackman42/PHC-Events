@@ -30,7 +30,7 @@
 
       const ministryQuestions = await axios({
         method: 'get',
-        url: '/api/tools/ministryQuestions'
+        url: '/api/tools/mp/ministryQuestions'
       })
       .then(response => response.data.ministryQuestions);
 
@@ -63,7 +63,7 @@
         try {
           await axios({
             method: 'delete',
-            url: '/api/tools/deleteAnswers',
+            url: '/api/tools/mp/deleteAnswers',
             params: {
               'MinistryQuestionID': currQuestionID
             }
@@ -86,7 +86,7 @@
       try {
         await axios({
           method: 'get',
-          url: '/api/tools/refreshAnswers',
+          url: '/api/tools/mp/refreshAnswers',
           params: {
             'MinistryQuestionID': currQuestionID
           }

@@ -1,139 +1,101 @@
+// Define tools to generate the route
+const tools = new Map();
+// tools.set({Tool Name}, {Path to Tool Page})
+tools.set('test', 'pages/tools/test');
+tools.set('updateAnswers', 'pages/tools/updateAnswers');
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 const express = require('express');
 const router = express.Router();
 const qs = require('qs')
 const axios = require('axios');
 
-const getAccessToken = async () => {
-    const data = await axios({
-        method: 'post',
+// TOOL AUTHORIZE MIDDLEWARE
+
+const authorize = async (req, res, next) => {
+  try {
+    if (!req.query.code && !req.session.access_token) {
+      const id = req.path.split('/').at(-1);
+
+      req.session.access_token = null;
+      req.session.toolName = id;
+      req.session.toolParams = qs.stringify(req.query); // Save initial parameters
+    
+      const params = new URLSearchParams({
+        client_id: process.env.TOOL_CLIENT_ID,
+        redirect_uri: `${process.env.DOMAIN_NAME}/api/tools/login`,
+        response_type: 'code',
+        scope: 'http://www.thinkministry.com/dataplatform/scopes/all'
+      }).toString();
+
+      return res.redirect('https://my.pureheart.org/ministryplatformapi/oauth/connect/authorize?' + params)
+    } else if (!req.session.access_token) {
+      const {code} = req.query;
+
+      const tokenData = await axios({
         url: 'https://my.pureheart.org/ministryplatformapi/oauth/connect/token',
+        method: 'POST',
         data: qs.stringify({
-            grant_type: "client_credentials",
-            scope: "http://www.thinkministry.com/dataplatform/scopes/all",
-            client_id: process.env.TOOL_CLIENT_ID,
-            client_secret: process.env.TOOL_CLIENT_SECRET
+            'grant_type': 'authorization_code',
+            'code': code,
+            'redirect_uri': `${process.env.DOMAIN_NAME}/api/tools/login`,
+            'client_id': process.env.TOOL_CLIENT_ID,
+            'client_secret': process.env.TOOL_CLIENT_SECRET
         })
-    })
+      })
         .then(response => response.data)
-    const {access_token, expires_in} = data;
-    const expiresDate = new Date(new Date().getTime() + (expires_in * 1000)).toISOString()
-    return access_token;
-}
-
-const getUser = async (user_guid, access_token) => {
-  return await axios({
-    method: 'get',
-    url: 'https://my.pureheart.org/ministryplatformapi/tables/dp_Users',
-    params: {
-      '$filter':`User_GUID='${user_guid}'`
-    },
-    headers: {
-      'Authorization': `Bearer ${access_token}`,
-      'Content-Type': 'application/json'
-    }
-  })
-  .then(response => response.data[0])
-}
-
-const toolMiddleware = async (req, res, next) => {
-  try {
-    const { dg, ug } = req.query;
-    const access_token = await getAccessToken();
-    const user = await getUser(ug, access_token);
-    req.session.access_token = access_token;
-    req.session.user = user;
   
-    next();
-  } catch (err) {
-    console.log('something went wrong');
-    res.sendStatus(err.response.status);
+      const { access_token, expires_in, token_type } = tokenData;
+      req.session.access_token = access_token;
+      req.session.expires_in = expires_in;
+      req.session.token_type = token_type;
+  
+      return res.redirect(req.originalUrl.split('?')[0] + '?' + req.session.toolParams);
+    } else {
+      return next();
+    }
+  } catch (error) {
+    console.log(error)
+    const err = {
+      status: error.response ? error.response.status : 500,
+      statusText: error.response ? error.response.statusText : 'Something Went Wrong',
+      data: error.response ? error.response.data : {}
+    }
+    return res.status(err.status).send(err).end();
   }
 }
 
-// API ROUTES
-
-router.get('/user', async (req, res) => {
-  try {
-    res.send(req.session.user);
-  } catch (error) {
-    console.log('something went wrong');
-    res.sendStatus(err.response.status);
-  }
+router.get('/login', authorize, (req, res) => {
+  res.redirect(`/api/tools/${req.session.toolName}`)
 })
 
-router.get('/ministryQuestions', async (req, res) => {
-  try {
-    const ministryQuestions = await axios({
-      method: 'get',
-      url: 'https://my.pureheart.org/ministryplatformapi/tables/Ministry_Questions',
-      params: {
-        '$select': `Ministry_Question_ID, Question_Title, Question_Header, Never_Delete_Answers`
-      },
-      headers: {
-        'Authorization': `Bearer ${req.session.access_token}`,
-        'Content-Type': 'application/json'
-      }
-    })
-    .then(response => response.data)
+// TOOL ROUTES
 
-    res.send({ministryQuestions}).status(200).end();
-  } catch (err) {
-    console.log('something went wrong');
-    res.sendStatus(err.response.status);
-  }
-})
-router.delete('/deleteAnswers', async (req, res) => {
-  try {
-    const { MinistryQuestionID } = req.query;
-    await axios({
-      method: 'post',
-      url: 'https://my.pureheart.org/ministryplatformapi/procs/DeleteAnswers',
-      data: {
-        "@DomainID": "1",
-        "@QuestionID": MinistryQuestionID
-      },
-      headers: {
-        'Authorization': `Bearer ${req.session.access_token}`,
-        'Content-Type': 'application/json'
-      }
-    })
+for (const [toolPathName, pathToToolPage] of tools) {
+  router.get(`/${toolPathName}`, (req, res) => {
+    res.render(pathToToolPage)
+  })
+}
 
-    res.sendStatus(200);
-  } catch (err) {
-    console.log('something went wrong');
-    console.log(err)
-    res.sendStatus(err.response.status);
-  }
-})
+// router.get('/test', (req, res) => {
+//   res.send({message: 'hello world'})
+// })
 
-router.get('/refreshAnswers', async (req, res) => {
-  try {
-    const { MinistryQuestionID } = req.query;
-    await axios({
-      method: 'post',
-      url: 'https://my.pureheart.org/ministryplatformapi/procs/service_ministry_QA_insert_single_answers',
-      data: {
-        "@DomainID": "1",
-        "@MinistryQuestion_ID": MinistryQuestionID
-      },
-      headers: {
-        'Authorization': `Bearer ${req.session.access_token}`,
-        'Content-Type': 'application/json'
-      }
-    })
-
-    res.sendStatus(200);
-  } catch (err) {
-    console.log('something went wrong');
-    console.log(err)
-    res.sendStatus(err.response.status);
-  }
-})
-
-// NAVIGATION ROUTES
-
-router.get('/updateAnswers', toolMiddleware, async (req, res) => {
-  res.render('pages/tools/updateAnswers')
-})
+// router.get('/updateAnswers', authorize, (req, res) => {
+//   res.render('pages/tools/updateAnswers')
+// })
 
 module.exports = router;

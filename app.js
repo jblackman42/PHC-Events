@@ -70,6 +70,7 @@ app.use('/api/mp', require('./routes/mp.js'))
 app.use('/api/prayer-wall', require('./routes/prayer-wall.js'))
 app.use('/websocket', require('./routes/websocket.js'))
 app.use('/api/widgets', require('./routes/widgets.js'))
+app.use('/api/tools/mp', require('./routes/MPTools.js'))
 app.use('/api/tools', require('./routes/tools.js'))
 
 // Starting the server
