@@ -1,22 +1,356 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <title>Create Event Tool</title>
-  <%- include('../../partials/head'); %>
+    <%- include('../../partials/head'); %>
+    <title>PHC - Create Event</title>
 </head>
 <body>
-  <h1>Create New Event</h1>
+    <%- include('../../partials/loading'); %>
 
-  <script>
-    (async () => {
-      const data = await axios({
-        method: 'get',
-        url: '/api/tools/mp/userinfo'
-      })
-        .then(response => response.data);
+    <%- include('../../partials/review-days'); %>
+    <%- include('../../partials/overbook-popup'); %>
 
-      console.log(data);
-    })()
-  </script>
+    
+
+    <div class="recurring-event-container">
+        <div class="recurring-event">
+            <div class="recurring-header">
+                <p>Recurrence Pattern</p>
+                <button class="close-button" onclick="patternHide()"><i class="material-icons">close</i></button>
+            </div>
+            <div class="nav-options">
+                <ul>
+                    <li id="Daily" onclick="showDaily()">Daily</li>
+                    <li id="Weekly" class="active" onclick="showWeekly()">Weekly</li>
+                    <li id="Monthly" onclick="showMonthly()">Monthly</li>
+                    <!-- <li id="yearly" onclick="showYearly()">Yearly</li> -->
+                </ul>
+            </div>
+            <div class="recurring-pattern">
+                <div id="Daily-options">
+                    <div class="input">
+                        <input type="radio" name="daily" id="days" onclick="toggleInputs([], ['days-number-option'])" checked>
+                        <label for="days">Every <input type="number" id="days-number-option" value="1" min="1" max="31"> day(s)</label>
+                    </div>
+                    <div class="input">
+                        <input type="radio" name="daily" id="weekday" onclick="toggleInputs(['days-number-option'], [])">
+                        <label for="weekday">Every Weekday</label>
+                    </div>
+                </div>
+    
+                <div id="Weekly-options">
+                    <div class="input">
+                        <label for="days">Every <input type="number" id="week-pattern" min="1" max="52" value="1"> week(s) on</label>
+                    </div>
+                    <div class="inputs-list">
+                        <div class="input">
+                            <input type="checkbox" id="week-pattern-sunday" value="Sunday" checked>
+                            <label for="week-pattern-sunday">Sunday</label>
+                        </div>
+                        <div class="input">
+                            <input type="checkbox" id="week-pattern-monday" value="Monday">
+                            <label for="week-pattern-monday">Monday</label>
+                        </div>
+                        <div class="input">
+                            <input type="checkbox" id="week-pattern-tuesday" value="Tuesday">
+                            <label for="week-pattern-tuesday">Tuesday</label>
+                        </div>
+                        <div class="input">
+                            <input type="checkbox" id="week-pattern-wednesday" value="Wednesday">
+                            <label for="week-pattern-wednesday">Wednesday</label>
+                        </div>
+                        <div class="input">
+                            <input type="checkbox" id="week-pattern-thursday" value="Thursday">
+                            <label for="week-pattern-thursday">Thursday</label>
+                        </div>
+                        <div class="input">
+                            <input type="checkbox" id="week-pattern-friday" value="Friday">
+                            <label for="week-pattern-friday">Friday</label>
+                        </div>
+                        <div class="input">
+                            <input type="checkbox" id="week-pattern-saturday" value="Saturday">
+                            <label for="week-pattern-saturday">Saturday</label>
+                        </div>
+                    </div>
+                </div>
+    
+                <div id="Monthly-options">
+                    <div class="input">
+                        <input type="radio" name="monthly" id="day-of-month" onclick="toggleInputs(['monthly-day-pattern', 'weekday-pattern', 'every-month-num-2'], ['month-day', 'every-month-num'])" checked>
+                        <label for="day-of-month">Day <input type="number" id="month-day" value="1" min="1" max="31"> of every <input type="number" id="every-month-num" value="1" min="1" max="11"> month(s)</label>
+                    </div>
+                    <div class="input">
+                        <input type="radio" name="monthly" id="times-of-month" onclick="toggleInputs(['month-day', 'every-month-num'], ['monthly-day-pattern', 'weekday-pattern', 'every-month-num-2'])">
+                        <label for="times-of-month">The 
+                            <select name="monthly-day-pattern" id="monthly-day-pattern" disabled>
+                                <option value="First">First</option>
+                                <option value="Second">Second</option>
+                                <option value="Third">Third</option>
+                                <option value="Fourth">Fourth</option>
+                                <option value="Last">Last</option>
+                            </select>
+                            <select name="weekday-pattern" id="weekday-pattern" disabled>
+                                <option value="Sunday">Sunday</option>
+                                <option value="Monday">Monday</option>
+                                <option value="Tuesday">Tuesday</option>
+                                <option value="Wednesday">Wednesday</option>
+                                <option value="Thursday">Thursday</option>
+                                <option value="Friday">Friday</option>
+                                <option value="Saturday">Saturday</option>
+                                <option value="Weekday">Weekday</option>
+                                <option value="WeekendDay">Weekend Day</option>
+                                <option value="Day">Day</option>
+                            </select>
+                            of every
+                            <input type="number" id="every-month-num-2" value="1" min="1" max="11" disabled>
+                            month(s)
+                        </label>
+                    </div>
+                </div>
+    
+                <!-- <div id="yearly-options">
+                    <div class="input">
+                        <input type="radio" name="yearly" id="single-month-day">
+                        <label for="single-month-day">Every
+                            <select name="month-year-pattern" id="month-year-pattern">
+                                <option value="january">January</option>
+                                <option value="february">February</option>
+                                <option value="march">March</option>
+                                <option value="april">April</option>
+                                <option value="may">May</option>
+                                <option value="june">June</option>
+                                <option value="july">July</option>
+                                <option value="august">August</option>
+                                <option value="september">September</option>
+                                <option value="october">October</option>
+                                <option value="november">November</option>
+                                <option value="december">December</option>
+                            </select>
+                            <input type="number" id="month-pattern-number" min="1" max="31" value="1">
+                        </label>
+                    </div>
+                    <div class="input">
+                        <input type="radio" name="yearly" id="single-month-time">
+                        <label for="single-month-time">The 
+                            <select name="yearly-day-pattern" id="yearly-day-pattern">
+                                <option value="first">First</option>
+                                <option value="second">Second</option>
+                                <option value="third">Third</option>
+                                <option value="fourth">Fourth</option>
+                                <option value="last">Last</option>
+                            </select>
+                            <select name="yearly-week-pattern" id="yearly-week-pattern">
+                                <option value="sunday">Sunday</option>
+                                <option value="monday">Monday</option>
+                                <option value="tuesday">Tuesday</option>
+                                <option value="wednesday">Wednesday</option>
+                                <option value="thursday">Thursday</option>
+                                <option value="friday">Friday</option>
+                                <option value="saturday">Saturday</option>
+                                <option value="day">Day</option>
+                            </select>
+                            of every
+                            <select name="yearly-month -pattern" id="yearly-month-pattern">
+                                <option value="january">January</option>
+                                <option value="february">February</option>
+                                <option value="march">March</option>
+                                <option value="april">April</option>
+                                <option value="may">May</option>
+                                <option value="june">June</option>
+                                <option value="july">July</option>
+                                <option value="august">August</option>
+                                <option value="september">September</option>
+                                <option value="october">October</option>
+                                <option value="november">November</option>
+                                <option value="december">December</option>
+                            </select>
+                        </label>
+                    </div>
+                </div> -->
+            </div>
+            <div class="date-options">
+                <div class="input">
+                    <label for="start-by" class="title-label">Start By:</label>
+                    <p id="start-by">Please choose start date</p>
+                </div>
+                <div class="input">
+                    <label for="end-by" class="title-label">End:</label>
+                    <div class="input-options">
+                        <div class="input">
+                            <input type="radio" name="end-by" id="occurrence" onclick="toggleInputs(['by-date-input'], ['occurrence-num'])" checked>
+                            <label for="occurrence">After <input type="number" id="occurrence-num" min="1" max="52" value="1"> occurrences</label>
+                        </div>
+                        <div class="input">
+                            <input type="radio" name="end-by" id="by-date" onclick="toggleInputs(['occurrence-num'], ['by-date-input'])">
+                            <label for="by-date">By date <input type="date" id="by-date-input" disabled></label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="button-container">
+                <button class="btn cancel" onclick="cancelPattern()"><i class='fas fa-ban'></i> Cancel</button>
+                <button class="btn" onclick="handleSave();"><i class='fas fa-save'></i> Save</button>
+            </div>
+            <p id="recurring-warning-msg">Not All Fields Completed</p>
+        </div>
+    </div>
+
+    <div id="facilities-equipment-container">
+        <div id="facilities-equipment-popup">
+            <div class="equipment-header">
+                <p>Facilities Equipment</p>
+                <button class="close-button" onclick="facilitiesPopupHide()"><i class="material-icons">close</i></button>
+            </div>
+    
+            <div class="equipment-items-container"></div>
+    
+            <div class="button-container">
+                <button class="btn cancel" onclick="facilitiesPopupCancel()"><i class='fas fa-ban'></i> Cancel</button>
+                <button class="btn" onclick="equipmentHandleSave();"><i class='fas fa-save'></i> Save</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="form-container">
+        <p>Event Creator: <span id="event-creator"></span></p>
+
+        <form id="create-form">
+            <div id="section-1" class="section">
+                <div class="input">
+                    <label for="event-name">Event Name:</label>
+                    <input type="text" name="event-name" id="event-name">
+                </div>
+                <div class="input">
+                    <label for="event-location">Event Location:</label>
+                    <select name="event-location" id="event-location"></select>
+                </div>
+                <div class="input">
+                    <label for="start-date">Event Date:</label>
+                    <input type="date" name="start-date" id="start-date" onchange="cancelPattern()">
+                </div>
+                <div class="input">
+                    <label for="start-time">Start Time:</label>
+                    <input type="time" name="start-time" id="start-time" onchange="cancelPattern()">
+                </div>
+                <div class="input">
+                    <label for="end-time">End Time:</label>
+                    <input type="time" name="end-time" id="end-time">
+                </div>
+                <div class="input">
+                    <label for="primary-contact">Primary Contact</label>
+                    <select name="primary-contact" id="primary-contact"></select>
+                </div>
+                <div class="input">
+                    <label for="event-type">Event Type:</label>
+                    <select name="event-type" id="event-type"></select>
+                </div>
+                <div class="input">
+                    <label for="attendance">Estimated Attendance:</label>
+                    <input type="number" name="attendance" id="attendance" value="0">
+                </div>
+                <div class="input">
+                    <label for="congregation">Congregation:</label>
+                    <select name="congregation" id="congregation"></select>
+                </div>
+                <div class="input">
+                    <label for="setup">Setup Time: (minutes)</label>
+                    <input type="number" name="setup" id="setup" value="0">
+                </div>
+                <div class="input">
+                    <label for="cleanup">Cleanup Time: (minutes)</label>
+                    <input type="number" name="cleanup" id="cleanup" value="0">
+                </div>
+                <div class="input">
+                    <label for="visibility">Display on Public Calendar:</label>
+                    <select name="visibility" id="visibility">
+                        <option value="1">No</option>
+                        <option value="4">Yes</option>
+                    </select>
+                </div>
+                <div class="input description">
+                    <label for="event-desc">Event Description:</label>
+                    <textarea name="event-desc" id="event-desc"></textarea>
+                </div>
+
+                <button type="button" class="btn" id="first-next-btn" onclick="nextSection();" disabled>Next</button>
+            </div>
+            <div id="section-2" class="section">
+                <div class="input">
+                    <label for="registration">Needs Registration:</label>
+                    <select name="registration" id="registration" class="event-service-request" data-service-id="19">
+                        <option value="0">No</option>
+                        <option value="1">Yes</option>
+                    </select>
+                </div>
+                <div class="input">
+                    <label for="childcare">Needs Childcare:</label>
+                    <select name="childcare" id="childcare" class="event-service-request" data-service-id="1">
+                        <option value="0">No</option>
+                        <option value="1">Yes</option>
+                    </select>
+                </div>
+                <div class="input">
+                    <label for="promotion">Needs Promotion:</label>
+                    <select name="promotion" id="promotion" class="event-service-request" data-service-id="18">
+                        <option value="0">No</option>
+                        <option value="1">Yes</option>
+                    </select>
+                </div>
+                <div class="input">
+                    <label for="av">Needs A/V:</label>
+                    <select name="av" id="av" class="event-service-request" data-service-id="6">
+                        <option value="0">No</option>
+                        <option value="1">Yes</option>
+                    </select>
+                </div>
+                <!-- <div class="input">
+                    <label for="facilities">Needs Facilities:</label>
+                    <select name="facilities" id="facilities" onchange="toggleFormFields(event, ['onsite-facilities', 'facilities-equipment'])">
+                        <option value="0">No</option>
+                        <option value="1">Yes</option>
+                    </select>
+                </div> -->
+                <div class="input" id="onsite-facilities">
+                    <label for="facilities-person">Onsite Facilities Employee:</label>
+                    <select name="facilities-person" id="facilities-person" class="event-service-request" data-service-id="17">
+                        <option value="0">No</option>
+                        <option value="1">Yes</option>
+                    </select>
+                </div>
+                <div class="input" id="facilities-equipment">
+                    <label for="facilities-equipment-input">Facilities Equipment:</label>
+                    <div id="facilities-equipment-input">
+                        <p id="equipment-label">0 Equipment</p>
+                        <button type="button" onclick="facilitiesPopupShow()"><i class='fas fa-ellipsis-h'></i></button>
+                    </div>
+                </div>
+                <div class="input full-width">
+                    <label for="recurring-event">Recurring Event</label>
+                    <div id="recurring-event-input">
+                        <p id="recurring-label">One Time Event</p>
+                        <button type="button" onclick="patternShow()"><i class='fas fa-ellipsis-h'></i></button>
+                    </div>
+                </div>
+                <div class="button-container">
+                    <button type="button" class="btn prev" onclick="prevSection()">Back</button>
+                    <button id="next-btn" type="button" class="btn" onclick="nextSection();loadRoomOptions()">Next</button>
+                </div>
+            </div>
+            <div id="section-3" class="section">
+                <div id="room-selectors">
+                </div>
+                <div class="button-container">
+                    <button type="button" class="btn prev" onclick="prevSection()">Back</button>
+                    <button class="btn">Submit</button>
+                </div>
+            </div>
+        </form>
+        <p id="warning-msg"></p>
+
+    </div>
+    <button class="close-btn btn" onclick="window.close()">Close</button>
+    
+
+    <script src="../../scripts/createTool.js"></script>
 </body>
 </html>

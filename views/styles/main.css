@@ -2372,6 +2372,19 @@ input:checked + .slider:before {
   filter: brightness(0.6);
 }
 
+.close-btn {
+  position: fixed;
+  right: 0;
+  bottom: 0;
+  width: -moz-max-content;
+  width: max-content;
+  margin: 1rem;
+  padding: 8px 2rem !important;
+  background-color: var(--primary-font-color) !important;
+  border-color: black !important;
+  color: white !important;
+}
+
 .form-container {
   margin: 4rem auto;
   color: var(--primary-font-color);

@@ -2,6 +2,18 @@ $input-background: var(--primary-bg-color);
 $secondary-background: var(--secondary-bg-color);
 $input-color: var(--primary-font-color);
 
+.close-btn {
+    position: fixed;
+    right: 0;
+    bottom: 0;
+    width: max-content;
+    margin: 1rem;
+    padding: 8px 2rem !important;
+    background-color: $input-color !important;
+    border-color: black !important;
+    color: white !important;
+  }
+
 .form-container {
     margin: 4rem auto;
     color: $input-color;
