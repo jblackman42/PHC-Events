@@ -3,6 +3,8 @@ const tools = new Map();
 // tools.set({Tool Name}, {Path to Tool Page})
 tools.set('test', 'pages/tools/test');
 tools.set('updateAnswers', 'pages/tools/updateAnswers');
+tools.set('createEvent', 'pages/tools/createEvent')
+tools.set('checkinSetup', 'pages/tools/checkinSetup')
 
 
 
@@ -38,7 +40,7 @@ const authorize = async (req, res, next) => {
         client_id: process.env.TOOL_CLIENT_ID,
         redirect_uri: `${process.env.DOMAIN_NAME}/api/tools/login`,
         response_type: 'code',
-        scope: 'http://www.thinkministry.com/dataplatform/scopes/all'
+        scope: 'http://www.thinkministry.com/dataplatform/scopes/all openid'
       }).toString();
 
       return res.redirect('https://my.pureheart.org/ministryplatformapi/oauth/connect/authorize?' + params)
@@ -85,7 +87,7 @@ router.get('/login', authorize, (req, res) => {
 // TOOL ROUTES
 
 for (const [toolPathName, pathToToolPage] of tools) {
-  router.get(`/${toolPathName}`, (req, res) => {
+  router.get(`/${toolPathName}`, authorize, (req, res) => {
     res.render(pathToToolPage)
   })
 }
