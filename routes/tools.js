@@ -3,8 +3,9 @@ const tools = new Map();
 // tools.set({Tool Name}, {Path to Tool Page})
 tools.set('test', 'pages/tools/test');
 tools.set('updateAnswers', 'pages/tools/updateAnswers');
-tools.set('createEvent', 'pages/tools/createEvent')
-tools.set('checkinSetup', 'pages/tools/checkinSetup')
+tools.set('createEvent', 'pages/tools/createEvent');
+tools.set('checkinSetup', 'pages/tools/checkinSetup');
+tools.set('childrenCheckin', 'pages/tools/childrenCheckin');
 
 
 
@@ -59,11 +60,25 @@ const authorize = async (req, res, next) => {
         })
       })
         .then(response => response.data)
+
+      const userData = await axios({
+        method: 'get',
+        url: 'https://my.pureheart.org/ministryplatformapi/oauth/connect/userinfo',
+        headers: {
+          'Authorization': `Bearer ${tokenData.access_token}`,
+          'Accept': 'application/json'
+        }
+      })
+        .then(response => response.data)
   
       const { access_token, expires_in, token_type } = tokenData;
       req.session.access_token = access_token;
       req.session.expires_in = expires_in;
       req.session.token_type = token_type;
+      req.session.user = userData;
+
+      console.log('user:')
+      console.log(userData)
   
       return res.redirect(req.originalUrl.split('?')[0] + '?' + req.session.toolParams);
     } else {
@@ -80,14 +95,70 @@ const authorize = async (req, res, next) => {
   }
 }
 
-router.get('/login', authorize, (req, res) => {
-  res.redirect(`/api/tools/${req.session.toolName}`)
+const autoLogin = async (req, res, next) => {
+  req.session.toolName = req.path.split('/').at(-1);
+  req.session.toolParams = qs.stringify(req.query); // Save initial parameters
+  if (!req.session.access_token) {
+    
+    const params = new URLSearchParams({
+      client_id: process.env.TOOL_CLIENT_ID,
+      redirect_uri: `${process.env.DOMAIN_NAME}/api/tools/login`,
+      response_type: 'code',
+      scope: 'http://www.thinkministry.com/dataplatform/scopes/all openid'
+    }).toString();
+
+    return res.redirect('https://my.pureheart.org/ministryplatformapi/oauth/connect/authorize?' + params)
+  } else {
+    next();
+  }
+}
+
+const parseCode = async (req, res, next) => {
+  if (req.query.code && !req.session.access_token) {
+    const {code} = req.query;
+
+    const tokenData = await axios({
+      url: 'https://my.pureheart.org/ministryplatformapi/oauth/connect/token',
+      method: 'POST',
+      data: qs.stringify({
+          'grant_type': 'authorization_code',
+          'code': code,
+          'redirect_uri': `${process.env.DOMAIN_NAME}/api/tools/login`,
+          'client_id': process.env.TOOL_CLIENT_ID,
+          'client_secret': process.env.TOOL_CLIENT_SECRET
+      })
+    })
+      .then(response => response.data)
+
+    const userData = await axios({
+      method: 'get',
+      url: 'https://my.pureheart.org/ministryplatformapi/oauth/connect/userinfo',
+      headers: {
+        'Authorization': `Bearer ${tokenData.access_token}`,
+        'Accept': 'application/json'
+      }
+    })
+      .then(response => response.data)
+
+    const { access_token, expires_in, token_type } = tokenData;
+    req.session.access_token = access_token;
+    req.session.expires_in = expires_in;
+    req.session.token_type = token_type;
+    req.session.user = userData;
+
+    return res.redirect(`/api/tools/${req.session.toolName}?${req.session.toolParams}`);
+
+  }
+}
+
+router.get('/login', parseCode, (req, res) => {
+  res.sendStatus(200);
 })
 
 // TOOL ROUTES
 
 for (const [toolPathName, pathToToolPage] of tools) {
-  router.get(`/${toolPathName}`, authorize, (req, res) => {
+  router.get(`/${toolPathName}`, autoLogin, (req, res) => {
     res.render(pathToToolPage)
   })
 }

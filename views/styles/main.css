@@ -339,6 +339,13 @@ html {
   flex-direction: column;
 }
 
+.center-grid {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+}
+
 .container {
   display: flex;
   flex-direction: column;
@@ -384,6 +391,9 @@ html {
 }
 .btn:disabled:hover {
   transform: none;
+}
+.btn.center {
+  margin: 0 auto;
 }
 @media (min-width: 768px) {
   .btn {

@@ -32,6 +32,13 @@ html {
     flex-direction: column;
 }
 
+.center-grid {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	min-height: 100vh;
+}
+
 .container {
 	display: flex;
 	flex-direction: column;
@@ -76,6 +83,10 @@ html {
 		&:hover {
 			transform: none;
 		}
+	}
+
+	&.center {
+		margin: 0 auto;
 	}
 
 	@media (min-width: 768px) {

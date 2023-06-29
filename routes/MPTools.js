@@ -498,4 +498,67 @@ router.post('/generate-sequence', async (req, res) => {
   res.send(pattern)
 })
 
+// CHILDREN'S CHECK-IN
+router.get('/selection', async (req, res) => {
+  const { SelectionID, PageID, UserID } = req.query;
+
+  if (!SelectionID || !PageID) return res.status(400).send({err: 'Must provide SelectionID, PageID, UserID in query'}).end();
+
+  try {
+    const result = await axios({
+      method: 'post',
+      url: 'https://my.pureheart.org/ministryplatformapi/procs/api_CloudTools_GetSelection',
+      data: {
+        "@SelectionID": SelectionID,
+        "@PageID": PageID,
+        "@UserID": UserID || req.session.user.userid
+      },
+      headers: {
+        'Authorization': `Bearer ${req.session.access_token}`,
+        'Accept': 'application/json'
+      }
+    })
+      .then(response => response.data[1])
+    
+    res.send(result);
+  } catch (error) {
+    const err = {
+      status: error.response ? error.response.status : 500,
+      statusText: error.response ? error.response.statusText : 'something went wrong please try again',
+      data: error.response ? error.response.data : {}
+    }
+    res.status(err.status).send(err.data);
+  }
+})
+
+router.post('/PHCChildrenCheckin', async (req, res) => {
+  const { EventIDs } = req.body;
+
+  if (!EventIDs) return res.status(400).send({err: 'Must provide EventIDs in body'}).end();
+
+  try {
+    const result = await axios({
+      method: 'post',
+      url: 'https://my.pureheart.org/ministryplatformapi/procs/PHCChildrenCheckin',
+      data: {
+        "@EventIDs": EventIDs
+      },
+      headers: {
+        'Authorization': `Bearer ${req.session.access_token}`,
+        'Accept': 'application/json'
+      }
+    })
+      .then(response => response.status)
+    
+    res.send(result);
+  } catch (error) {
+    const err = {
+      status: error.response ? error.response.status : 500,
+      statusText: error.response ? error.response.statusText : 'something went wrong please try again',
+      data: error.response ? error.response.data : {}
+    }
+    res.status(err.status).send(err.data);
+  }
+})
+
 module.exports = router;
