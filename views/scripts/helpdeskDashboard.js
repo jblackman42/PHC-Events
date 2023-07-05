@@ -1,7 +1,7 @@
 class Dashboard extends HTMLElement {
   constructor() {
     super();
-    this.colors = ["#1abc9c", "#f1c40f","#3498db","#e67e22","#e74c3c", "#9b59b6", "#34495e"];
+    this.colors = ["#1abc9c", "#f1c40f","#3498db","#e67e22","#e74c3c", "#9b59b6", "#a29bfe", "#34495e"];
     this.titleSize = 24;
     this.charts = [];
     this.timeId = 0;
@@ -140,7 +140,7 @@ class Dashboard extends HTMLElement {
 
     // get today's total tickets and resolved tickets
     const day = new Date();
-      day.setDate(day.getDate() - 30);
+      day.setDate(day.getDate() - this.daysBack);
     const monthsTickets = this.tickets.filter(ticket => new Date(ticket.Request_Date) >= this.minDate)
     const monthsResolvedTickets = this.tickets.filter(ticket => new Date(ticket.Resolve_Date) >= this.minDate && ticket.Status == 3)
 
@@ -402,9 +402,9 @@ class Dashboard extends HTMLElement {
     const daysList = [];
 
     const date = new Date();
-      date.setDate(date.getDate() - 29);
+      date.setDate(date.getDate() - (this.daysBack-1));
 
-    for (let i = 0; i < 30; i ++) {
+    for (let i = 0; i < this.daysBack; i ++) {
         daysList.push(date.toLocaleDateString());
         date.setDate(date.getDate() + 1);
     }

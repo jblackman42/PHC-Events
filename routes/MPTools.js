@@ -550,7 +550,7 @@ router.post('/PHCChildrenCheckin', async (req, res) => {
     })
       .then(response => response.status)
     
-    res.send(result);
+    res.sendStatus(result);
   } catch (error) {
     const err = {
       status: error.response ? error.response.status : 500,

@@ -352,29 +352,25 @@ router.get('/ministry-question', async (req, res) => {
     }
 })
 
-router.get('/ministry-answers-weekly', async (req, res) => {
-    const { ministryQuestionID } = req.query;
+router.get('/ministry-answers', async (req, res) => {
+    const { ministryQuestionID, monthly } = req.query;
     
-    if (!ministryQuestionID) return res.status(400).send({err: 'no ministry question id'}).end();
-
+    if (!ministryQuestionID || !monthly) return res.status(400).send({err: 'no ministry question id'}).end();
+    
     try {
-        //get access token for accessing database informatin
-        const accessToken = await getAccessToken();
-
         const data = await axios({
-            method: 'get',
-            url: `https://my.pureheart.org/ministryplatformapi/tables/Ministry_Answers`,
-            params: {
-              $filter: `Ministry_Question_ID = ${ministryQuestionID}`,
-              $select: `Ministry_Week_ID_Table.[Ministry_Week_Start], Ministry_Answer_ID, Ministry_Answers.[Ministry_Week_ID], Ministry_Question_ID, Numerical_Value, Ministry_Answers.[Congregation_ID], Congregation_ID_Table.[Congregation_Name], Ministry_ID, Program_ID, Type`,
-              $orderby: `Ministry_Week_ID_Table.[Ministry_Week_Start]`
+            method: 'post',
+            url: `https://my.pureheart.org/ministryplatformapi/procs/api_PHC_GetMinistryAnswers`,
+            data: {
+                "@QuestionID": ministryQuestionID,
+                "@Monthly": monthly
             },
             headers: {
-              'Authorization': `Bearer ${accessToken}`,
-              'Content-Type': 'Application/JSON'
-            }
-          })
-          .then(response => response.data)
+                'Authorization': `Bearer ${await getAccessToken()}`,
+                'Content-Type': 'application/json'
+            },
+        })
+            .then(response => response.data[0])
 
         res.send(data);
     } catch (e) {
@@ -386,30 +382,76 @@ router.get('/ministry-answers-weekly', async (req, res) => {
 })
 
 router.get('/ministry-answers-monthly', async (req, res) => {
+    // const { ministryQuestionID } = req.query;
+    
+    // if (!ministryQuestionID) return res.status(400).send({err: 'no ministry question id'}).end();
+
+    // try {
+    //     //get access token for accessing database informatin
+    //     const accessToken = await getAccessToken();
+
+    //     const data = await axios({
+    //         method: 'get',
+    //         url: `https://my.pureheart.org/ministryplatformapi/tables/Fiscal_Period_Answers`,
+    //         params: {
+    //             $filter: `Ministry_Question_ID = ${ministryQuestionID}`,
+    //             $select: `Fiscal_Period_ID_Table.[Fiscal_Period_Start], Fiscal_Period_Answer_ID, Fiscal_Period_Answers.[Fiscal_Period_ID], Ministry_Question_ID, Numerical_Value, Fiscal_Period_Answers.[Congregation_ID], Congregation_ID_Table.[Congregation_Name], Ministry_ID, Program_ID, Type`,
+    //             $orderby: `Fiscal_Period_ID_Table.[Fiscal_Period_Start]`
+    //         },
+    //         headers: {
+    //             'Authorization': `Bearer ${accessToken}`,
+    //             'Content-Type': 'Application/JSON'
+    //         }
+    //     })
+    //         .then(response => response.data)
+
+    //     res.send(data);
+    // } catch (e) {
+    //     const { response } = e;
+    //     const { data } = response;
+    //     const { Message } = data;
+    //     res.status(response.status).send(Message).end();
+    // }
+    
     const { ministryQuestionID } = req.query;
     
     if (!ministryQuestionID) return res.status(400).send({err: 'no ministry question id'}).end();
 
     try {
-        //get access token for accessing database informatin
+        let count = 0;
+        let results = [];
+        let hasMoreData = true;
         const accessToken = await getAccessToken();
-
-        const data = await axios({
-            method: 'get',
-            url: `https://my.pureheart.org/ministryplatformapi/tables/Fiscal_Period_Answers`,
-            params: {
-                $filter: `Ministry_Question_ID = ${ministryQuestionID}`,
-                $select: `Fiscal_Period_ID_Table.[Fiscal_Period_Start], Fiscal_Period_Answer_ID, Fiscal_Period_Answers.[Fiscal_Period_ID], Ministry_Question_ID, Numerical_Value, Fiscal_Period_Answers.[Congregation_ID], Congregation_ID_Table.[Congregation_Name], Ministry_ID, Program_ID, Type`,
-                $orderby: `Fiscal_Period_ID_Table.[Fiscal_Period_Start]`
-            },
-            headers: {
-                'Authorization': `Bearer ${accessToken}`,
-                'Content-Type': 'Application/JSON'
+        
+        while (hasMoreData) {
+            const response = await axios({
+                method: 'get',
+                url: `https://my.pureheart.org/ministryplatformapi/tables/Fiscal_Period_Answers`,
+                params: {
+                    $filter: `Ministry_Question_ID = ${ministryQuestionID}`,
+                    $select: `Fiscal_Period_ID_Table.[Fiscal_Period_Start], Fiscal_Period_Answer_ID, Fiscal_Period_Answers.[Fiscal_Period_ID], Ministry_Question_ID, Numerical_Value, Fiscal_Period_Answers.[Congregation_ID], Congregation_ID_Table.[Congregation_Name], Ministry_ID, Program_ID, Type`,
+                    $orderby: `Fiscal_Period_ID_Table.[Fiscal_Period_Start]`
+                },
+                headers: {
+                    'Authorization': `Bearer ${accessToken}`,
+                    'Content-Type': 'Application/JSON'
+                }
+            })
+    
+            const data = response.data;
+    
+            // Check if we got fewer items than expected, which means this was the last page
+            if (data.length < 1000) {
+                hasMoreData = false;
             }
-        })
-            .then(response => response.data)
-
-        res.send(data);
+    
+            results = results.concat(data);
+            count += 1000;
+        }
+    
+        // return results;
+        
+        res.send(results);
     } catch (e) {
         const { response } = e;
         const { data } = response;
