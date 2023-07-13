@@ -2322,6 +2322,19 @@ input:checked + .slider:before {
   border-radius: 2.5px;
   border: 1px solid var(--primary-font-color);
 }
+@media screen and (max-width: 768px) {
+  #add-heart-crews-container #add-heart-crews-popup .heart-crew-popup-body {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+  #add-heart-crews-container #add-heart-crews-popup .heart-crew-popup-body select {
+    width: 100%;
+    margin: 0;
+    box-sizing: border-box;
+    padding-block: 0;
+  }
+}
 #add-heart-crews-container #add-heart-crews-popup select {
   box-sizing: content-box;
   margin-left: auto;
