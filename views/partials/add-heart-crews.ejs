@@ -1,0 +1,65 @@
+<div id="add-heart-crews-container">
+    <div id="add-heart-crews-popup">
+        <div class="crews-header">
+            <p>Add Heart Crew</p>
+            <button class="close-button" onclick="heartCrewPopupHide()"><i class="material-icons">close</i></button>
+        </div>
+        <div class="heart-crew-popup-body">
+            <label for="heart-crew">Heart Crew:</label>
+            <select id="heart-crew">
+                <option value="0">Choose One...</option>
+            </select>
+        </div>
+        <div class="crews-footer">
+            <button class="btn cancel" onclick="heartCrewPopupCancel()"><i class='fas fa-ban'></i> Cancel</button>
+            <button class="btn" onclick="heartCrewPopupSave();"><i class='fas fa-save'></i> Save</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    let heartCrews = [];
+    let selectedHeartCrewID = null;
+    const addHeartCrewsContainerDOM = document.getElementById('add-heart-crews-container');
+    const heartCrewSelectDOM = document.getElementById('heart-crew');
+    const heartCrewPopupShow = () => {
+        addHeartCrewsContainerDOM.classList.add('open')
+    }
+    const heartCrewPopupHide = () => {
+        addHeartCrewsContainerDOM.classList.remove('open')
+    }
+
+    const heartCrewPopupSave = () => {
+        const heartCrewLabelDOM = document.getElementById('add-group');
+        
+        const currHeartCrew = heartCrews.filter(crew => crew.Group_ID == heartCrewSelectDOM.value)[0];
+        
+        heartCrewLabelDOM.innerText = currHeartCrew.Group_Name;
+        selectedHeartCrewID = currHeartCrew.Group_ID;
+
+        heartCrewPopupHide();
+    }
+
+    const heartCrewPopupCancel = () => {
+        const addGroupLabelDOM = document.getElementById('add-group');
+        addGroupLabelDOM.innerText = 'No Heart Crew Added';
+        heartCrewSelectDOM.value = '0';
+        selectedHeartCrewID = null;
+        
+
+        heartCrewPopupHide();
+    }
+
+    (async () => {
+        heartCrews = await axios({
+            method: 'get',
+            url: '/api/mp/heart-crews'
+        })
+            .then(response => response.data)
+        
+        const heartCrewsHTML = heartCrews.map(crew => {
+            return `<option value="${crew.Group_ID}">${crew.Group_Name}</option>`
+        }).join('')
+        heartCrewSelectDOM.innerHTML += heartCrewsHTML;
+    })()
+</script>

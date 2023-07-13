@@ -7,6 +7,7 @@ let congregations = [];
 let places = [];
 let blockedRooms = [];
 // global html vars
+const heartCrewDefaultRoomID = 1106;
 
 // page 1 inputs
 const eventCreatorDOM = document.querySelector('#event-creator');
@@ -340,6 +341,9 @@ const createEvent = async () => {
   bookServices(createdEvents)
   bookEquipment(createdEvents)
   createSeries(createdEvents)
+  addEventGroups(createdEvents)
+  addEventRoomGroups(createdEvents)
+
  
   doneLoading();
 
@@ -470,5 +474,56 @@ const createSeries = async (createdEvents) => {
     .then(response => response.data)
     .catch(err => alert('Something terrible has happened! It looks like we failed to make your recurring events into a series. Please reach out to the IT team.'))
   
+  doneLoading();
+}
+
+const addEventGroups = async (createdEvents) => {
+  loading();
+
+  const eventIDs = createdEvents.map(event => event.Event_ID);
+
+  const EventGroups = eventIDs.map(id => {
+    return {
+      Event_ID: id,
+      Group_ID: selectedHeartCrewID
+    }
+  })
+
+  await axios({
+    method: 'post',
+    url: '/api/mp/event-groups',
+    data: {
+      eventGroupsToBook: EventGroups
+    }
+  })
+    .then(response => response.data)
+    .catch(err => alert('Something terrible has happened! It looks like we failed to add your Heart Crew to the event group. Please reach out to the IT team.'))
+
+  doneLoading();
+}
+
+const addEventRoomGroups = async (createdEvents) => {
+  loading();
+
+  const eventIDs = createdEvents.map(event => event.Event_ID);
+
+  const EventRoomGroups = eventIDs.map(id => {
+    return {
+      Event_ID: id,
+      Room_ID: heartCrewDefaultRoomID,
+      Group_ID: selectedHeartCrewID
+    }
+  })
+    
+  await axios({
+    method: 'post',
+    url: '/api/mp/event-room-groups',
+    data: {
+      eventRoomGroupsToBook: EventRoomGroups
+    }
+  })
+    .then(response => response.data)
+    .catch(err => alert('Something terrible has happened! It looks like we failed to add your Heart Crew to the event room groups. Please reach out to the IT team.'))
+
   doneLoading();
 }

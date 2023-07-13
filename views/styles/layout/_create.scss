@@ -208,7 +208,7 @@ $input-color: var(--primary-font-color);
             textarea {
                 resize: none;
             }
-            #recurring-event-input, #facilities-equipment-input {
+            #recurring-event-input, #facilities-equipment-input, #group-input {
                 display: flex;
                 justify-content: space-between;
                 background-color: $input-background;

@@ -2249,6 +2249,99 @@ input:checked + .slider:before {
   margin: 1rem;
 }
 
+#add-heart-crews-container {
+  position: fixed;
+  inset: 0;
+  z-index: 999999999;
+  background-color: rgba(0, 0, 0, 0.6666666667);
+  display: grid;
+  place-items: center;
+  display: none;
+  visibility: hidden;
+}
+#add-heart-crews-container.open {
+  display: grid;
+  visibility: visible;
+}
+@media screen and (min-width: 768px) {
+  #add-heart-crews-container.open #add-heart-crews-popup {
+    animation: fade-in 200ms;
+  }
+}
+#add-heart-crews-container #add-heart-crews-popup {
+  background-color: var(--primary-bg-color);
+  color: var(--primary-font-color);
+  position: relative;
+  width: 600px;
+  max-width: 90vw;
+}
+#add-heart-crews-container #add-heart-crews-popup .crews-header {
+  border-bottom: 2px solid var(--secondary-bg-color);
+  display: flex;
+}
+#add-heart-crews-container #add-heart-crews-popup .crews-header p {
+  padding: 1rem;
+  margin: 0;
+  font-size: 1.5rem;
+}
+#add-heart-crews-container #add-heart-crews-popup .close-button {
+  color: currentColor;
+  position: static;
+  margin-left: auto;
+}
+#add-heart-crews-container #add-heart-crews-popup .btn {
+  margin: auto 0.5rem 1rem auto;
+  color: red;
+}
+#add-heart-crews-container #add-heart-crews-popup input,
+#add-heart-crews-container #add-heart-crews-popup textarea,
+#add-heart-crews-container #add-heart-crews-popup select {
+  padding: 0.25rem 0.5rem;
+  height: 2rem;
+  line-height: 2rem;
+  border: none;
+  background-color: var(--primary-bg-color);
+  color: currentColor;
+  border-radius: 2.5px;
+}
+#add-heart-crews-container #add-heart-crews-popup .heart-crew-popup-body {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 0.5rem 1rem;
+}
+#add-heart-crews-container #add-heart-crews-popup .heart-crew-popup-body label {
+  margin-right: 0.75rem;
+  white-space: nowrap;
+}
+#add-heart-crews-container #add-heart-crews-popup .heart-crew-popup-body select {
+  padding: 0.25rem 0.5rem;
+  margin-left: auto;
+  background-color: var(--primary-bg-color);
+  color: currentColor;
+  border-radius: 2.5px;
+  border: 1px solid var(--primary-font-color);
+}
+#add-heart-crews-container #add-heart-crews-popup select {
+  box-sizing: content-box;
+  margin-left: auto;
+  -webkit-appearance: none;
+}
+#add-heart-crews-container #add-heart-crews-popup .crews-footer {
+  display: flex;
+  justify-content: flex-end;
+  padding: 1rem;
+  gap: 1rem;
+  border-top: 2px solid var(--secondary-bg-color);
+}
+#add-heart-crews-container #add-heart-crews-popup .crews-footer .btn {
+  margin: 0;
+}
+#add-heart-crews-container #add-heart-crews-popup .crews-footer .btn.cancel {
+  background-color: hsl(0, 1%, 36%) !important;
+  border-color: var(--secondary-bg-color) !important;
+}
+
 #loginForm,
 #signUpForm {
   background-color: #181818;
@@ -2566,14 +2659,14 @@ input:checked + .slider:before {
 .form-container form .input textarea {
   resize: none;
 }
-.form-container form .input #recurring-event-input, .form-container form .input #facilities-equipment-input {
+.form-container form .input #recurring-event-input, .form-container form .input #facilities-equipment-input, .form-container form .input #group-input {
   display: flex;
   justify-content: space-between;
   background-color: var(--primary-bg-color);
   border-radius: 2.5px;
   height: 40px;
 }
-.form-container form .input #recurring-event-input button, .form-container form .input #facilities-equipment-input button {
+.form-container form .input #recurring-event-input button, .form-container form .input #facilities-equipment-input button, .form-container form .input #group-input button {
   border: none;
   background-color: transparent;
   color: currentColor;
@@ -2584,7 +2677,7 @@ input:checked + .slider:before {
   margin-right: 0;
   cursor: pointer;
 }
-.form-container form .input #recurring-event-input button i, .form-container form .input #facilities-equipment-input button i {
+.form-container form .input #recurring-event-input button i, .form-container form .input #facilities-equipment-input button i, .form-container form .input #group-input button i {
   font-size: 1.25rem;
 }
 .form-container form .input input::-webkit-outer-spin-button,
