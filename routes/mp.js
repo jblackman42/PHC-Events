@@ -505,4 +505,64 @@ router.get('/prayer-requests', ensureApiAuthenticated, async (req, res) => {
   res.send(prayerRequestData)
 })
 
+router.get('/heart-crews', ensureApiAuthenticated, async (req, res) => {
+  const heartCrewData = await axios({
+    method: 'get',
+    url: `https://my.pureheart.org/ministryplatformapi/tables/Groups?%24select=Groups.Group_ID%2C%20Groups.Group_Name&%24filter=Groups.%5BEnd_Date%5D%20IS%20NULL%20%20AND%20Parent_Group_Table.%5BGroup_Name%5D%20LIKE%20'%25Heart%20Crew%25'&%24orderby=Group_Name`,
+    headers: {
+      'content-type': 'application/json',
+      'authorization': `Bearer ${await getAccessToken()}`
+    }
+  })
+    .then(response => response.data)
+    .catch(err => console.log(err))
+
+  res.send(heartCrewData)
+})
+
+
+
+
+
+
+router.post('/event-groups', ensureApiAuthenticated, async (req, res) => {
+  const { eventGroupsToBook } = req.body;
+
+  if (!eventGroupsToBook || !eventGroupsToBook.length)  return res.status(400).send({err: 'no groups to book provided'}).end();
+
+  const groupsData = await axios({
+    method: 'post',
+    url: 'https://my.pureheart.org/ministryplatformapi/tables/Event_Groups',
+    data: eventGroupsToBook,
+    headers: {
+      'content-type': 'application/json',
+      'authorization': `Bearer ${await getAccessToken()}`
+    }
+  })
+    .then(response => response.data)
+    .catch(err => console.log(err))
+
+  res.send(groupsData)
+})
+
+router.post('/event-room-groups', ensureApiAuthenticated, async (req, res) => {
+  const { eventRoomGroupsToBook } = req.body;
+
+  if (!eventRoomGroupsToBook || !eventRoomGroupsToBook.length)  return res.status(400).send({err: 'no event room groups to book provided'}).end();
+
+  const eventRoomsData = await axios({
+    method: 'post',
+    url: 'https://my.pureheart.org/ministryplatformapi/tables/Event_Rooms',
+    data: eventRoomGroupsToBook,
+    headers: {
+      'content-type': 'application/json',
+      'authorization': `Bearer ${await getAccessToken()}`
+    }
+  })
+    .then(response => response.data)
+    .catch(err => console.log(err))
+
+  res.send(eventRoomsData)
+})
+
 module.exports = router;
