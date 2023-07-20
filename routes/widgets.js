@@ -463,14 +463,38 @@ router.get('/ministry-answers-monthly', async (req, res) => {
     }
 })
 
-router.put('/expirations', async (req, res) => {
-    const { updatedLicense } = req.body;
+router.get('/expirations', async (req, res) => {
+    const { guid } = req.query;
 
+    if (!guid) return res.status(400).send({err: 'Missing Parameter: guid'}).end();
+
+    try {
+        const data = await axios({
+            method: 'get',
+            url: 'https://my.pureheart.org/ministryplatformapi/tables/expirations',
+            params: {
+                $filter: `Expiration_GUID='${guid}'`
+            },
+            headers: {
+                'Content-Type': 'Application/JSON',
+                'Authorization': `Bearer ${await getAccessToken()}`
+            }
+        })
+            .then(response => response.data[0])
+
+        res.status(200).send(data).end();
+    } catch (err) {
+        console.log(err)
+        res.status(500).send({error: err}).end();
+    }
+})
+
+router.put('/expirations', async (req, res) => {
     try {
         const data = await axios({
             method: 'put', //put means update
             url: 'https://my.pureheart.org/ministryplatformapi/tables/expirations', //get from swagger
-            data: [updatedLicense], //always an array for put/post so you can do multiple
+            data: [req.body], //always an array for put/post so you can do multiple
             headers: {
                 'Content-Type': 'Application/JSON',
                 'Authorization': `Bearer ${await getAccessToken()}`
