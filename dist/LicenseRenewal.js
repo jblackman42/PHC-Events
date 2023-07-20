@@ -3,31 +3,31 @@ class LicenseRenewal extends HTMLElement {
     super();
 
     const urlParams = new URLSearchParams(window.location.search);
-    this.Expiration_ID = urlParams.get('Expiration_ID');
-
+    this.guid = urlParams.get('guid');
+    this.id = urlParams.get('id');
+    
     const invalidURLRedirectURL = this.getAttribute('invalidURLRedirectURL')
-
-    if (!this.Expiration_ID) {
+    if (!this.guid || !this.id) {
       window.location = invalidURLRedirectURL;
     }
 
     // this.fetchURL = 'https://phc.events';
-    this.fetchURL = this.getAttribute('fetchURL');
+    this.fetchURL = this.getAttribute('fetchURL') || 'https://phc.events';
     this.draw();
   }
 
   draw = () => {
     this.innerHTML = `
       <div class="container">
-        <h2>User Form</h2>
+        <h2>Update License Form</h2>
         <form id="update-license-form">
-          <label for="license">Driver's License #:</label><br>
-          <input type="text" id="license" name="license" required><br>
+          <label for="license">Driver's License #:</label>
+          <input type="text" id="license" name="license" required>
           
-          <label for="exp-date">Expiration Date:</label><br>
-          <input type="date" id="exp-date" name="exp-date" required><br>
+          <label for="exp-date">Expiration Date:</label>
+          <input type="date" id="exp-date" name="exp-date" required>
 
-          <label for="state">Issued State:</label><br>
+          <label for="state">Issued State:</label>
           <select id="state" name="state" required>
             <option value="" selected disabled>--Please choose a state--</option>
             <option value="AL">Alabama</option>
@@ -81,13 +81,16 @@ class LicenseRenewal extends HTMLElement {
             <option value="WI">Wisconsin</option>
             <option value="WY">Wyoming</option>
 
-          </select><br>
+          </select>
 
-          <label for="license-file">Upload Driver's License, front and back:</label><br>
-          <input type="file" id="fileInput1" required><br>
-          <input type="file" id="fileInput2" required><br>
+          <label for="license-file">Picure of Front of License:</label>
+          <input type="file" id="fileInput1" required>
+          <label for="license-file">Picture of Back of License:</label>
+          <input type="file" id="fileInput2" required>
 
           <input type="submit" value="Submit">
+
+          <p id="form-message"></p>
         </form>
       </div>
     `;
@@ -96,11 +99,39 @@ class LicenseRenewal extends HTMLElement {
     updateLicenseFormDOM.addEventListener('submit', this.handleSubmit)
   }
 
+  showError = (error) => {
+    const formMessage = document.getElementById('form-message');
+    formMessage.classList.add('error');
+    formMessage.textContent  = error;
+    formMessage.style.display = 'block';
+    formMessage.style.visibility = 'visible';
+  }
+
+  showMessage = (message) => {
+    const formMessage = document.getElementById('form-message');
+    formMessage.classList.remove('error');
+    formMessage.textContent  = message;
+    formMessage.style.display = 'block';
+    formMessage.style.visibility = 'visible';
+  }
+  
+  hideMessage = () => {
+    const formMessage = document.getElementById('form-message');
+    formMessage.classList.remove('error');
+    formMessage.textContent = '';
+    formMessage.style.display = 'none';
+    formMessage.style.visibility = 'hidden';
+  }
+
   handleSubmit = async (e) => {
     e.preventDefault();
 
+    const showError = this.showError;
+    const showMessage = this.showMessage;
+    const draw = this.draw;
+
     const requestURL = this.fetchURL;
-    const Expiration_ID = this.Expiration_ID;
+    const expiration_id = this.id;
     const licenseInputDOM = document.getElementById('license');
     const exoDateInputDOM = document.getElementById('exp-date');
     const stateInputDOM = document.getElementById('state');
@@ -112,13 +143,14 @@ class LicenseRenewal extends HTMLElement {
     // --------------------------------------------------------------------------------------------------
   
     const updatedLicense = {
-      'Expiration_ID': this.Expiration_ID,
+      'Expiration_ID': this.id,
+      'Expiration_GUID': this.guid,
       'Driver_License_#': licenseInputDOM.value,
       'License_Expiration': new Date(exoDateInputDOM.value).toISOString(),
       'State_Issuing_Authority': stateInputDOM.value
     };
   
-    await axios({
+    const newLicense = await axios({
       method: 'put', //put means update
       url: `${requestURL}/api/widgets/expirations`, //get from swagger
       data: {
@@ -128,7 +160,7 @@ class LicenseRenewal extends HTMLElement {
       .then(response => response.data)
       .catch(err => {
         console.error(err);
-        alert('something went wrong, probably you did it wrong')
+        showError('Something went wrong. Please try again or contact IT');
       })
   
     // upload license files to mp
@@ -153,19 +185,18 @@ class LicenseRenewal extends HTMLElement {
       // Make the axios request
       const records = await axios({
           method: 'post',
-          url: `${requestURL}/api/widgets/files/expirations?id=${Expiration_ID}`, //get from swagger
+          url: `${requestURL}/api/widgets/files/expirations?id=${expiration_id}`, //get from swagger
           data: formData,
           headers: { 'Content-Type': 'multipart/form-data' }
       })
       .then(response => response.data)
       .catch(err => {
           console.error(err);
-          alert('something went wrong, probably you did it wrong')
+          showError('Something went wrong. Please try again or contact IT');
       });
-
-      console.log(records)
   
-      alert('record updated successfully')
+      draw();
+      showMessage('Record Updated Successfully. You can now close this page!')
     }
   
     // Define a function to be called when both files have been read
