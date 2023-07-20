@@ -4,6 +4,9 @@ const axios = require('axios');
 const qs = require('qs')
 const path = require('path');
 const fs = require('fs');
+const multer = require('multer');
+const FormData = require('form-data');
+const upload = multer();
 
 // const StaffSchema = require('../models/Staff');
 // const SermonSchema = require('../models/Sermons');
@@ -459,4 +462,59 @@ router.get('/ministry-answers-monthly', async (req, res) => {
         res.status(response.status).send(Message).end();
     }
 })
+
+router.put('/expirations', async (req, res) => {
+    const { updatedLicense } = req.body;
+
+    try {
+        const data = await axios({
+            method: 'put', //put means update
+            url: 'https://my.pureheart.org/ministryplatformapi/tables/expirations', //get from swagger
+            data: [updatedLicense], //always an array for put/post so you can do multiple
+            headers: {
+                'Content-Type': 'Application/JSON',
+                'Authorization': `Bearer ${await getAccessToken()}`
+            }
+        })
+            .then(response => response.data)
+
+        res.status(200).send(data).end();
+    } catch (err) {
+        console.log(err)
+        res.status(500).send({error: err}).end();
+    }
+})
+
+router.post('/files/expirations', upload.any(), async (req, res) => {
+    const { id } = req.query;
+
+    const formData = new FormData();
+    req.files.forEach((file) => {
+        formData.append(file.originalname, file.buffer, file.originalname);
+    });
+
+    const formHeaders = formData.getHeaders();
+
+    try {
+        const data = await axios({
+            method: 'post',
+            url: `https://my.pureheart.org/ministryplatformapi/files/expirations/${id}`,
+            data: formData,
+            // Do not set Content-Type manually, let axios set it automatically.
+            headers: {
+                ...formHeaders,
+                'Authorization': `Bearer ${await getAccessToken()}`
+            },
+            maxContentLength: Infinity,
+            maxBodyLength: Infinity
+        })
+            .then(response => response.data)
+
+        res.status(200).send(data).end();
+    } catch (err) {
+        // console.log(err)
+        res.status(500).send({error: err}).end();
+    }
+});
+
 module.exports = router;
