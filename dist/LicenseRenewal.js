@@ -3,31 +3,31 @@ class LicenseRenewal extends HTMLElement {
     super();
 
     const urlParams = new URLSearchParams(window.location.search);
-    this.Expiration_ID = urlParams.get('Expiration_ID');
-
+    this.guid = urlParams.get('guid');
+    
     const invalidURLRedirectURL = this.getAttribute('invalidURLRedirectURL')
-
-    if (!this.Expiration_ID) {
+    if (!this.guid) {
       window.location = invalidURLRedirectURL;
     }
 
     // this.fetchURL = 'https://phc.events';
-    this.fetchURL = this.getAttribute('fetchURL');
+    // this.fetchURL = this.getAttribute('fetchURL') || 'https://phc.events';
+    this.fetchURL = this.getAttribute('fetchURL') || 'http://localhost:3000';
     this.draw();
   }
 
   draw = () => {
     this.innerHTML = `
       <div class="container">
-        <h2>User Form</h2>
+        <h2>Update License Form</h2>
         <form id="update-license-form">
-          <label for="license">Driver's License #:</label><br>
-          <input type="text" id="license" name="license" required><br>
+          <label for="license">Driver's License #:</label>
+          <input type="text" id="license" name="license" required>
           
-          <label for="exp-date">Expiration Date:</label><br>
-          <input type="date" id="exp-date" name="exp-date" required><br>
+          <label for="exp-date">Expiration Date:</label>
+          <input type="date" id="exp-date" name="exp-date" required>
 
-          <label for="state">Issued State:</label><br>
+          <label for="state">Issued State:</label>
           <select id="state" name="state" required>
             <option value="" selected disabled>--Please choose a state--</option>
             <option value="AL">Alabama</option>
@@ -81,13 +81,16 @@ class LicenseRenewal extends HTMLElement {
             <option value="WI">Wisconsin</option>
             <option value="WY">Wyoming</option>
 
-          </select><br>
+          </select>
 
-          <label for="license-file">Upload Driver's License, front and back:</label><br>
-          <input type="file" id="fileInput1" required><br>
-          <input type="file" id="fileInput2" required><br>
+          <label for="license-file">Picure of Front of License:</label>
+          <input type="file" id="fileInput1">
+          <label for="license-file">Picture of Back of License:</label>
+          <input type="file" id="fileInput2">
 
           <input type="submit" value="Submit">
+
+          <p id="form-message"></p>
         </form>
       </div>
     `;
@@ -96,99 +99,130 @@ class LicenseRenewal extends HTMLElement {
     updateLicenseFormDOM.addEventListener('submit', this.handleSubmit)
   }
 
+  showError = (error) => {
+    const formMessage = document.getElementById('form-message');
+    formMessage.classList.add('error');
+    formMessage.textContent  = error;
+    formMessage.style.display = 'block';
+    formMessage.style.visibility = 'visible';
+  }
+
+  showMessage = (message) => {
+    const formMessage = document.getElementById('form-message');
+    formMessage.classList.remove('error');
+    formMessage.textContent  = message;
+    formMessage.style.display = 'block';
+    formMessage.style.visibility = 'visible';
+  }
+  
+  hideMessage = () => {
+    const formMessage = document.getElementById('form-message');
+    formMessage.classList.remove('error');
+    formMessage.textContent = '';
+    formMessage.style.display = 'none';
+    formMessage.style.visibility = 'hidden';
+  }
+
   handleSubmit = async (e) => {
     e.preventDefault();
 
+    const showError = this.showError;
+    const showMessage = this.showMessage;
+    const draw = this.draw;
+
     const requestURL = this.fetchURL;
-    const Expiration_ID = this.Expiration_ID;
     const licenseInputDOM = document.getElementById('license');
     const exoDateInputDOM = document.getElementById('exp-date');
     const stateInputDOM = document.getElementById('state');
     
-    let fileInput1 = document.getElementById('fileInput1');
-    let fileInput2 = document.getElementById('fileInput2');
+    this.fileInput1 = document.getElementById('fileInput1');
+    this.fileInput2 = document.getElementById('fileInput2');
 
-    // update record in MP
-    // --------------------------------------------------------------------------------------------------
+    
+    try {
+      // get record info from guid
+      // --------------------------------------------------------------------------------------------------
+      const { Expiration_ID } = await axios({
+        method: 'get', //put means update
+        url: `${requestURL}/api/widgets/expirations`, //get from swagger
+        params: {
+          guid: this.guid
+        },
+      })
+        .then(response => response.data)
+        
+      // update record in MP
+      // --------------------------------------------------------------------------------------------------
+      const newLicense = {
+        'Expiration_ID': Expiration_ID,
+        'Driver_License_#': licenseInputDOM.value,
+        'License_Expiration': new Date(exoDateInputDOM.value).toISOString(),
+        'State_Issuing_Authority': stateInputDOM.value
+      }
+
+      await axios({
+        method: 'put', //put means update
+        url: `${requestURL}/api/widgets/expirations`, //get from swagger
+        data: newLicense,
+      })
+        .then(response => response.data)
   
-    const updatedLicense = {
-      'Expiration_ID': this.Expiration_ID,
-      'Driver_License_#': licenseInputDOM.value,
-      'License_Expiration': new Date(exoDateInputDOM.value).toISOString(),
-      'State_Issuing_Authority': stateInputDOM.value
-    };
-  
+      // upload license files to mp
+      // --------------------------------------------------------------------------------------------------
+      // Create two FileReader instances
+      let reader1 = new FileReader();
+      let reader2 = new FileReader();
+    
+      // Define a function to be called when both files have been read
+      let filesRead = 0;
+      function fileRead(uploadFunc) {
+          filesRead++;
+          if (filesRead === 2) {
+              // Both files have been read - upload them
+              uploadFunc(Expiration_ID);
+          }
+      }
+    
+      // Define the onload function for both readers
+      reader1.onload = () => fileRead(this.uploadFiles);
+      reader2.onload = () => fileRead(this.uploadFiles);
+    
+      // Start reading the files
+      if (this.fileInput1.files.length > 0) {
+          reader1.readAsText(this.fileInput1.files[0]);
+      }
+      if (this.fileInput2.files.length > 0) {
+          reader2.readAsText(this.fileInput2.files[0]);
+      }
+
+      draw();
+      showMessage('Record Updated Successfully. You can now close this page!')
+    } catch (err) {
+      console.error(err);
+      showError('Something went wrong. Please try again or contact IT');
+    }
+  }
+
+  uploadFiles = async (Expiration_ID) => {
+    // Create the FormData instance
+    const formData = new FormData();
+
+    const todayString = `${new Date().getFullYear()}-${new Date().getMonth()+1}-${new Date().getDate()}`;
+    const renamedFile1 = new File([this.fileInput1.files[0]], `(License Front - ${todayString}) ${this.fileInput1.files[0].name}`, {type: this.fileInput1.files[0].type});
+    const renamedFile2 = new File([this.fileInput2.files[0]], `(License Back - ${todayString}) ${this.fileInput2.files[0].name}`, {type: this.fileInput2.files[0].type});
+
+    // Append the two files
+    formData.append('file1', renamedFile1);
+    formData.append('file2', renamedFile2);
+
+    // Make the axios request
     await axios({
-      method: 'put', //put means update
-      url: `${requestURL}/api/widgets/expirations`, //get from swagger
-      data: {
-        updatedLicense: updatedLicense
-      },
+        method: 'post',
+        url: `${this.fetchURL}/api/widgets/files/expirations?id=${Expiration_ID}`, //get from swagger
+        data: formData,
+        headers: { 'Content-Type': 'multipart/form-data' }
     })
       .then(response => response.data)
-      .catch(err => {
-        console.error(err);
-        alert('something went wrong, probably you did it wrong')
-      })
-  
-    // upload license files to mp
-    // --------------------------------------------------------------------------------------------------
-  
-    // Create two FileReader instances
-    let reader1 = new FileReader();
-    let reader2 = new FileReader();
-  
-    async function uploadFiles() {
-      // Create the FormData instance
-      const formData = new FormData();
-  
-      const todayString = `${new Date().getFullYear()}-${new Date().getMonth()+1}-${new Date().getDate()}`
-      const renamedFile1 = new File([fileInput1.files[0]], `License Front ${todayString}`, {type: fileInput1.files[0].type});
-      const renamedFile2 = new File([fileInput2.files[0]], `License Back ${todayString}`, {type: fileInput2.files[0].type});
-  
-      // Append the two files
-      formData.append('file1', renamedFile1);
-      formData.append('file2', renamedFile2);
-  
-      // Make the axios request
-      const records = await axios({
-          method: 'post',
-          url: `${requestURL}/api/widgets/files/expirations?id=${Expiration_ID}`, //get from swagger
-          data: formData,
-          headers: { 'Content-Type': 'multipart/form-data' }
-      })
-      .then(response => response.data)
-      .catch(err => {
-          console.error(err);
-          alert('something went wrong, probably you did it wrong')
-      });
-
-      console.log(records)
-  
-      alert('record updated successfully')
-    }
-  
-    // Define a function to be called when both files have been read
-    let filesRead = 0;
-    function fileRead() {
-        filesRead++;
-        if (filesRead === 2) {
-            // Both files have been read - upload them
-            uploadFiles();
-        }
-    }
-  
-    // Define the onload function for both readers
-    reader1.onload = fileRead;
-    reader2.onload = fileRead;
-  
-    // Start reading the files
-    if (fileInput1.files.length > 0) {
-        reader1.readAsText(fileInput1.files[0]);
-    }
-    if (fileInput2.files.length > 0) {
-        reader2.readAsText(fileInput2.files[0]);
-    }
   }
 }
 
