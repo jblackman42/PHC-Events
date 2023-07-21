@@ -1,11 +1,4 @@
-body {
-  font-family: Arial, sans-serif;
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
-
-.container {
+phc-license-renewal .container {
   width: 90%;
   max-width: 600px;
   margin: 20px auto;
@@ -15,20 +8,20 @@ body {
   background-color: #f8f8f8;
 }
 
-h2 {
+phc-license-renewal h2 {
   text-align: center;
 }
 
-form {
+phc-license-renewal form {
   display: flex;
   flex-direction: column;
 }
 
-label, input, select {
+phc-license-renewal label, phc-license-renewal input, phc-license-renewal select {
   margin-bottom: 15px;
 }
 
-input[type="text"], input[type="date"], select, input[type="file"] {
+phc-license-renewal input[type="text"], phc-license-renewal input[type="date"], phc-license-renewal select, phc-license-renewal input[type="file"] {
   padding: 5px;
   border: 1px solid #ccc;
   border-radius: 5px;
@@ -36,7 +29,7 @@ input[type="text"], input[type="date"], select, input[type="file"] {
   width: 100%;
 }
 
-input[type="submit"] {
+phc-license-renewal input[type="submit"] {
   padding: 10px 20px;
   border: none;
   border-radius: 5px;
@@ -45,18 +38,18 @@ input[type="submit"] {
   cursor: pointer;
 }
 
-input[type="submit"]:hover {
+phc-license-renewal input[type="submit"]:hover {
   background-color: #45a049;
 }
 
 /* Responsive styles */
 @media (max-width: 600px) {
-  .container {
+  phc-license-renewal .container {
     width: 85%;
     padding: 15px;
   }
 
-  input[type="text"], input[type="date"], select, input[type="file"] {
+  phc-license-renewal input[type="text"], phc-license-renewal input[type="date"], phc-license-renewal select, phc-license-renewal input[type="file"] {
     font-size: 24px; /* Adjust font size here */
   }
 }
