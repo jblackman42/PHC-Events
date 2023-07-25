@@ -11,8 +11,8 @@ class LicenseRenewal extends HTMLElement {
     }
 
     // this.fetchURL = 'https://phc.events';
-    // this.fetchURL = this.getAttribute('fetchURL') || 'https://phc.events';
-    this.fetchURL = this.getAttribute('fetchURL') || 'http://localhost:3000';
+    this.fetchURL = this.getAttribute('fetchURL') || 'https://phc.events';
+    // this.fetchURL = this.getAttribute('fetchURL') || 'http://localhost:3000';
     this.draw();
   }
 
