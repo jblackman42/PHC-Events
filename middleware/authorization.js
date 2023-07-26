@@ -143,9 +143,10 @@ const ensureApiAuthenticated = async (req, res, next) => {
 }
 
 const checkHost = (req, res, next) => {
-    const host = req.get('host');
+    return next();
+    const ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
     
-    if (process.env.WHITELISTED_DOMAINS.includes(host)) {
+    if (process.env.WHITELISTED_IPS.includes(ip)) {
       next(); // Move to the next middleware/route
     } else {
       res.status(403).json({
@@ -154,6 +155,7 @@ const checkHost = (req, res, next) => {
       });
     }
 }
+  
 
 module.exports = {
     ensureAuthenticated,

@@ -560,4 +560,9 @@ router.post('/event-room-groups', ensureApiAuthenticated, async (req, res) => {
   res.send(eventRoomsData)
 })
 
+
+router.get('/my-ip', (req, res) => {
+  const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
+  res.json({ ip });
+});
 module.exports = router;
