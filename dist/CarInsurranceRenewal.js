@@ -19,15 +19,15 @@ class CarInsurranceRenewal extends HTMLElement {
   draw = () => {
     this.innerHTML = `
       <div class="container">
-        <h2>Update Insurrance Form</h2>
+        <h2>Update Insurance Form</h2>
         <form id="update-insurrance-form">
           
           <label for="exp-date">Expiration Date:</label>
           <input type="date" id="exp-date" name="exp-date" required>
 
-          <label for="insurrance-file">Picure of Front of Insurrance:</label>
+          <label for="insurrance-file">Picure of Front of Insurance:</label>
           <input type="file" id="fileInput1" required>
-          <label for="insurrance-file">Picture of Back of Insurrance if applicable:</label>
+          <label for="insurrance-file">Picture of Back of Insurance if applicable:</label>
           <input type="file" id="fileInput2">
 
           <input type="submit" value="Submit">
