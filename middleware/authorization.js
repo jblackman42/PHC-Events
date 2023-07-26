@@ -142,7 +142,21 @@ const ensureApiAuthenticated = async (req, res, next) => {
     }
 }
 
+const checkHost = (req, res, next) => {
+    const host = req.get('host');
+    
+    if (process.env.WHITELISTED_DOMAINS.includes(host)) {
+      next(); // Move to the next middleware/route
+    } else {
+      res.status(403).json({
+        status: 'error',
+        message: 'Host not allowed'
+      });
+    }
+}
+
 module.exports = {
     ensureAuthenticated,
-    ensureApiAuthenticated
+    ensureApiAuthenticated,
+    checkHost
 }
