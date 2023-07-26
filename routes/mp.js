@@ -520,11 +520,6 @@ router.get('/heart-crews', ensureApiAuthenticated, async (req, res) => {
   res.send(heartCrewData)
 })
 
-
-
-
-
-
 router.post('/event-groups', ensureApiAuthenticated, async (req, res) => {
   const { eventGroupsToBook } = req.body;
 
