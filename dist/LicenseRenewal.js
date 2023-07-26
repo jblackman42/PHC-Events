@@ -84,9 +84,9 @@ class LicenseRenewal extends HTMLElement {
           </select>
 
           <label for="license-file">Picure of Front of License:</label>
-          <input type="file" id="fileInput1">
+          <input type="file" id="fileInput1" required>
           <label for="license-file">Picture of Back of License:</label>
-          <input type="file" id="fileInput2">
+          <input type="file" id="fileInput2" required>
 
           <input type="submit" value="Submit">
 

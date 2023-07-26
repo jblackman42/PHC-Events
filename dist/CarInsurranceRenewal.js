@@ -26,7 +26,7 @@ class CarInsurranceRenewal extends HTMLElement {
           <input type="date" id="exp-date" name="exp-date" required>
 
           <label for="insurrance-file">Picure of Front of Insurrance:</label>
-          <input type="file" id="fileInput1">
+          <input type="file" id="fileInput1" required>
           <label for="insurrance-file">Picture of Back of Insurrance if applicable:</label>
           <input type="file" id="fileInput2">
 
@@ -110,28 +110,31 @@ class CarInsurranceRenewal extends HTMLElement {
       // Create two FileReader instances
       let reader1 = new FileReader();
       let reader2 = new FileReader();
+      let numOfFiles = 0;
     
       // Define a function to be called when both files have been read
       let filesRead = 0;
       function fileRead(uploadFunc) {
           filesRead++;
-          if (filesRead === 2) {
+          if (filesRead === numOfFiles) {
               // Both files have been read - upload them
               uploadFunc(Expiration_ID);
           }
       }
     
+      
+      // Start reading the files
+      if (this.fileInput1.files.length > 0) {
+        reader1.readAsText(this.fileInput1.files[0]);
+        numOfFiles ++;
+      }
+      if (this.fileInput2.files.length > 0) {
+        reader2.readAsText(this.fileInput2.files[0]);
+        numOfFiles ++;
+      }
       // Define the onload function for both readers
       reader1.onload = () => fileRead(this.uploadFiles);
       reader2.onload = () => fileRead(this.uploadFiles);
-    
-      // Start reading the files
-      if (this.fileInput1.files.length > 0) {
-          reader1.readAsText(this.fileInput1.files[0]);
-      }
-      if (this.fileInput2.files.length > 0) {
-          reader2.readAsText(this.fileInput2.files[0]);
-      }
 
       draw();
       showMessage('Record Updated Successfully. You can now close this page!')
@@ -146,12 +149,14 @@ class CarInsurranceRenewal extends HTMLElement {
     const formData = new FormData();
 
     const todayString = `${new Date().getFullYear()}-${new Date().getMonth()+1}-${new Date().getDate()}`;
-    const renamedFile1 = new File([this.fileInput1.files[0]], `(Insurrance Front - ${todayString}) ${this.fileInput1.files[0].name}`, {type: this.fileInput1.files[0].type});
-    const renamedFile2 = new File([this.fileInput2.files[0]], `(Insurrance Back - ${todayString}) ${this.fileInput2.files[0].name}`, {type: this.fileInput2.files[0].type});
+    const files = [];
+    if (this.fileInput1.files.length) files.push(new File([this.fileInput1.files[0]], `(Insurrance Front - ${todayString}) ${this.fileInput1.files[0].name}`, {type: this.fileInput1.files[0].type}));
+    if (this.fileInput2.files.length) files.push(new File([this.fileInput2.files[0]], `(Insurrance Back - ${todayString}) ${this.fileInput2.files[0].name}`, {type: this.fileInput2.files[0].type}));
 
     // Append the two files
-    formData.append('file1', renamedFile1);
-    formData.append('file2', renamedFile2);
+    files.forEach((file, i) => {
+      formData.append(`files${i+1}`, file)
+    })
 
     // Make the axios request
     await axios({
