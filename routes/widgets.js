@@ -7,7 +7,6 @@ const fs = require('fs');
 const multer = require('multer');
 const FormData = require('form-data');
 const upload = multer();
-const { checkHost } = require('../middleware/authorization');
 
 // const StaffSchema = require('../models/Staff');
 // const SermonSchema = require('../models/Sermons');
@@ -63,7 +62,7 @@ router.get('/styles/:filename', (req, res) => {
     });
 })
 
-router.post('/staff', checkHost, async (req, res) => {
+router.post('/staff', async (req, res) => {
     const {Contact_ID_List} = req.body;
 
     if (!Contact_ID_List) {
@@ -87,7 +86,7 @@ router.post('/staff', checkHost, async (req, res) => {
     res.status(200).send(data).end();
 })
 
-router.get('/staff-ministries', checkHost, async (req, res) => {
+router.get('/staff-ministries', async (req, res) => {
 
     const data = await axios({
         method: 'post',
@@ -105,7 +104,7 @@ router.get('/staff-ministries', checkHost, async (req, res) => {
 
 // sermons widget here -------------------------------------------------------------------------------
 
-router.get('/series', checkHost, async (req, res) => {
+router.get('/series', async (req, res) => {
     let SeriesType = req.query.SeriesType;
     let SeriesID = req.query.SeriesID;
 
@@ -131,7 +130,7 @@ router.get('/series', checkHost, async (req, res) => {
     res.status(200).send(data).end();
 })
 
-router.get('/sermons', checkHost, async (req, res) => {
+router.get('/sermons', async (req, res) => {
     let SeriesID = req.query.SeriesID
 
     if (!SeriesID) {
@@ -155,7 +154,13 @@ router.get('/sermons', checkHost, async (req, res) => {
     res.status(200).send(data).end();
 })
 
-router.get('/featured-events', checkHost, async (req, res) => {
+router.get('/test', (req, res) => {
+    res.sendStatus(200);
+})
+
+router.get('/featured-events', async (req, res) => {
+
+    console.log(8)
     const data = await axios({
         method: 'post',
         url: `https://my.pureheart.org/ministryplatformapi/procs/api_Widget_GetFeaturedEvents`,
@@ -174,7 +179,7 @@ router.get('/featured-events', checkHost, async (req, res) => {
     res.status(200).send(data).end();
 })
 
-router.get('/opportunities', checkHost, async (req, res) => {
+router.get('/opportunities', async (req, res) => {
 
     const data = await axios({
         method: 'post',
@@ -190,7 +195,7 @@ router.get('/opportunities', checkHost, async (req, res) => {
     res.status(200).send(data).end();
 })
 
-router.post('/opportunity-auto-place', checkHost, async (req, res) => {
+router.post('/opportunity-auto-place', async (req, res) => {
     //get access token for accessing database informatin
     try {
         const {id} = req.body;
@@ -217,7 +222,7 @@ router.post('/opportunity-auto-place', checkHost, async (req, res) => {
     }
 })
 
-router.post('/email', checkHost, async (req, res) => {
+router.post('/email', async (req, res) => {
     const apiUserId = 6580;
     const apiUserContactId = 95995;
 
@@ -251,7 +256,7 @@ router.post('/email', checkHost, async (req, res) => {
     }
 })
 
-router.get('/unsubscribe', checkHost, async (req, res) => {
+router.get('/unsubscribe', async (req, res) => {
     const id = req.query.id;
 
     try {
@@ -277,7 +282,7 @@ router.get('/unsubscribe', checkHost, async (req, res) => {
 })
 
 
-router.get('/group-register', checkHost, async (req, res) => {
+router.get('/group-register', async (req, res) => {
     const formGUID = req.query.Form_GUID;
 
     if (!formGUID) return res.status(400).send({err: 'no form guid found'}).end();
@@ -296,6 +301,7 @@ router.get('/group-register', checkHost, async (req, res) => {
         })
             .then(response => response.data[0])
 
+            console.log(formData.Form_ID)
         const formFieldsData = await axios({
             method: 'get',
             url: `https://my.pureheart.org/ministryplatformapi/tables/Form_Fields?$filter=Form_ID=${formData.Form_ID}`,
@@ -320,7 +326,7 @@ router.get('/group-register', checkHost, async (req, res) => {
 
 
 
-router.get('/ministry-question', checkHost, async (req, res) => {
+router.get('/ministry-question', async (req, res) => {
     const { ministryQuestionID } = req.query;
     
     if (!ministryQuestionID) return res.status(400).send({err: 'no ministry question id'}).end();
@@ -349,7 +355,7 @@ router.get('/ministry-question', checkHost, async (req, res) => {
     }
 })
 
-router.get('/ministry-answers', checkHost, async (req, res) => {
+router.get('/ministry-answers', async (req, res) => {
     const { ministryQuestionID, monthly } = req.query;
     
     if (!ministryQuestionID || !monthly) return res.status(400).send({err: 'no ministry question id'}).end();
@@ -378,7 +384,7 @@ router.get('/ministry-answers', checkHost, async (req, res) => {
     }
 })
 
-router.get('/ministry-answers-monthly', checkHost, async (req, res) => {
+router.get('/ministry-answers-monthly', async (req, res) => {
     // const { ministryQuestionID } = req.query;
     
     // if (!ministryQuestionID) return res.status(400).send({err: 'no ministry question id'}).end();
@@ -457,7 +463,7 @@ router.get('/ministry-answers-monthly', checkHost, async (req, res) => {
     }
 })
 
-router.get('/expirations', checkHost, async (req, res) => {
+router.get('/expirations', async (req, res) => {
     const { guid } = req.query;
 
     if (!guid) return res.status(400).send({err: 'Missing Parameter: guid'}).end();
@@ -483,7 +489,7 @@ router.get('/expirations', checkHost, async (req, res) => {
     }
 })
 
-router.put('/expirations', checkHost, async (req, res) => {
+router.put('/expirations', async (req, res) => {
     try {
         const data = await axios({
             method: 'put', //put means update
@@ -503,7 +509,7 @@ router.put('/expirations', checkHost, async (req, res) => {
     }
 })
 
-router.post('/files/expirations', checkHost, upload.any(), async (req, res) => {
+router.post('/files/expirations', upload.any(), async (req, res) => {
     const { id } = req.query;
 
     const formData = new FormData();

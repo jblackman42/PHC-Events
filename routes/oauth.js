@@ -2,7 +2,6 @@ const express = require('express');
 const router = express.Router();
 const qs = require('qs')
 const axios = require('axios');
-const { checkHost } = require('../middleware/authorization');
 
 const getAccessToken = async () => {
     const data = await axios({
@@ -21,7 +20,7 @@ const getAccessToken = async () => {
     return access_token;
   }
 
-router.post('/login', checkHost, async (req, res) => {
+router.post('/login', async (req, res) => {
     //this video explains this axios request
     //https://youtu.be/r5N8MrQedcg?t=155
     //heres the docs for ministry platform oauth info
@@ -92,8 +91,12 @@ router.post('/login', checkHost, async (req, res) => {
     }
 })
 
-router.get('/user', checkHost, (req, res) => {
+router.get('/user', (req, res) => {
   res.send(req.session.user);
+})
+
+router.get('/client-authorize', async (req, res) => {
+    
 })
 
 module.exports = router;

@@ -1,10 +1,9 @@
 const express = require('express');
 const app = express();
 const axios = require('axios');
-const qs = require('qs');
-const { checkHost } = require('../middleware/authorization.js')
+const qs = require('qs')
 
-app.get('/tickets', checkHost, async (req, res) => {
+app.get('/tickets', async (req, res) => {
   const accessToken = await axios({
       method: 'post',
       url: 'https://my.pureheart.org/ministryplatformapi/oauth/connect/token',

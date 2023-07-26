@@ -1,8 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const axios = require('axios');
-const qs = require('qs');
-const { checkHost } = require('../middleware/authorization');
+const qs = require('qs')
 
 
 
@@ -98,11 +97,11 @@ const sendNotifications = async (req, res) => {
 // schedule.scheduleJob('8 * * *', () => sendNotifications());
 
 
-router.get('/send-notifications', checkHost, async (req, res) => {
+router.get('/send-notifications', async (req, res) => {
     return await sendNotifications(req, res)
 })
 
-router.get('/', checkHost, async (req, res) => {
+router.get('/', async (req, res) => {
 
     const {skip} = req.query;
     
@@ -120,7 +119,7 @@ router.get('/', checkHost, async (req, res) => {
     res.status(200).json({prayer_requests}).end();
 })
 
-router.get('/:id', checkHost, async (req, res) => {
+router.get('/:id', async (req, res) => {
 
     const prayer_request = await axios({
         method: 'get',
@@ -135,7 +134,7 @@ router.get('/:id', checkHost, async (req, res) => {
     res.status(200).json({prayer_request}).end();
 })
 
-router.post('/', checkHost, async (req, res) => {
+router.post('/', async (req, res) => {
     
     const response = await axios({
         method: 'post',
@@ -152,7 +151,7 @@ router.post('/', checkHost, async (req, res) => {
     res.sendStatus(response.status)
 })
 
-router.post('/prayed', checkHost, async (req, res) => {
+router.post('/prayed', async (req, res) => {
 
     try {
         const data = await axios({
@@ -170,6 +169,17 @@ router.post('/prayed', checkHost, async (req, res) => {
         res.sendStatus(data.status)
     } catch (err) {
         console.log(err)
+        res.sendStatus(500)
+    }
+})
+
+router.post('/send-email', async (req, res) => {
+
+    try {
+        const {recipientName, recipientEmail, Prayer_Count} = req.body;
+
+        res.sendStatus(200)
+    } catch (err) {
         res.sendStatus(500)
     }
 })

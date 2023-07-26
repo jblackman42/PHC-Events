@@ -2,9 +2,8 @@ const express = require('express');
 const router = express.Router();
 const axios = require('axios');
 const qs = require('qs');
-const { checkHost } = require('../middleware/authorization');
 
-router.get('/ministryQuestions', checkHost, async (req, res) => {
+router.get('/ministryQuestions', async (req, res) => {
   try {
     const ministryQuestions = await axios({
       method: 'get',
@@ -26,7 +25,7 @@ router.get('/ministryQuestions', checkHost, async (req, res) => {
   }
 })
 
-router.delete('/deleteAnswers', checkHost, async (req, res) => {
+router.delete('/deleteAnswers', async (req, res) => {
   try {
     const { MinistryQuestionID } = req.query;
     await axios({
@@ -50,7 +49,7 @@ router.delete('/deleteAnswers', checkHost, async (req, res) => {
   }
 })
 
-router.get('/refreshAnswers', checkHost, async (req, res) => {
+router.get('/refreshAnswers', async (req, res) => {
   try {
     const { MinistryQuestionID } = req.query;
     await axios({
@@ -76,7 +75,7 @@ router.get('/refreshAnswers', checkHost, async (req, res) => {
 
 // testing api routs
 
-router.get('/userinfo', checkHost, async (req, res) => {
+router.get('/userinfo', async (req, res) => {
   try {
     const result = await axios({
       method: 'get',
@@ -100,7 +99,7 @@ router.get('/userinfo', checkHost, async (req, res) => {
 
 // CREATE EVENT ROUTES
 
-router.post('/overlapped-rooms', checkHost, async (req, res) => {
+router.post('/overlapped-rooms', async (req, res) => {
   const { dates } = req.body;
 
   if (!dates || !dates.length) return res.status(400).send({err: 'no startDate or endDate provided'}).end();
@@ -130,7 +129,7 @@ router.post('/overlapped-rooms', checkHost, async (req, res) => {
   res.send(eventRooms)
 })
 
-router.get('/locations', checkHost, async (req, res) => {
+router.get('/locations', async (req, res) => {
   const locations = await axios({
     method: 'get',
     url: 'https://my.pureheart.org/ministryplatformapi/tables/locations',
@@ -149,7 +148,7 @@ router.get('/locations', checkHost, async (req, res) => {
   res.send(locations)
 })
 
-router.get('/primary-contacts', checkHost, async (req, res) => {
+router.get('/primary-contacts', async (req, res) => {
   const users = await axios({
     method: 'get',
     url: 'https://my.pureheart.org/ministryplatformapi/tables/dp_User_User_Groups',
@@ -183,7 +182,7 @@ router.get('/primary-contacts', checkHost, async (req, res) => {
   res.send(users)
 })
 
-router.get('/event-types', checkHost, async (req, res) => {
+router.get('/event-types', async (req, res) => {
   const eventTypes = await axios({
     method: 'get',
     url: 'https://my.pureheart.org/ministryplatformapi/tables/Event_Types',
@@ -202,7 +201,7 @@ router.get('/event-types', checkHost, async (req, res) => {
   res.send(eventTypes)
 })
 
-router.get('/congregations', checkHost, async (req, res) => {
+router.get('/congregations', async (req, res) => {
   const congregations = await axios({
     method: 'get',
     url: 'https://my.pureheart.org/ministryplatformapi/tables/Congregations',
@@ -221,7 +220,7 @@ router.get('/congregations', checkHost, async (req, res) => {
   res.send(congregations)
 })
 
-router.get('/places', checkHost, async (req, res) => {
+router.get('/places', async (req, res) => {
   const places = await axios({
     method: 'get',
     url: 'https://my.pureheart.org/ministryplatformapi/tables/Rooms',
@@ -262,7 +261,7 @@ router.get('/places', checkHost, async (req, res) => {
   res.send(locationsArr)
 })
 
-router.get('/events', checkHost, async (req, res) => {
+router.get('/events', async (req, res) => {
   // monthStart <= eventEnd && monthEnd >= eventStart
   const { monthStart, monthEnd } = req.query;
 
@@ -287,7 +286,7 @@ router.get('/events', checkHost, async (req, res) => {
   res.send(events)
 })
 
-router.post('/events', checkHost, async (req, res) => {
+router.post('/events', async (req, res) => {
   const { events } = req.body;
 
   if (!events || !events.length)  return res.status(400).send({err: 'no event provided'}).end();
@@ -307,7 +306,7 @@ router.post('/events', checkHost, async (req, res) => {
   res.send(eventsData)
 })
 
-router.get('/event-rooms', checkHost, async (req, res) => {
+router.get('/event-rooms', async (req, res) => {
   const { eventIDs } = req.query;
 
   const rooms = await axios({
@@ -328,7 +327,7 @@ router.get('/event-rooms', checkHost, async (req, res) => {
   res.send(rooms)
 })
 
-router.post('/event-rooms', checkHost, async (req, res) => {
+router.post('/event-rooms', async (req, res) => {
   const { roomsToBook } = req.body;
 
   if (!roomsToBook || !roomsToBook.length)  return res.status(400).send({err: 'no rooms to book provided'}).end();
@@ -348,7 +347,7 @@ router.post('/event-rooms', checkHost, async (req, res) => {
   res.send(roomData)
 })
 
-router.get('/event-services', checkHost, async (req, res) => {
+router.get('/event-services', async (req, res) => {
   // monthStart <= eventEnd && monthEnd >= eventStart
   const { eventId } = req.query;
 
@@ -372,7 +371,7 @@ router.get('/event-services', checkHost, async (req, res) => {
   res.send(events)
 })
 
-router.post('/event-services', checkHost, async (req, res) => {
+router.post('/event-services', async (req, res) => {
   const { servicesToBook } = req.body;
 
   if (!servicesToBook || !servicesToBook.length)  return res.status(400).send({err: 'no rooms to book provided'}).end();
@@ -392,7 +391,7 @@ router.post('/event-services', checkHost, async (req, res) => {
   res.send(serviceData)
 })
 
-router.get('/event-equipment', checkHost, async (req, res) => {
+router.get('/event-equipment', async (req, res) => {
   // monthStart <= eventEnd && monthEnd >= eventStart
   const { eventId } = req.query;
 
@@ -416,7 +415,7 @@ router.get('/event-equipment', checkHost, async (req, res) => {
   res.send(events)
 })
 
-router.post('/event-equipment', checkHost, async (req, res) => {
+router.post('/event-equipment', async (req, res) => {
   const { equipmentToBook } = req.body;
 
   if (!equipmentToBook || !equipmentToBook.length)  return res.status(400).send({err: 'no equipment to book provided'}).end();
@@ -436,7 +435,7 @@ router.post('/event-equipment', checkHost, async (req, res) => {
   res.send(equipmentData)
 })
 
-router.get('/equipment', checkHost, async (req, res) => {
+router.get('/equipment', async (req, res) => {
   const equipment = await axios({
     method: 'get',
     url: 'https://my.pureheart.org/ministryplatformapi/tables/Equipment',
@@ -456,7 +455,7 @@ router.get('/equipment', checkHost, async (req, res) => {
   res.send(equipment)
 })
 
-router.post('/event-sequences', checkHost, async (req, res) => {
+router.post('/event-sequences', async (req, res) => {
   const { Event_IDs, Table_Name } = req.body;
   
   if (!Event_IDs || !Table_Name)  return res.status(400).send({err: 'no event id or table name provided'}).end();
@@ -479,7 +478,7 @@ router.post('/event-sequences', checkHost, async (req, res) => {
   res.send(sequenceData)
 })
 
-router.post('/generate-sequence', checkHost, async (req, res) => {
+router.post('/generate-sequence', async (req, res) => {
   const { sequence } = req.body;
 
   if (!sequence) return res.status(400).send({err: 'no sequence provided'}).end();
@@ -500,7 +499,7 @@ router.post('/generate-sequence', checkHost, async (req, res) => {
 })
 
 // CHILDREN'S CHECK-IN
-router.get('/selection', checkHost, async (req, res) => {
+router.get('/selection', async (req, res) => {
   const { SelectionID, PageID, UserID } = req.query;
 
   if (!SelectionID || !PageID) return res.status(400).send({err: 'Must provide SelectionID, PageID, UserID in query'}).end();
@@ -532,7 +531,7 @@ router.get('/selection', checkHost, async (req, res) => {
   }
 })
 
-router.post('/PHCChildrenCheckin', checkHost, async (req, res) => {
+router.post('/PHCChildrenCheckin', async (req, res) => {
   const { EventIDs } = req.body;
 
   if (!EventIDs) return res.status(400).send({err: 'Must provide EventIDs in body'}).end();
