@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <%- include('../partials/head'); %>
+    </head>
+<body>
+    <%- include('../partials/loading'); %>
+
+    <%- include('../partials/navbar'); %>
+
+    <upload-sermon-guide currentURL="https://phc.events">
+    </upload-sermon-guide>
+
+    <%- include('../partials/footer'); %>
+</body>
+<script>
+    class uploadSermonGuide extends HTMLElement {
+        constructor() {
+            super();
+            this.currentURL = this.getAttribute('currentURL')
+
+            this.draw();
+        }
+
+        draw = async () => {
+            this.innerHTML = `
+                <h1>Upload Sermon Guide</h1>
+                <form id="upload-guide">
+                    <div class="input wide">
+                        <select id="sermon" required></select>
+                        <label for="sermon">Sermon:</label>
+                    </div>
+                    <div class="input">
+                        <select id="link-type" required></select>
+                        <label for="link-type">Link Type:</label>
+                    </div>
+                    <div class="input">
+                        <input type="file" id="file" required>
+                        <label for="file">File:</label>
+                    </div>
+                    <div class="input wide checkbox">
+                        <label for="create-announcement">Create Announcement:</label>
+                        <input type="checkbox" id="create-announcement">
+                        <hr>
+                    </div>
+                    <div class="input">
+                        <input type="text" id="announcement-title" disabled>
+                        <label for="announcement-title">Announcement Title:</label>
+                    </div>
+                    <div class="input">
+                        <input type="text" id="announcement-subtext" disabled>
+                        <label for="announcement-subtext">Announcement Subtext:</label>
+                    </div>
+                    <div class="input">
+                        <input type="date" id="announcement-start-date" disabled>
+                        <label for="announcement-start-date">Announcement Start Date:</label>
+                    </div>
+                    <div class="input">
+                        <input type="date" id="announcement-end-date" disabled>
+                        <label for="announcement-end-date">Announcement End Date:</label>
+                    </div>
+
+                    <div class="btn-container">
+                        <button id="submit-btn" class="btn" type="submit">Confirm</button>
+                    </div>
+
+                    <p id="form-message"></p>
+                </form>
+            `
+
+            const uploadFormDOM = document.getElementById('upload-guide');
+            
+            const sermonSelectDOM = document.getElementById('sermon');
+            const linkTypesSelectDOM = document.getElementById('link-type');
+            const fileInputDOM = document.getElementById('file');
+
+            const createAnnouncementCheckboxInputDOM = document.getElementById('create-announcement');
+            const announcementTitleInputDOM = document.getElementById('announcement-title');
+            const announcementSubtextInputDOM = document.getElementById('announcement-subtext');
+            const announcementStartDateDOM = document.getElementById('announcement-start-date');
+            const announcementEndDateDOM = document.getElementById('announcement-end-date');
+
+            createAnnouncementCheckboxInputDOM.addEventListener('change', () => {
+                const isChecked = createAnnouncementCheckboxInputDOM.checked;
+                announcementTitleInputDOM.disabled = !isChecked;
+                announcementSubtextInputDOM.disabled = !isChecked;
+                announcementStartDateDOM.disabled = !isChecked;
+                announcementEndDateDOM.disabled = !isChecked;
+
+                if (!this.isConnected) {
+                    announcementTitleInputDOM.value = null;
+                    announcementSubtextInputDOM.value = null;
+                    announcementStartDateDOM.value = null;
+                    announcementEndDateDOM.value = null;
+                    return;
+                }
+
+                if (!this.sermons || !this.linkTypes || !isChecked) return;
+
+                const currSermon = this.sermons.find(sermon => sermon.Sermon_ID == sermonSelectDOM.value);
+                const currLinkType = this.linkTypes.find(linkType => linkType.Sermon_Link_Type_ID == linkTypesSelectDOM.value);
+                
+                const endDate = new Date(currSermon.Sermon_Date);
+                endDate.setHours(0);
+                endDate.setMinutes(0);
+                endDate.setDate(endDate.getDate() + 6);
+
+
+                announcementTitleInputDOM.value = announcementTitleInputDOM.value || `This Week's ${currLinkType.Sermon_Link_Type}`;
+                announcementSubtextInputDOM.value = announcementSubtextInputDOM.value || 'Click Here';
+                announcementStartDateDOM.value = announcementStartDateDOM.value || currSermon.Sermon_Date.split('T')[0];
+                announcementEndDateDOM.value = announcementEndDateDOM.value || endDate.toISOString().split('T')[0];
+            })
+
+            uploadFormDOM.addEventListener('submit', async (e) => {
+                e.preventDefault();
+
+                loading();
+                await this.handleSubmit();
+                doneLoading();
+            })
+
+            this.getData();
+        }
+
+        formatDate = (dateString) => {
+            const date = new Date(dateString);
+            const year = date.getFullYear();
+            const month = (date.getMonth() + 1).toString().padStart(2, '0'); // Months are 0-based in JavaScript
+            const day = date.getDate().toString().padStart(2, '0');
+            const hours = date.getHours().toString().padStart(2, '0');
+            const minutes = date.getMinutes().toString().padStart(2, '0');
+            const seconds = date.getSeconds().toString().padStart(2, '0');
+
+            return `${year}-${month}-${day}T${hours}:${minutes}:${seconds}`;
+        }
+
+        getData = async () => {
+            loading();
+
+            // get dom elements
+            const sermonSelectDOM = document.getElementById('sermon');
+            const linkTypesSelectDOM = document.getElementById('link-type');
+
+            // get sermons
+            this.sermons = await axios({
+                method: 'get',
+                url: '/api/mp/sermons'
+            })
+                .then(response => response.data);
+            // put sermons in select dom
+            sermonSelectDOM.innerHTML = this.sermons.map(sermon => {
+                const { Sermon_ID, Sermon_Date, Display_Name, Title, Subtitle } = sermon;
+                const date = new Date(Sermon_Date);
+                let month = date.getMonth() + 1; // getMonth() is zero-based
+                let day = date.getDate();
+                let year = date.getFullYear().toString().substr(-2); // get last two digits of year
+
+                // put together and remove nulls
+                const labels = [`${month}/${day}/${year}`, Display_Name, Subtitle, Title].filter(value => value !== null);
+
+                // join them with ' - ' between each value
+                return `
+                    <option value="${Sermon_ID}">${labels.join(' - ')}</option>
+                `
+            })
+            
+            
+            // get link types
+            this.linkTypes = await axios({
+                method: 'get',
+                url: '/api/mp/sermon-link-types'
+            })
+                .then(response => response.data);
+            // put sermons in select dom
+            linkTypesSelectDOM.innerHTML = this.linkTypes.map(linkType => {
+                const { Sermon_Link_Type, Sermon_Link_Type_ID } = linkType;
+                return `
+                    <option value="${Sermon_Link_Type_ID}">${Sermon_Link_Type}</option>
+                `
+            })
+
+            doneLoading();
+        }
+
+        showSuccessMsg = (msg) => {
+            const formMessageDOM = document.getElementById('form-message');
+            const submitBtnDOM = document.getElementById('submit-btn');
+            formMessageDOM.classList.add('success');
+            formMessageDOM.classList.remove('error');
+            submitBtnDOM.disabled = true;
+            formMessageDOM.innerHTML = msg;
+        }
+
+        showErrorMsg = (msg) => {
+            const formMessageDOM = document.getElementById('form-message');
+            formMessageDOM.classList.remove('success');
+            formMessageDOM.classList.add('error');
+            formMessageDOM.innerHTML = msg;
+        }
+
+        handleSubmit = async () => {
+            const sermonSelectDOM = document.getElementById('sermon');
+            const linkTypesSelectDOM = document.getElementById('link-type');
+            const fileInputDOM = document.getElementById('file');
+
+            const createAnnouncementCheckboxInputDOM = document.getElementById('create-announcement');
+            const announcementTitleInputDOM = document.getElementById('announcement-title');
+            const announcementSubtextInputDOM = document.getElementById('announcement-subtext');
+            const announcementStartDateDOM = document.getElementById('announcement-start-date');
+            const announcementEndDateDOM = document.getElementById('announcement-end-date');
+
+            try {
+                const formData = new FormData();
+                const file = fileInputDOM.files[0];
+                formData.append('file', file);
+
+                const { UniqueFileId } = await axios({
+                    method: 'post',
+                    url: `/api/mp/sermon-file/${sermonSelectDOM.value}`,
+                    data: formData
+                })
+                    .then(response => response.data[0]);
+                    
+                // cerate link to email
+                const mediaLink = `${this.currentURL}/api/mp/files/${UniqueFileId}`
+                // create sermon link
+                const sermon_link = {
+                    Sermon_ID: sermonSelectDOM.value,
+                    Link_Type_ID: linkTypesSelectDOM.value,
+                    Link_URL: mediaLink,
+                    Status_ID: 3
+                }
+                await axios({
+                    method: 'post',
+                    url: `/api/mp/sermon-link`,
+                    data: {sermon_links: [sermon_link]}
+                })
+                    .then(response => response.data);
+
+                // if selected, create PP announcement
+                if (!createAnnouncementCheckboxInputDOM.checked) return this.showSuccessMsg('Media upload successful, You can now close this page.');
+
+                const Start_Date = new Date(announcementStartDateDOM.value);
+                Start_Date.setMinutes(Start_Date.getMinutes() + Start_Date.getTimezoneOffset())
+
+                const End_Date = new Date(announcementEndDateDOM.value);
+                End_Date.setMinutes(End_Date.getMinutes() + End_Date.getTimezoneOffset())
+                End_Date.setMilliseconds((1000*60*60*24)-1);
+
+                const announcement = {
+                    Announcement_Title: announcementTitleInputDOM.value,
+                    Body: announcementSubtextInputDOM.value,
+                    Start_Date: this.formatDate(Start_Date),
+                    End_Date: this.formatDate(End_Date),
+                    Link_URL: mediaLink,
+                    Testers_Only: true
+                }
+                await axios({
+                    method: 'post',
+                    url: `/api/mp/announcements`,
+                    data: {announcements: [announcement]}
+                })
+                    .then(response => response.data);
+
+                return this.showSuccessMsg('Media Upload Successful')
+            } catch (error) {
+                doneLoading();
+                console.log(error);
+
+                return this.showErrorMsg('Something went wrong. Please try again later or contact IT.')
+            }
+        }
+    }
+    customElements.define('upload-sermon-guide', uploadSermonGuide);
+</script>
+</html>

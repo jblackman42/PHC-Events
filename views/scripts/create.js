@@ -480,6 +480,8 @@ const createSeries = async (createdEvents) => {
 const addEventGroups = async (createdEvents) => {
   loading();
 
+  if (!selectedHeartCrewID) return;
+
   const eventIDs = createdEvents.map(event => event.Event_ID);
 
   const EventGroups = eventIDs.map(id => {
@@ -504,6 +506,8 @@ const addEventGroups = async (createdEvents) => {
 
 const addEventRoomGroups = async (createdEvents) => {
   loading();
+
+  if (!selectedHeartCrewID) return;
 
   const eventIDs = createdEvents.map(event => event.Event_ID);
 

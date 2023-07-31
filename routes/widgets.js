@@ -4,8 +4,8 @@ const axios = require('axios');
 const qs = require('qs')
 const path = require('path');
 const fs = require('fs');
-const multer = require('multer');
 const FormData = require('form-data');
+const multer = require('multer');
 const upload = multer();
 
 // const StaffSchema = require('../models/Staff');

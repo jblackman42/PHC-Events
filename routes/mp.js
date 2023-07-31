@@ -2,6 +2,11 @@ const express = require('express');
 const router = express.Router();
 const qs = require('qs')
 const axios = require('axios');
+const fs = require('fs');
+const FormData = require('form-data');
+const multer = require('multer');
+const upload = multer({ dest: 'uploads/' }); // You can change this to save files in the directory you prefer
+
 
 const { ensureAuthenticated, ensureApiAuthenticated } = require('../middleware/authorization.js')
 
@@ -566,8 +571,153 @@ router.post('/event-room-groups', ensureApiAuthenticated, async (req, res) => {
 })
 
 
-router.get('/my-ip', (req, res) => {
-  const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
-  res.json({ ip });
+router.get('/sermons', ensureApiAuthenticated, async (req, res) => {
+  try {
+    const sermons = await axios({
+      method: 'get',
+      url: 'https://my.pureheart.org/ministryplatformapi/tables/Pocket_Platform_Sermons',
+      params: {
+        $select: `Sermon_ID, Series_ID, Congregation_ID, Title, Subtitle, Description, Sermon_Date, Pocket_Platform_Sermons.[Speaker_ID], Speaker_ID_Table.[Display_Name]`,
+        $orderby: `Sermon_Date DESC`
+      },
+      headers: {
+        'content-type': 'application/json',
+        'authorization': `Bearer ${await getAccessToken()}`
+      }
+    })
+      .then(response => response.data)
+  
+    res.send(sermons)
+  } catch (error) {
+    console.log(error);
+    res.status(500).send(error).end();
+  }
 });
+router.get('/sermon-link-types', ensureApiAuthenticated, async (req, res) => {
+  try {
+    const linkTypes = await axios({
+      method: 'get',
+      url: 'https://my.pureheart.org/ministryplatformapi/tables/Pocket_Platform_Sermon_Link_Types',
+      params: {
+        $select: `Sermon_Link_Type, Sermon_Link_Type_ID`,
+        $orderby: `Sermon_Link_Type`
+      },
+      headers: {
+        'content-type': 'application/json',
+        'authorization': `Bearer ${await getAccessToken()}`
+      }
+    })
+      .then(response => response.data)
+  
+    res.send(linkTypes)
+  } catch (error) {
+    console.log(error);
+    res.status(500).send(error).end();
+  }
+});
+// router.post('/sermon-file/:id', ensureApiAuthenticated, upload.any(), async (req, res) => {
+router.post('/sermon-file/:id', ensureApiAuthenticated, async (req, res) => {
+  const { id } = req.params;
+
+  if (!req.files || Object.keys(req.files).length === 0) {
+    return res.status(400).send('No files were uploaded.');
+  }
+
+  // The name of the input field (i.e., "file") is used to retrieve the uploaded file
+  const file = req.files.file;
+  const formData = new FormData();
+  formData.append('file', file.data, {
+    filename: file.name,
+    knownLength: file.size,
+  });
+
+  const formHeaders = formData.getHeaders();
+  try {
+    const response = await axios({
+      method: 'post',
+      url: `https://my.pureheart.org/ministryplatformapi/files/Pocket_Platform_Sermons/${id}`,
+      data: formData,
+      headers: {
+        ...formHeaders,
+        'Authorization': `Bearer ${await getAccessToken()}`,
+      },
+      maxContentLength: Infinity,
+      maxBodyLength: Infinity,
+    });
+
+    res.status(200).send(response.data).end();
+  } catch (error) {
+    console.log(error);
+    res.status(500).send(error).end();
+  }
+});
+  
+router.post('/sermon-link', ensureApiAuthenticated, async (req, res) => {
+  const { sermon_links } = req.body;
+
+  if (!sermon_links || !sermon_links.length)  return res.status(400).send({err: 'no sermon_links provided'}).end();
+
+  const data = await axios({
+    method: 'post',
+    url: 'https://my.pureheart.org/ministryplatformapi/tables/Pocket_Platform_Sermon_Links',
+    data: sermon_links,
+    headers: {
+      'content-type': 'application/json',
+      'authorization': `Bearer ${await getAccessToken()}`
+    }
+  })
+    .then(response => response.data)
+    .catch(err => console.log(err))
+
+  res.send(data)
+})
+
+router.post('/announcements', ensureApiAuthenticated, async (req, res) => {
+  const { announcements } = req.body;
+
+  if (!announcements || !announcements.length)  return res.status(400).send({err: 'no announcements provided'}).end();
+
+  const data = await axios({
+    method: 'post',
+    url: 'https://my.pureheart.org/ministryplatformapi/tables/Pocket_Platform_Announcements',
+    data: announcements,
+    headers: {
+      'content-type': 'application/json',
+      'authorization': `Bearer ${await getAccessToken()}`
+    }
+  })
+    .then(response => response.data)
+    .catch(err => console.log(err))
+
+  res.send(data)
+})
+
+router.get('/files/:uniqueId', async (req, res) => {
+  const { uniqueId } = req.params;
+
+  // Build the URL for the file
+  const fileUrl = `https://my.pureheart.org/ministryplatformapi/files/${uniqueId}`;
+
+  try {
+    // Fetch the file from the external URL
+    const response = await axios({
+      method: 'get',
+      url: fileUrl,
+      responseType: 'stream',
+    });
+
+    // Get the content type from the response headers
+    const contentType = response.headers['content-type'];
+
+    // Set the content type in the response headers
+    res.setHeader('Content-Type', contentType);
+
+    // Pipe the file stream directly to the response
+    response.data.pipe(res);
+  } catch (error) {
+    console.error(error);
+    res.status(500).send('An error occurred while retrieving the file.');
+  }
+});
+
 module.exports = router;

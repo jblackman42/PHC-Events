@@ -3348,6 +3348,99 @@ helpdesk-dashboard .total-stats-container .stats-container .data .label {
   transform: scale(0.96);
 }
 
+upload-sermon-guide {
+  margin: 0 auto;
+  width: 800px;
+  max-width: 98vw;
+  color: var(--primary-font-color);
+  text-align: center;
+}
+upload-sermon-guide #upload-guide {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  padding: 1rem 2rem;
+  text-align: left;
+}
+upload-sermon-guide #upload-guide .input {
+  display: flex;
+  flex-direction: column-reverse;
+  width: calc(50% - 0.5rem);
+}
+upload-sermon-guide #upload-guide .input.checkbox {
+  gap: 1rem;
+  margin-top: 1rem;
+  flex-direction: row;
+}
+upload-sermon-guide #upload-guide .input.checkbox label {
+  margin: 0;
+}
+upload-sermon-guide #upload-guide .input.checkbox hr {
+  flex: 1;
+  height: 1px;
+  background-color: var(--secondary-bg-color);
+  border: none;
+}
+upload-sermon-guide #upload-guide .input.wide {
+  width: 100%;
+}
+upload-sermon-guide #upload-guide .input label {
+  margin-bottom: 0.5rem;
+}
+upload-sermon-guide #upload-guide .input input:not(input[type=checkbox]),
+upload-sermon-guide #upload-guide .input textarea,
+upload-sermon-guide #upload-guide .input select {
+  padding: 0.25rem 0.5rem;
+  height: 2rem;
+  line-height: 2rem;
+  border: none;
+  background-color: var(--primary-bg-color);
+  color: currentColor;
+  border-radius: 2.5px;
+}
+upload-sermon-guide #upload-guide .input input[type=file]#file {
+  height: 2rem;
+  line-height: 1.15;
+  padding-top: 0.5rem;
+  padding-bottom: 0rem;
+  padding-inline: 0.5rem;
+}
+upload-sermon-guide #upload-guide .input input:disabled + label, upload-sermon-guide #upload-guide .input input:disabled {
+  opacity: 0.5;
+}
+upload-sermon-guide #upload-guide .input select {
+  box-sizing: content-box;
+  -webkit-appearance: none;
+}
+@media screen and (max-width: 768px) {
+  upload-sermon-guide #upload-guide {
+    flex-direction: column;
+  }
+  upload-sermon-guide #upload-guide .input {
+    width: 100%;
+  }
+}
+upload-sermon-guide #upload-guide .btn-container {
+  width: 100%;
+  display: flex;
+  justify-content: flex-end;
+}
+upload-sermon-guide #upload-guide #form-message {
+  margin: 0 auto;
+  font-size: 18px;
+}
+upload-sermon-guide #upload-guide #form-message.success {
+  color: #27ae60;
+}
+upload-sermon-guide #upload-guide #form-message.error {
+  color: #c0392b;
+}
+@media screen and (max-width: 425px) {
+  upload-sermon-guide {
+    margin-top: 3rem;
+  }
+}
+
 .tool-container {
   min-height: 100vh;
   width: -moz-max-content;

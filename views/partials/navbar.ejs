@@ -18,6 +18,7 @@
                 <li id="new-event-btn"><a href="/create">New Event</a></li>
                 <li><a href="/my-tasks" id="tasks-link">My Tasks</a></li>
                 <li id="prayer-wall-btn"><a href="/prayer-wall">Prayer Wall</a></li>
+                <li id="guide-btn"><a href="/upload-guide">New Guide</a></li>
                 <li><a href="/logout">Logout</a></li>
             </ul>
         </div>
@@ -39,6 +40,7 @@
 <script>
     const newEventUserGroupID = 48;
     const prayerWallUserGroupID = 49;
+    const sermonGuideUserGroupID = 66;
 
     const userWelcomeMsg = document.getElementById('userWelcomeMsg');
 
@@ -123,6 +125,11 @@
                 const prayerWallBtn = document.getElementById('prayer-wall-btn');
                 prayerWallBtn.style.display = 'block';
                 prayerWallBtn.style.visibility = 'visible';
+            }
+            if (user_groups.length && user_groups.includes(sermonGuideUserGroupID)) {
+                const guideBtn = document.getElementById('guide-btn');
+                guideBtn.style.display = 'block';
+                guideBtn.style.visibility = 'visible';
             }
         })
 
