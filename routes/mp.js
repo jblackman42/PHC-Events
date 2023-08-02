@@ -720,4 +720,8 @@ router.get('/files/:uniqueId', async (req, res) => {
   }
 });
 
+router.get('/my-ip', async (req, res) => {
+  res.sendStatus(200);
+})
+
 module.exports = router;
