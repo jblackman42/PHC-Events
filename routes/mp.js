@@ -721,7 +721,8 @@ router.get('/files/:uniqueId', async (req, res) => {
 });
 
 router.get('/my-ip', async (req, res) => {
-  res.sendStatus(200);
+  const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
+  res.json({ ip });
 })
 
 module.exports = router;
