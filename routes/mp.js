@@ -720,6 +720,28 @@ router.get('/files/:uniqueId', async (req, res) => {
   }
 });
 
+router.get('/food-for-thought', async (req, res) => {
+    try {
+        const { Link_URL } = await axios({
+            method: 'get',
+            url: 'https://my.pureheart.org/ministryplatformapi/tables/Pocket_Platform_Sermon_Links',
+            params: {
+                $filter: 'Link_Type_ID = 4 AND Sermon_ID_Table.[Sermon_Date]  < GETDATE()',
+                $orderby: 'Sermon_ID_Table.[Sermon_Date]  DESC',
+                $top: 1
+            },
+            headers: {
+                'Content-Type': 'Application/JSON',
+                'Authorization': `Bearer ${await getAccessToken()}`
+            }
+        })
+            .then(response => response.data[0])
+        res.redirect(Link_URL);
+    } catch (err) {
+        res.status(err.response.status).send(err.response.data).end();
+    }
+})
+
 router.get('/my-ip', async (req, res) => {
   const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
   res.json({ ip });
