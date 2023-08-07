@@ -119,6 +119,19 @@ const handleSave = async () => {
   reviewShow();
 }
 
+
+const formatDate = (dateString) => {
+  const date = new Date(dateString);
+  const year = date.getFullYear();
+  const month = (date.getMonth() + 1).toString().padStart(2, '0'); // Months are 0-based in JavaScript
+  const day = date.getDate().toString().padStart(2, '0');
+  const hours = date.getHours().toString().padStart(2, '0');
+  const minutes = date.getMinutes().toString().padStart(2, '0');
+  const seconds = date.getSeconds().toString().padStart(2, '0');
+
+  return `${year}-${month}-${day}T${hours}:${minutes}:${seconds}`;
+}
+
 const getDailyPattern = async () => {
   const eventDate = document.getElementById('start-date');
   const eventStartTime = document.getElementById('start-time');
@@ -129,8 +142,8 @@ const getDailyPattern = async () => {
   const sequence = {
     "Type": "Daily",
     "Interval": daysPatternOptionDOM.checked ? parseInt(dailyIntervalDOM.value) : null,
-    "StartDate": new Date(`${eventDate.value}T${eventStartTime.value}`).toISOString(),
-    "EndDate": endByDateDOM.checked ? new Date(`${byDateInputDOM.value}T${eventStartTime.value}`).toISOString() : null,
+    "StartDate": formatDate(`${eventDate.value}T${eventStartTime.value}`),
+    "EndDate": endByDateDOM.checked ? formatDate(`${byDateInputDOM.value}T${eventStartTime.value}`) : null,
     "TotalOccurrences": endByOccurDOM.checked ? parseInt(occurrenceNumDOM.value) : null,
     "Day": 0,
     "DayPosition": "Unspecified",
@@ -165,8 +178,8 @@ const getWeeklyPattern = async () => {
   const sequence = {
     "Type": "Weekly",
     "Interval": parseInt(weekPatternDOM.value),
-    "StartDate": new Date(`${eventDate.value}T${eventStartTime.value}`).toISOString(),
-    "EndDate": endByDateDOM.checked ? new Date(`${byDateInputDOM.value}T${eventStartTime.value}`).toISOString() : null,
+    "StartDate": formatDate(`${eventDate.value}T${eventStartTime.value}`),
+    "EndDate": endByDateDOM.checked ? formatDate(`${byDateInputDOM.value}T${eventStartTime.value}`) : null,
     "TotalOccurrences": endByOccurDOM.checked ? parseInt(occurrenceNumDOM.value) : null,
     "Day": 0,
     "DayPosition": "Unspecified",
@@ -198,8 +211,8 @@ const getMonthlyPattern = async () => {
   const sequence = {
     "Type": "Monthly",
     "Interval": dayOfMonthOption.checked ? parseInt(everyMonthNum.value) : parseInt(everyMonthNum2.value),
-    "StartDate": new Date(`${eventDate.value}T${eventStartTime.value}`).toISOString(),
-    "EndDate": endByDateDOM.checked ? new Date(`${byDateInputDOM.value}T${eventStartTime.value}`).toISOString() : null,
+    "StartDate": formatDate(`${eventDate.value}T${eventStartTime.value}`),
+    "EndDate": endByDateDOM.checked ? formatDate(`${byDateInputDOM.value}T${eventStartTime.value}`) : null,
     "TotalOccurrences": endByOccurDOM.checked ? parseInt(occurrenceNumDOM.value) : null,
     "Day": dayOfMonthOption.checked ? parseInt(monthDay.value) : 0,
     "DayPosition": timesOfMonthOption.checked ? monthlyDayPattern.value : 'Unspecified',
