@@ -11,7 +11,7 @@ nav {
 		border: none;
 		background-color: transparent;
 	}
-	.openButton {
+	#openButton {
 		font-size: 300%;
 		display: grid;
 		place-items: center;
@@ -62,7 +62,7 @@ nav {
 		transition: transform 300ms ease-in-out;
 		&.open {
 			transform: translateX(0%);
-			.closeButton {
+			#closeButton {
 				transform: translateX(calc(50% + 2rem)) rotateZ(180deg);
 			}
 
@@ -84,7 +84,7 @@ nav {
 				calc(-100% - 15px)
 			); //moves entirely off-screen plus 15px to hide box shadow
 		}
-		.closeButton {
+		#closeButton {
 			position: absolute;
 			background-color: $close-btn-background;
 			display: grid;
@@ -148,6 +148,10 @@ nav {
 						visibility: hidden;
 					}
 					&#prayer-wall-btn {
+						display: none;
+						visibility: hidden;
+					}
+					&#guide-btn {
 						display: none;
 						visibility: hidden;
 					}

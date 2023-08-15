@@ -44,7 +44,7 @@ router.post('/login', async (req, res) => {
                 'Authorization': `Basic ${Buffer.from(`${process.env.CLIENT_ID}:${process.env.CLIENT_SECRET}`).toString('base64')}`
             }
         })
-            .then(response => response.data)
+            .then(response => response.data);
         
         const {access_token, token_type, refresh_token, expires_in} = login;
 
@@ -55,21 +55,19 @@ router.post('/login', async (req, res) => {
                 'Authorization': `${token_type} ${access_token}`
             }
         })
-            .then(response => response.data)
-            .catch(err => console.log(err))
+            .then(response => response.data);
 
         const usersUserGroups = await axios({
             method: 'get',
             url: `https://my.pureheart.org/ministryplatformapi/tables/dp_User_User_Groups?$filter=User_ID=${user.userid}`,
             headers: {
-                'Authorization': `${token_type} ${await getAccessToken()}`,
+                'Authorization': `bearer ${await getAccessToken()}`,
                 'Content-Type': 'application/json'
             }
         })
-            .then(response => response.data.map(group => group.User_Group_ID))
-            .catch(err => console.log(err))
+            .then(response => response.data);
 
-        user.user_groups = usersUserGroups;
+        user.user_groups = usersUserGroups.map(group => group.User_Group_ID);
 
         req.session.user = user;
         req.session.access_token = access_token;
