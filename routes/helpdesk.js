@@ -31,4 +31,8 @@ app.get('/tickets', async (req, res) => {
   res.status(200).send(data).end();
 })
 
+app.get('/teams-notification', async (req, res) => {
+    res.sendStatus(200);
+})
+
 module.exports = app;
