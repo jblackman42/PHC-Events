@@ -32,7 +32,17 @@ app.get('/tickets', async (req, res) => {
 })
 
 app.get('/teams-notification', async (req, res) => {
-    res.sendStatus(200);
-})
+    const validationToken = req.query.validationToken;
+
+    if (validationToken) {
+        // Respond with the validation token to complete the webhook setup
+        res.send(validationToken);
+    } else {
+        // Handle the actual notification from Microsoft Teams here
+        // You can add your notification processing logic later
+        res.sendStatus(200);
+    }
+});
+
 
 module.exports = app;
