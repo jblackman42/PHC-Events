@@ -720,7 +720,7 @@ router.get('/files/:uniqueId', async (req, res) => {
   }
 });
 
-router.get('/food-for-thought', async (req, res) => {
+router.get('/current-guide', async (req, res) => {
   try {
       const { Link_URL } = await axios({
           method: 'get',
