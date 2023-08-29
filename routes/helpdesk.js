@@ -99,7 +99,7 @@ app.post('/teams-notification', verifyTeamsNotificationMiddleware, async (req, r
     const messageData = req.body.value[0];
     console.log(JSON.stringify(messageData));
 
-    if (messageData.resource.includes("/replies/")) {
+    if (messageData.resource.includes("/replies")) {
         console.log("Reply detected. No action taken.");
         return res.status(200).send({ message: "Reply detected. No action taken." });
     }
