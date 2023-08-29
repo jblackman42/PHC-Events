@@ -134,9 +134,9 @@ app.post('/teams-notification', verifyTeamsNotificationMiddleware, async (req, r
             method: 'post',
             url: 'https://prod-135.westus.logic.azure.com:443/workflows/a44f87ab6dea4c5c824e48959a27a6b2/triggers/manual/paths/invoke?api-version=2016-06-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=L0Ph1e5pj9UQZ5gS3q5wguaVWWwMncDi21_AuPNVOBw',
             data: {
-                Message_ID: messageId,
-                Team_ID: process.env.MS_TEAM_ID,
-                Channel_ID: process.env.MS_CHANNEL_ID,
+                "Message_ID": messageId,
+                "Team_ID": process.env.MS_TEAM_ID,
+                "Channel_ID": process.env.MS_CHANNEL_ID
             }
         })
 
