@@ -123,8 +123,17 @@ app.get('/tickets', async (req, res) => {
 
 app.post('/teams-notification', verifyTeamsNotificationMiddleware, async (req, res) => {
     const messageData = req.body.value[0];
-    const messageId = messageData.resourceData.id;
+    const resourceId = messageData.resource;
 
+    // Check if the resource string has multiple '/messages' indicating it might be a reply
+    const isReply = (resourceId.match(/\/messages/g) || []).length > 1;
+
+    if (isReply) {
+        console.log('Detected a reply. Not sending automated response.');
+        return res.status(200).send({ message: 'Reply detected. No action taken.' });
+    }
+
+    const messageId = messageData.resourceData.id;
     const newMessage = {
         body: {
             content: "Automated Response!",
@@ -137,12 +146,14 @@ app.post('/teams-notification', verifyTeamsNotificationMiddleware, async (req, r
             .api(`/teams/${process.env.MS_TEAM_ID}/channels/${process.env.MS_CHANNEL_ID}/messages/${messageId}/replies`)
             .post(newMessage);
 
-        res.status(200).send(response);
+        console.log(response);
+        res.send(response);
     } catch (err) {
         console.error(err);
         res.status(500).send({ error: 'Failed to send automated response.' });
     }
 });
+
 
 app.post('/renew-subscription', async (req, res) => {
     try {
