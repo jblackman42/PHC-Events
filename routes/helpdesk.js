@@ -136,7 +136,8 @@ app.post('/teams-notification', verifyTeamsNotificationMiddleware, async (req, r
             data: {
                 "Message_ID": messageId,
                 "Team_ID": process.env.MS_TEAM_ID,
-                "Channel_ID": process.env.MS_CHANNEL_ID
+                "Channel_ID": process.env.MS_CHANNEL_ID,
+                "Link_to_Message": messageDetails.webUrl
             }
         })
 
