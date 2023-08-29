@@ -104,8 +104,8 @@ app.post('/teams-notification', verifyTeamsNotificationMiddleware, async (req, r
         return res.status(200).send({ message: "Reply detected. No action taken." });
     }
     
-    console.log("New Conversation Detected.")
-    res.sendStatus(200);
+    // console.log("New Conversation Detected.")
+    // res.sendStatus(200);
     // const resourceId = messageData.resource;
 
     // // Check if the resource string has multiple '/messages' indicating it might be a reply
@@ -116,33 +116,33 @@ app.post('/teams-notification', verifyTeamsNotificationMiddleware, async (req, r
     //     return res.status(200).send({ message: 'Reply detected. No action taken.' });
     // }
 
-    // const messageId = messageData.resourceData.id;
-    // if (!messageId) {
-    //     console.error("Couldn't extract message ID from the payload:", messageData);
-    //     return res.status(400).send({ error: 'Message ID not found in the payload.' });
-    // }
+    const messageId = messageData.resourceData.id;
+    if (!messageId) {
+        console.error("Couldn't extract message ID from the payload:", messageData);
+        return res.status(400).send({ error: 'Message ID not found in the payload.' });
+    }
 
-    // const newMessage = {
-    //     body: {
-    //         content: "Automated Response!",
-    //         contentType: "text"
-    //     }
-    // };
+    const newMessage = {
+        body: {
+            content: "Automated Response!",
+            contentType: "text"
+        }
+    };
 
-    // try {
-    //     // Wait for a short period (e.g., 2 seconds) before sending the reply.
-    //     await delay(2000);
+    try {
+        // Wait for a short period (e.g., 2 seconds) before sending the reply.
+        await delay(2000);
 
-    //     const response = await client
-    //         .api(`/teams/${process.env.MS_TEAM_ID}/channels/${process.env.MS_CHANNEL_ID}/messages/${messageId}/replies`)
-    //         .post(newMessage);
+        const response = await client
+            .api(`/teams/${process.env.MS_TEAM_ID}/channels/${process.env.MS_CHANNEL_ID}/messages/${messageId}/replies`)
+            .post(newMessage);
 
-    //     console.log('Reply sent:', response);
-    //     res.send(response);
-    // } catch (err) {
-    //     console.error('Failed to send automated response:', err);
-    //     res.status(500).send({ error: 'Failed to send automated response.' });
-    // }
+        console.log('Reply sent:', response);
+        res.send(response);
+    } catch (err) {
+        console.error('Failed to send automated response:', err);
+        res.status(500).send({ error: 'Failed to send automated response.' });
+    }
 });
 
 
