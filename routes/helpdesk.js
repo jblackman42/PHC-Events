@@ -86,7 +86,7 @@ const client = MicrosoftGraph.Client.init({
 
 const verifyTeamsNotificationMiddleware = (req, res, next) => {
     if (req.query && req.query.validationToken) return res.send(req.query.validationToken);
-    if (!req.body.value || !req.body.value.length) return res.status(401).send({error: "Invalid subscriptionId or tenantId"})
+    if (!req.body.value || !req.body.value.length) return res.status(401).send({error: "Invalid req.body"})
     const { subscriptionId, tenantId } = req.body.value[0];
     if (subscriptionId === process.env.MS_SUBSCRIPTION_ID && tenantId === process.env.MS_TENANT_ID) {
         return next();
@@ -97,7 +97,6 @@ const verifyTeamsNotificationMiddleware = (req, res, next) => {
 
 app.post('/teams-notification', verifyTeamsNotificationMiddleware, async (req, res) => {
     const messageData = req.body.value[0];
-    console.log(JSON.stringify(messageData));
 
     if (messageData.resource.includes("/replies")) {
         console.log("Reply detected. No action taken.");
@@ -121,23 +120,40 @@ app.post('/teams-notification', verifyTeamsNotificationMiddleware, async (req, r
         console.error("Couldn't extract message ID from the payload:", messageData);
         return res.status(400).send({ error: 'Message ID not found in the payload.' });
     }
-
-    const newMessage = {
-        body: {
-            content: "Automated Response!",
-            contentType: "text"
-        }
-    };
-
+    
     try {
+        // Fetch the message details
+        const messageDetails = await client
+        .api(`/teams/${process.env.MS_TEAM_ID}/channels/${process.env.MS_CHANNEL_ID}/messages/${messageId}`)
+        .get();
+
+        const { displayName } = messageDetails.from.user;
+        const nickname = displayName.split(' ')[0];
+
+        await axios({
+            method: 'post',
+            url: 'https://prod-135.westus.logic.azure.com:443/workflows/a44f87ab6dea4c5c824e48959a27a6b2/triggers/manual/paths/invoke?api-version=2016-06-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=L0Ph1e5pj9UQZ5gS3q5wguaVWWwMncDi21_AuPNVOBw',
+            data: {
+                Message_ID: messageId,
+                Team_ID: process.env.MS_TEAM_ID,
+                Channel_ID: process.env.MS_CHANNEL_ID,
+            }
+        })
+
+        const newMessage = {
+            body: {
+                content: `Hi ${nickname},<br><br>Thanks for reaching out to us! We've received your IT helpdesk ticket and we're on it. We'll do our best to fix the issue as soon as possible, and we'll keep you updated.<br><br>If you have any more information to add, you can reach out to helpdesk@pureheart.org. Please don't send multiple tickets for the same issue - it'll slow things down.<br><br>If this is an emergency you can text or call Blake at 623-341-0204<br><br>Thanks!`,
+                contentType: "html"
+            }
+        };
         // Wait for a short period (e.g., 2 seconds) before sending the reply.
-        await delay(2000);
+        // await delay(2000);
 
         const response = await client
             .api(`/teams/${process.env.MS_TEAM_ID}/channels/${process.env.MS_CHANNEL_ID}/messages/${messageId}/replies`)
             .post(newMessage);
 
-        console.log('Reply sent:', response);
+        // console.log('Reply sent:', response);
         res.send(response);
     } catch (err) {
         console.error('Failed to send automated response:', err);
