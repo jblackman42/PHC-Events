@@ -20,16 +20,16 @@ const refreshAll = () => {
 router.ws('/', function(ws, req) {
   ws.id = Math.floor(Math.random() * Date.now()).toString(16)
   clients.push(ws)
-  console.log('new client connected');
+  // console.log('new client connected');
 
   
 
   ws.on('message', () => {
-    console.log('message received');
+    // console.log('message received');
   })
 
   ws.on('close', (code, reason) => {
-    console.log('websocket closed')
+    // console.log('websocket closed')
     console.log(reason)
     clients = clients.filter(client => client.id !== ws.id)
   })
@@ -44,7 +44,7 @@ router.get('/', (req, res) => {
     clients.forEach(clientWs => {
       clientWs.send(msg)
     })
-    console.log(`sent ${clients.length} updates`)
+    // console.log(`sent ${clients.length} updates`)
 
     res.status(200).send(`sent ${clients.length} updates`).end();
   } catch (err) {
