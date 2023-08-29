@@ -83,7 +83,6 @@ const client = MicrosoftGraph.Client.init({
 });
 
 const verifyTeamsNotificationMiddleware = (req, res, next) => {
-    console.log(JSON.stringify(req.body))
     if (!req.body.value || !req.body.value.length) return res.status(401).send({error: "Invalid subscriptionId or tenantId"})
     const { subscriptionId, tenantId } = req.body.value[0];
     if (subscriptionId === process.env.MS_SUBSCRIPTION_ID && tenantId === process.env.MS_TENANT_ID) {
@@ -123,23 +122,26 @@ app.get('/tickets', async (req, res) => {
 })
 
 app.post('/teams-notification', verifyTeamsNotificationMiddleware, async (req, res) => {
-    // verified by middleware so it will never be null
     const messageData = req.body.value[0];
-    console.log(messageData)
-    // console.log('Received request:', req.method, req.url, req.headers, req.body);
+    const messageId = messageData.resourceData.id;
 
-    // const validationToken = req.query.validationToken;
+    const newMessage = {
+        body: {
+            content: "Automated Response!",
+            contentType: "text"
+        }
+    };
 
-    // if (validationToken) {
-    //     console.log('Sending back validation token:', validationToken);
-    //     res.send(validationToken);
-    // } else {
-    //     console.log('No validation token found. Handling notification.');
-    //     // Handle the actual notification from Microsoft Teams here
-    //     // Add your notification processing logic later
-    //     res.sendStatus(200);
-    // }
-    res.sendStatus(200);
+    try {
+        const response = await client
+            .api(`/teams/${process.env.MS_TEAM_ID}/channels/${process.env.MS_CHANNEL_ID}/messages/${messageId}/replies`)
+            .post(newMessage);
+
+        res.status(200).send(response);
+    } catch (err) {
+        console.error(err);
+        res.status(500).send({ error: 'Failed to send automated response.' });
+    }
 });
 
 app.post('/renew-subscription', async (req, res) => {
@@ -154,11 +156,11 @@ app.post('/renew-subscription', async (req, res) => {
 app.post('/test', async (req, res) => {
     // const newMessage = {
     //     body: {
-    //         content: "Hello World.",
+    //         content: "Automated Response!",
     //         contentType: "text"
     //     }
     // };
-    
+
     // client
     //     .api(`/teams/${process.env.MS_TEAM_ID}/channels/${process.env.MS_CHANNEL_ID}/messages`)
     //     .post(newMessage, (err, response) => {
