@@ -83,6 +83,7 @@ const client = MicrosoftGraph.Client.init({
 });
 
 const verifyTeamsNotificationMiddleware = (req, res, next) => {
+    console.log(JSON.stringify(req.body))
     if (!req.body.value || !req.body.value.length) return res.status(401).send({error: "Invalid subscriptionId or tenantId"})
     const { subscriptionId, tenantId } = req.body.value[0];
     if (subscriptionId === process.env.MS_SUBSCRIPTION_ID && tenantId === process.env.MS_TENANT_ID) {
