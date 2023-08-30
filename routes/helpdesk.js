@@ -97,6 +97,7 @@ const verifyTeamsNotificationMiddleware = (req, res, next) => {
 
 app.post('/teams-notification', verifyTeamsNotificationMiddleware, async (req, res) => {
     const messageData = req.body.value[0];
+    console.log(messageData);
 
     if (messageData.resource.includes("/replies")) {
         console.log("Reply detected. No action taken.");
@@ -126,6 +127,8 @@ app.post('/teams-notification', verifyTeamsNotificationMiddleware, async (req, r
         const messageDetails = await client
         .api(`/teams/${process.env.MS_TEAM_ID}/channels/${process.env.MS_CHANNEL_ID}/messages/${messageId}`)
         .get();
+
+        console.log(messageDetails);
 
         const { displayName } = messageDetails.from.user;
         const nickname = displayName.split(' ')[0];
@@ -157,7 +160,7 @@ app.post('/teams-notification', verifyTeamsNotificationMiddleware, async (req, r
         // console.log('Reply sent:', response);
         res.send(response);
     } catch (err) {
-        console.error('Failed to send automated response:', err.response);
+        console.error('Failed to send automated response:', err);
         res.status(500).send({ error: 'Failed to send automated response.' });
     }
 });
