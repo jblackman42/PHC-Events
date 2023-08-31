@@ -134,7 +134,7 @@ class Dashboard extends HTMLElement {
     //   return this.handleNewTicket();
     // }
     // this.lastNotification = newRandomNotificationSound
-    const audio = new Audio(`/assets/notifications/notification-${13}.mp3`);
+    const audio = new Audio(`/assets/notifications/notification-${14}.mp3`);
     audio.play();
   }
 
