@@ -25,18 +25,32 @@ const MS_GRAPH_API = {
 
         return access_token;
     },
+    getSubscription: async () => {
+        return await axios({
+            method: 'get',
+            url: 'https://graph.microsoft.com/v1.0/subscriptions',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${await MS_GRAPH_API.getAccessToken()}`
+            }
+        })
+            .then(response => response.data.value[0])
+    },
     renewSubscription: async () => {
         const tomorrow = new Date();
-        tomorrow.setDate(tomorrow.getDate() + 3);
+        tomorrow.setDate(tomorrow.getDate() + 1);
         tomorrow.setHours(0);
         tomorrow.setMinutes(-tomorrow.getTimezoneOffset());
         tomorrow.setSeconds(0);
         tomorrow.setMilliseconds(0);
         return await axios({
-            method: 'patch',
-            url: `https://graph.microsoft.com/v1.0/subscriptions/${process.env.MS_SUBSCRIPTION_ID}`,
+            method: 'post',
+            url: 'https://graph.microsoft.com/v1.0/subscriptions',
             data: {
-                "expirationDateTime": tomorrow.toISOString()
+                expirationDateTime: tomorrow.toISOString(),
+                changeType: "created",
+                notificationUrl: "https://phc.events/api/helpdesk/teams-notification",
+                resource: `/teams/${process.env.MS_TEAM_ID}/channels/${process.env.MS_CHANNEL_ID}/messages`
             },
             headers: {
                 'Content-Type': 'application/json',
@@ -44,6 +58,18 @@ const MS_GRAPH_API = {
             }
         })
             .then(response => response.data)
+        // return await axios({
+        //     method: 'patch',
+        //     url: `https://graph.microsoft.com/v1.0/subscriptions/${process.env.MS_SUBSCRIPTION_ID}`,
+        //     data: {
+        //         "expirationDateTime": tomorrow.toISOString()
+        //     },
+        //     headers: {
+        //         'Content-Type': 'application/json',
+        //         'Authorization': `Bearer ${await MS_GRAPH_API.getAccessToken()}`
+        //     }
+        // })
+        //     .then(response => response.data)
     }
 }
 
@@ -72,7 +98,6 @@ const client = MicrosoftGraph.Client.init({
                 }
             });
             
-            process.env.MS_REFRESH_TOKEN = refresh_token;
             done(null, access_token);
         } catch (error) {
             console.error('Error fetching token from Microsoft Graph:', error.message);
@@ -84,11 +109,13 @@ const client = MicrosoftGraph.Client.init({
     }
 });
 
-const verifyTeamsNotificationMiddleware = (req, res, next) => {
+const verifyTeamsNotificationMiddleware = async (req, res, next) => {
+    const subscription = await MS_GRAPH_API.getSubscription();
+
     if (req.query && req.query.validationToken) return res.send(req.query.validationToken);
     if (!req.body.value || !req.body.value.length) return res.status(401).send({error: "Invalid req.body"})
     const { subscriptionId, tenantId } = req.body.value[0];
-    if (subscriptionId === process.env.MS_SUBSCRIPTION_ID && tenantId === process.env.MS_TENANT_ID) {
+    if (subscriptionId === subscription.id && tenantId === process.env.MS_TENANT_ID) {
         return next();
     } else {
         res.status(401).send({error: "Invalid subscriptionId or tenantId"})
@@ -96,32 +123,20 @@ const verifyTeamsNotificationMiddleware = (req, res, next) => {
 }
 
 app.post('/teams-notification', verifyTeamsNotificationMiddleware, async (req, res) => {
+
     const messageData = req.body.value[0];
-    console.log(messageData);
+    const messageId = messageData.resourceData.id;
 
     if (messageData.resource.includes("/replies")) {
         console.log("Reply detected. No action taken.");
         return res.status(200).send({ message: "Reply detected. No action taken." });
     }
-    
-    // console.log("New Conversation Detected.")
-    // res.sendStatus(200);
-    // const resourceId = messageData.resource;
 
-    // // Check if the resource string has multiple '/messages' indicating it might be a reply
-    // const isReply = (resourceId.match(/\/messages/g) || []).length > 1;
-
-    // if (isReply) {
-    //     console.log('Detected a reply. Not sending automated response.');
-    //     return res.status(200).send({ message: 'Reply detected. No action taken.' });
-    // }
-
-    const messageId = messageData.resourceData.id;
     if (!messageId) {
         console.error("Couldn't extract message ID from the payload:", messageData);
         return res.status(400).send({ error: 'Message ID not found in the payload.' });
     }
-    
+
     try {
         // Fetch the message details
         const messageDetails = await client
@@ -164,7 +179,6 @@ app.post('/teams-notification', verifyTeamsNotificationMiddleware, async (req, r
         res.status(500).send({ error: 'Failed to send automated response.' });
     }
 });
-
 
 app.post('/renew-subscription', async (req, res) => {
     try {
