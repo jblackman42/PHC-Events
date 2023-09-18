@@ -173,7 +173,8 @@ app.post('/teams-notification', verifyTeamsNotificationMiddleware, async (req, r
             .post(newMessage);
 
         // console.log('Reply sent:', response);
-        res.send(response);
+        console.log("Ticket created. Reply Sent");
+        return res.status(200).send({ message: "Ticket created. Reply Sent" });
     } catch (err) {
         console.error('Failed to send automated response:', err);
         res.status(500).send({ error: 'Failed to send automated response.' });
