@@ -287,7 +287,7 @@ document.getElementById('create-form').addEventListener('submit', (e) => {
 
 const getProgramFromEvent = async (eventDetails) => {
   return await axios({
-    method: 'get',
+    method: 'post',
     url: '/api/openai/get-program',
     data: eventDetails
   })
