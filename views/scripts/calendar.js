@@ -583,9 +583,9 @@ class PHC_Calendar extends HTMLElement {
     
 
     const filteredEventIds = await axios({
-      method: 'get',
+      method: 'post',
       url: '/api/mp/filter-rooms',
-      params: {
+      data: {
         eventIDs: this.events.map(e => e.Event_ID),
         roomIDs: this.roomFilter ? [this.roomFilter.Room_ID] : this.buildingFilter.Rooms.map(room => room.Room_ID)
       }

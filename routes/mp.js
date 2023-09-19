@@ -117,8 +117,8 @@ router.get('/event-rooms', ensureApiAuthenticated, async (req, res) => {
   res.send(rooms)
 })
 
-router.get('/filter-rooms', ensureApiAuthenticated, async (req, res) => {
-  const { eventIDs, roomIDs } = req.query;
+router.post('/filter-rooms', ensureApiAuthenticated, async (req, res) => {
+  const { eventIDs, roomIDs } = req.body;
 
   const events = await axios({
     method: 'post',
