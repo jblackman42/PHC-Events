@@ -285,6 +285,15 @@ document.getElementById('create-form').addEventListener('submit', (e) => {
   createEvent();
 })
 
+const getProgramFromEvent = async (eventDetails) => {
+  return await axios({
+    method: 'post',
+    url: '/api/openai/get-program',
+    data: eventDetails
+  })
+    .then(response => response.data.Program_ID)
+}
+
 const createEvent = async () => {
   loading();
 
@@ -300,7 +309,19 @@ const createEvent = async () => {
   const eventStartDate = new Date(`${startDateDOM.value}T${startTimeDOM.value}:00`);
   const eventEndDate = new Date(`${startDateDOM.value}T${endTimeDOM.value}:00`);
   const eventLength = eventEndDate.getTime() - eventStartDate.getTime();
-  if (!pattern || !pattern.length) pattern = [eventStartDate.toISOString()]
+  if (!pattern || !pattern.length) pattern = [eventStartDate.toISOString()];
+
+  // document.getElementById('event-location').options[document.getElementById('event-location').selectedIndex].text
+  const programID = await getProgramFromEvent({
+    Event_Title: eventNameDOM.value,
+    Event_Type: eventTypeDOM.options[eventTypeDOM.selectedIndex].text,
+    Congregation_Name: congregationDOM.options[congregationDOM.selectedIndex].text,
+    Location_Name: eventLocationDOM.options[eventLocationDOM.selectedIndex].text,
+    Description: eventDescDOM.value,
+    Display_Name: primaryContactDOM.options[primaryContactDOM.selectedIndex].text,
+    Visibility_Level: visibilityLevelDOM.options[visibilityLevelDOM.selectedIndex].text
+  })
+
   // create event in MP
   const eventsToCreate = pattern.map(startDate => {
     const scheduleStartTime = new Date(startDate)
@@ -313,7 +334,7 @@ const createEvent = async () => {
       Congregation_ID: congregationDOM.value,
       Location_ID: eventLocationDOM.value,
       Description: eventDescDOM.value,
-      Program_ID: 1, //hard coded because i hate everything
+      Program_ID: programID, //hard coded because i hate everything
       Primary_Contact: primaryContactDOM.value,
       Participants_Expected: attendanceDOM.value,
       Minutes_for_Setup: setupTimeDOM.value,

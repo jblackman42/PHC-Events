@@ -107,8 +107,14 @@ router.get('/', async (req, res) => {
     
     const prayer_requests = await axios({
         method: 'get',
-        url: `https://my.pureheart.org/ministryplatformapi/tables/Prayer_Requests?%24filter=Prayer_Status_ID%3D2&%24orderby=Date_Created%20DESC&%24top=18&%24skip=${skip}`,
+        url: `https://my.pureheart.org/ministryplatformapi/tables/Prayer_Requests`,
         // url: `https://my.pureheart.org/ministryplatformapi/tables/Prayer_Requests?$filter=Prayer_Status_ID=2&$top=18&$skip=${skip}`,
+        params: {
+            '$filter': 'Prayer_Status_ID=2',
+            '$orderby': 'Date_Created DESC',
+            '$top': '18',
+            '$skip': `${skip}`
+        },
         headers: {
             'Authorization': `Bearer ${await getAccessToken()}`
         }

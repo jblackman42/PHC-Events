@@ -26,6 +26,9 @@ navigation.get('/prayer-wall', ensureAuthenticated, ensureAdminUserGroups(49), (
 navigation.get('/refresh', ensureAuthenticated, (req, res) => {
   res.render('pages/refresh')
 })
+navigation.get('/helpdesk', ensureAuthenticated, (req, res) => {
+  res.render('pages/helpdesk-kanban')
+})
 navigation.get('/upload-guide', ensureAuthenticated, ensureAdminUserGroups(66), (req, res) => {
   res.render('pages/guide')
 })

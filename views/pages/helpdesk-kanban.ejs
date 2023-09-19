@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Helpdesk Kanban</title>
+    <%- include('../partials/head'); %>
+</head>
+<body>
+    <%- include('../partials/loading'); %>
+
+    <dialog id="ticket-fullscreen"></dialog>
+
+    <dialog id="ticket-viewer">
+    </dialog>
+
+    <%- include('../partials/navbar'); %>
+
+    <div id="helpdesk-container">
+      <div id="kanban-container"></div>
+    </div>
+
+
+    <script>
+      const agentColors = ['#1abc9c', '#c0392b', '#f1c40f']
+      let agents = [];
+      let tickets = [];
+
+      const getKanbanColumns = async () => {
+        try {
+          return await axios({
+            method: 'get',
+            url: '/api/kanban/statuses'
+          })
+          .then(response => response.data)
+        } catch (err) {
+          console.error(err);
+          return [];
+        }
+      }
+
+      const getHelpdeskTickets = async () => {
+        try {
+          return await axios({
+            method: 'get',
+            url: '/api/kanban/tickets'
+          })
+          .then(response => response.data)
+        } catch (err) {
+          console.error(err);
+          return [];
+        }
+      }
+
+      const getAgents = async () => {
+        try {
+          return await axios({
+            method: 'get',
+            url: '/api/kanban/agents'
+          })
+          .then(response => response.data)
+        } catch (err) {
+          console.error(err);
+          return [];
+        }
+      }
+
+      const loadKanbanColumns = async () => {
+        const kanbanContainerDOM = document.getElementById('kanban-container');
+        const columns = await getKanbanColumns();
+
+        kanbanContainerDOM.innerHTML = columns.map(status => {
+          const { Ticket_Status_ID, Status } = status;
+          return `
+            <div class="status-column" id="status-${Ticket_Status_ID}">
+              <h1 class="column-title">${Status}</h1>
+              <div class="ticket-container" id="ticket-container-${Ticket_Status_ID}"></div>
+            </div>
+          `
+        }).join('')
+      }
+
+      const loadHelpdeskTickets = async () => {
+        tickets = [...await getHelpdeskTickets()].sort((a,b) => {
+          if (a.Priority_Name === null) return -1;
+          if (b.Priority_Name === null) return 1;
+          
+          if (a.Priority_Name < b.Priority_Name) return -1;
+          if (a.Priority_Name > b.Priority_Name) return 1;
+          
+          return 0;
+        });
+
+        tickets.forEach((ticket, i) => {
+          const { Agent_ID, Agent_Name, Description, IT_Help_Ticket_ID, Priority_ID, Priority_Name, Request_Date, Request_Title, Resolve_Date, Status_ID, Status_Name, Tag_ID, Tag_Name, Ticket_Requestor_Contact_ID, Ticket_Requestor_Display_Name } = ticket;
+          const ticketColumnDOM = document.getElementById(`ticket-container-${Status_ID}`);
+          if (!ticketColumnDOM) return;
+          ticketColumnDOM.innerHTML += `
+            <div class="ticket" draggable="true" style="border-color: ${agents.indexOf(Agent_Name) >= 0 ? agentColors[agents.indexOf(Agent_Name)] + 'AA' : '#00000066'}" >
+              <div class="ticket-header">
+                <h3>${Request_Title}</h3>
+                <p class="requestor">${Ticket_Requestor_Display_Name}</p>
+                <p class="date">${new Date(Request_Date).toLocaleDateString()}</p>
+              </div>
+              <div class="ticket-details">
+                <div class="detail">
+                  <p class="label">Agent:</p>
+                  <p class="value">${Agent_Name || 'Unknown'}</p>
+                </div>
+                <div class="detail">
+                  <p class="label">Tag:</p>
+                  <p class="value">${Tag_Name || 'Unknown'}</p>
+                </div>
+                <div class="detail">
+                  <p class="label">Priority:</p>
+                  <p class="value">${Priority_Name || 'Unknown'}</p>
+                </div>
+              </div>
+              <div class="btn-container">
+                <button class="drag-btn kanban-btn small" id="drag-btn-${IT_Help_Ticket_ID}"><i class='fas fa-arrows-alt'></i></button>
+                <button class="kanban-btn" id="info-btn-${IT_Help_Ticket_ID}" onclick="openTicketViewer(${i})">More Info</button>
+                <a class="mp-btn kanban-btn" title="View on MP" href="https://my.pureheart.org/mp/331-3315/${IT_Help_Ticket_ID}" target="_blank"><img src="/assets/MPLogo.png" alt="View On MP"></a>
+              </div>
+            </div>
+          `
+        })
+      }
+
+
+      const ticketViewerDOM = document.getElementById('ticket-viewer');
+      const openTicketViewer = (ticketIndex) => {
+        const { Agent_ID, Agent_Name, Description, IT_Help_Ticket_ID, Priority_ID, Priority_Name, Request_Date, Request_Title, Resolve_Date, Status_ID, Status_Name, Tag_ID, Tag_Name, Ticket_Requestor_Contact_ID, Ticket_Requestor_Display_Name } = tickets[ticketIndex];
+        ticketViewerDOM.innerHTML = `
+          <div class="ticket-title-bar">
+            <h1 class="ticket-title">${Request_Title}</h1>
+            <button class="close-btn" onclick="closeTicketViewer()"><i class="material-icons">close</i></button>
+          </div>
+
+          <div class="ticket-body">
+            <div class="ticket-column">
+              <div class="detail">
+                <p class="label">Requestor:</p>
+                <p class="value">${Ticket_Requestor_Display_Name}</p>
+              </div>
+              <div class="detail">
+                <p class="label">Request Date:</p>
+                <p class="value">${new Date(Request_Date).toDateString()}</p>
+              </div>
+              <div class="detail">
+                <p class="label">Agent:</p>
+                <p class="value">${Agent_Name || 'Unknown'}</p>
+              </div>
+              <div class="detail">
+                <p class="label">Tag:</p>
+                <p class="value">${Tag_Name || 'Unknown'}</p>
+              </div>
+              <div class="detail">
+                <p class="label">Priority:</p>
+                <p class="value">${Priority_Name || 'Unknown'}</p>
+              </div>
+            </div>
+            <div class="ticket-column" style="background-color: white; color: black;">
+              <div class="ticket-description-container">
+                <div>${Description || 'No Description Found'}</div>
+              </div>
+              <button class="kanban-btn fullscreen-btn" onclick="openTicketFullscreen(${ticketIndex})"><i class="material-icons">fullscreen</i></button>
+            </div>
+          </div>
+
+          <div class="ticket-footer">
+            <a class="mp-btn kanban-btn" title="View on MP" href="https://my.pureheart.org/mp/331-3315/${IT_Help_Ticket_ID}" target="_blank"><img src="/assets/MPLogo.png" alt="View On MP"></a>
+            <button class="kanban-btn blue small">Edit</button>
+            <button class="delete-btn kanban-btn red small">Delete</button>
+            <button class="complete-btn kanban-btn green">Complete</button>
+          </div>
+        `
+
+
+        ticketViewerDOM.showModal();
+      }
+      const closeTicketViewer = () => {
+        ticketViewerDOM.close();
+      }
+
+      const ticketFullscreenDOM = document.getElementById('ticket-fullscreen');
+      const openTicketFullscreen = (ticketIndex) => {
+        const { Agent_ID, Agent_Name, Description, IT_Help_Ticket_ID, Priority_ID, Priority_Name, Request_Date, Request_Title, Resolve_Date, Status_ID, Status_Name, Tag_ID, Tag_Name, Ticket_Requestor_Contact_ID, Ticket_Requestor_Display_Name } = tickets[ticketIndex];
+        ticketFullscreenDOM.innerHTML = `
+          <div class="ticket-title-bar">
+            <h1 class="ticket-title">${Request_Title}</h1>
+            <button class="close-btn" onclick="closeTicketFullscreen()"><i class="material-icons">close</i></button>
+          </div>
+          <div>
+            ${Description}
+          </div>
+        `;
+
+        ticketFullscreenDOM.showModal();
+      }
+
+      const closeTicketFullscreen = () => {
+        ticketFullscreenDOM.close();
+      }
+
+
+      (async () => {
+        agents = [...await getAgents()].map(agent => agent.First_Name);
+        loadKanbanColumns();
+        loadHelpdeskTickets();
+
+        // openTicketViewer()
+      })()
+
+    </script>
+</body>
+</html>
