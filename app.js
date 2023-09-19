@@ -5,6 +5,8 @@ const enableWs = require('express-ws');
 const cors = require('cors');
 require('dotenv').config();
 
+const connectDB = require('./db/connect.js');
+
 // Initializing the express app
 const app = express();
 enableWs(app);
@@ -64,18 +66,24 @@ app.use("/assets", express.static(__dirname + "/views/assets"));
 app.use('/', require('./routes/index'))
 
 //API routing
-app.use('/api/helpdesk', require('./routes/helpdesk.js'))
-app.use('/api/oauth', require('./routes/oauth.js'))
-app.use('/api/mp', require('./routes/mp.js'))
-app.use('/api/prayer-wall', require('./routes/prayer-wall.js'))
-app.use('/websocket', require('./routes/websocket.js'))
-app.use('/api/widgets', require('./routes/widgets.js'))
+app.use('/api/helpdesk', require('./routes/helpdesk.js'));
+app.use('/api/oauth', require('./routes/oauth.js'));
+app.use('/api/mp', require('./routes/mp.js'));
+app.use('/api/prayer-wall', require('./routes/prayer-wall.js'));
+app.use('/websocket', require('./routes/websocket.js'));
+app.use('/api/widgets', require('./routes/widgets.js'));
+app.use('/api/tools/mp', require('./routes/MPTools.js'));
+app.use('/api/tools', require('./routes/tools.js'));
+app.use('/api/openai', require('./routes/openai.js'));
 
 app.use('/api/kanban', require('./routes/helpdesk-kanban.js'))
 // Starting the server
 const port = process.env.PORT || 3000;
 (async () => {
   try {
+    // Connect to the database
+    await connectDB();
+    
     app.listen(port, console.log(`\n Server is listening on port ${port}\n http://localhost:${port}`));
   } catch (error) { console.log(error) }
 })();
