@@ -13,10 +13,12 @@
 	--secondary-bg-color: #9f9696;
 
 	--red-accent-color: #e74c3c;
+	--red-accent-color2: #c0392b;
 	--blue-accent-color: #3498db;
 	--blue-accent-color2: #2980b9;
 	--arrow-button-color: #b2bec3;
 	--green-accent-color: #2ecc71;
+	--green-accent-color2: #27ae60;
 }
 
 body,
@@ -28,6 +30,13 @@ html {
 	max-width: 100vw;
     display: flex;
     flex-direction: column;
+}
+
+.center-grid {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	min-height: 100vh;
 }
 
 .container {
@@ -74,6 +83,10 @@ html {
 		&:hover {
 			transform: none;
 		}
+	}
+
+	&.center {
+		margin: 0 auto;
 	}
 
 	@media (min-width: 768px) {

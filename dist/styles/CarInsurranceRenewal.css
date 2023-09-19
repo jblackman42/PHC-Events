@@ -1,0 +1,68 @@
+phc-car-insurrance-renewal .container {
+  width: 90%;
+  max-width: 600px;
+  margin: 20px auto;
+  padding: 20px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  background-color: #f8f8f8;
+}
+
+phc-car-insurrance-renewal h2 {
+  text-align: center;
+}
+
+phc-car-insurrance-renewal form {
+  display: flex;
+  flex-direction: column;
+}
+
+phc-car-insurrance-renewal input, phc-car-insurrance-renewal select {
+  margin-bottom: 15px;
+  -webkit-appearance: none;
+}
+
+phc-car-insurrance-renewal input[type="text"], phc-car-insurrance-renewal input[type="date"], phc-car-insurrance-renewal select, phc-car-insurrance-renewal input[type="file"] {
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  font-size: 16px;
+  width: 100%;
+  box-sizing: border-box; /* Added to ensure padding is included in width */
+}
+
+phc-car-insurrance-renewal input[type="submit"] {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 5px;
+  background-color: #7B2D26;
+  color: white;
+  cursor: pointer;
+}
+
+phc-car-insurrance-renewal input[type="submit"]:hover {
+  background-color: #90352d;
+}
+
+#update-insurrance-form #form-message {
+  text-align: center;
+  color: #27ae60;
+  display: none;
+  visibility: hidden;
+}
+#update-insurrance-form #form-message.error {
+  color: #c0392b;
+}
+
+/* Responsive styles */
+@media (max-width: 600px) {
+  phc-car-insurrance-renewal .container {
+    width: 85%;
+    padding: 15px;
+  }
+
+  phc-car-insurrance-renewal input[type="text"], phc-car-insurrance-renewal input[type="date"], phc-car-insurrance-renewal select, phc-car-insurrance-renewal input[type="file"] {
+    font-size: 16px; /* Adjust font size here */
+    padding: 20px; /* Increased padding */
+  }
+}

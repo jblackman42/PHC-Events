@@ -142,7 +142,19 @@ const ensureApiAuthenticated = async (req, res, next) => {
     }
 }
 
+const ensureAdminUserGroups = (Group_ID) => {
+    return (req, res, next) => {
+        const { user_groups } = req.session.user;
+        if (user_groups && user_groups.includes(Group_ID)) {
+            return next();
+        } else {
+            return res.render('pages/login', {error: 'unauthorized'});
+        }
+    }
+}
+
 module.exports = {
     ensureAuthenticated,
-    ensureApiAuthenticated
+    ensureApiAuthenticated,
+    ensureAdminUserGroups
 }

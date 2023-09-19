@@ -3,6 +3,9 @@ const express = require('express');
 const session = require('express-session');
 const enableWs = require('express-ws');
 const cors = require('cors');
+const fileUpload = require('express-fileupload');  // Added
+const FormData = require('form-data');            // Added
+const axios = require('axios');                   // Added
 require('dotenv').config();
 
 const connectDB = require('./db/connect.js');
@@ -31,16 +34,6 @@ app.use(cors({
   origin: process.env.NODE_ENV === 'production' ? whitelist : '*'
 }));
 
-// Force HTTPS in production
-// if (process.env.NODE_ENV === 'production') {
-//   app.use((req, res, next) => {
-//     if (req.header('x-forwarded-proto') !== 'https')
-//       res.redirect(`https://${req.header('host')}${req.url}`);
-//     else
-//       next();
-//   });
-// }
-
 // Express settings
 app.set('trust proxy', 1); // Trust first proxy
 app.set('view engine', 'ejs'); // Set the view engine to ejs
@@ -57,13 +50,16 @@ app.use(session({
 app.use(express.json({limit: '50mb'}));
 app.use(express.urlencoded({limit: '50mb', extended: true}));
 
+// Add the fileUpload middleware
+app.use(fileUpload());
+
 // Static file middleware for serving styles, scripts and assets
 app.use("/styles", express.static(__dirname + "/views/styles"));
 app.use("/scripts", express.static(__dirname + "/views/scripts"));
 app.use("/assets", express.static(__dirname + "/views/assets"));
 
 //Navigation routing
-app.use('/', require('./routes/index'))
+app.use('/', require('./routes/index'));
 
 //API routing
 app.use('/api/helpdesk', require('./routes/helpdesk.js'));

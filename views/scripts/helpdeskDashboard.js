@@ -1,7 +1,7 @@
 class Dashboard extends HTMLElement {
   constructor() {
     super();
-    this.colors = ["#1abc9c", "#f1c40f","#3498db","#e67e22","#e74c3c", "#9b59b6", "#34495e"];
+    this.colors = ["#1abc9c", "#f1c40f","#3498db","#e67e22","#e74c3c", "#9b59b6", "#a29bfe", "#34495e"];
     this.titleSize = 24;
     this.charts = [];
     this.timeId = 0;
@@ -16,37 +16,10 @@ class Dashboard extends HTMLElement {
     this.numOfNotificationSounds = 24;
     this.lastNotification;
 
-    this.getTickets();
     this.createWebsocket();
     this.webSocketKeepAlive(60000) //every 60 seconds
-  }
 
-  getTickets = async () => {
-    this.tickets = await axios({
-      method: 'get',
-      url: '/api/helpdesk/tickets'
-    })
-      .then(response => response.data)
-      .catch(err => console.error(err))
-
-    if (!this.tickets || !this.tickets.length) return;
-
-    this.getTodaysStatsData();
-    this.getMonthsStatsData();
-    this.createRequestorChart();
-    this.createAgentChartMonth();
-    this.createResolvedMonthChart();
-    this.createTagsPieChart();
-    this.createMonthsTicketsGraph();
-  }
-
-  update = () => {
-    this.charts.forEach(chart => {
-      chart.destroy();
-    })
-    const profilePicsContainer = document.getElementById('profile-pics-container');
-      profilePicsContainer.innerHTML = '';
-    this.getTickets();
+    this.update();
   }
 
   createWebsocket = () => {
@@ -85,6 +58,39 @@ class Dashboard extends HTMLElement {
     if (today.getHours() == resetHours && today.getMinutes() == resetMinutes) this.update();
   }
 
+  update = async () => {
+    this.tickets = await axios({
+      method: 'get',
+      url: '/api/helpdesk/tickets'
+    })
+      .then(response => response.data)
+      .catch(err => console.error(err))
+
+    if (!this.tickets || !this.tickets.length) return;
+
+    this.charts.forEach(chart => chart.destroy());
+
+    // card stats
+    this.getTodaysStatsData();
+    this.getMonthsStatsData();
+    // charts
+    this.charts.push(this.createRequestorChart());
+    this.charts.push(this.createAgentChartMonth());
+    this.charts.push(this.createResolvedMonthChart());
+    this.charts.push(this.createTagsPieChart());
+    this.charts.push(this.createMonthsTicketsGraph());
+  }
+
+  // update = () => {
+  //   this.charts.forEach(chart => {
+  //     chart.destroy();
+  //   });
+  //   this.charts = [];
+  //   const profilePicsContainer = document.getElementById('profile-pics-container');
+  //     profilePicsContainer.innerHTML = '';
+  //   this.getTickets();
+  // }
+
   getTodaysStatsData = () => {
     // html elements
     const todaysTicketsDOM = document.getElementById('tickets-opened-today');
@@ -116,19 +122,19 @@ class Dashboard extends HTMLElement {
   }
 
   handleNewTicket = () => {
-    if (this.getRandomInt(1,100) == 100) {
-      const audio = new Audio(`/assets/notifications/notification-24.mp3`);
-      audio.play();
-      return;
-    }
+    // if (this.getRandomInt(1,100) == 100) {
+    //   const audio = new Audio(`/assets/notifications/notification-24.mp3`);
+    //   audio.play();
+    //   return;
+    // }
 
 
-    const newRandomNotificationSound = this.getRandomInt(1, this.numOfNotificationSounds);
-    if (newRandomNotificationSound == this.lastNotification) {
-      return this.handleNewTicket();
-    }
-    this.lastNotification = newRandomNotificationSound
-    const audio = new Audio(`/assets/notifications/notification-${newRandomNotificationSound}.mp3`);
+    // const newRandomNotificationSound = this.getRandomInt(1, this.numOfNotificationSounds);
+    // if (newRandomNotificationSound == this.lastNotification) {
+    //   return this.handleNewTicket();
+    // }
+    // this.lastNotification = newRandomNotificationSound
+    const audio = new Audio(`/assets/notifications/notification-${14}.mp3`);
     audio.play();
   }
 
@@ -140,7 +146,7 @@ class Dashboard extends HTMLElement {
 
     // get today's total tickets and resolved tickets
     const day = new Date();
-      day.setDate(day.getDate() - 30);
+      day.setDate(day.getDate() - this.daysBack);
     const monthsTickets = this.tickets.filter(ticket => new Date(ticket.Request_Date) >= this.minDate)
     const monthsResolvedTickets = this.tickets.filter(ticket => new Date(ticket.Resolve_Date) >= this.minDate && ticket.Status == 3)
 
@@ -189,7 +195,20 @@ class Dashboard extends HTMLElement {
       }
     })
 
-    const requestorLeaderboardChart = new Chart(document.getElementById('requestor-leaderboard'), {
+    const profilePicsContainer = document.getElementById('profile-pics-container');
+    profilePicsContainer.innerHTML = sortedRequestors.map((requestor, i) => {
+      const {File_ID, Requestor} = this.tickets.filter(ticket => ticket.Requestor == requestor)[0];
+      
+      const placement = i == 0 ? '1st' : i == 1 ? '2nd' : '3rd';
+      
+      return `
+        <div class="img-container" data-placement="${placement}">
+          <img src="https://my.pureheart.org/ministryplatformapi/files/${File_ID}" alt="${Requestor}" title="${Requestor}">
+        </div>
+      `
+    }).join('')
+
+    return new Chart(document.getElementById('requestor-leaderboard'), {
       type: 'bar',
       data: {
         labels: sortedRequestors,
@@ -223,20 +242,6 @@ class Dashboard extends HTMLElement {
         responsive:true
       }
     });
-    this.charts.push(requestorLeaderboardChart)
-
-    const profilePicsContainer = document.getElementById('profile-pics-container');
-    profilePicsContainer.innerHTML = sortedRequestors.map((requestor, i) => {
-      const {File_ID, Requestor} = this.tickets.filter(ticket => ticket.Requestor == requestor)[0];
-      
-      const placement = i == 0 ? '1st' : i == 1 ? '2nd' : '3rd';
-      
-      return `
-        <div class="img-container" data-placement="${placement}">
-          <img src="https://my.pureheart.org/ministryplatformapi/files/${File_ID}" alt="${Requestor}" title="${Requestor}">
-        </div>
-      `
-    }).join('')
   }
 
   createAgentChartMonth = () => {
@@ -264,7 +269,7 @@ class Dashboard extends HTMLElement {
       }
     })
 
-    const agentLeaderboardChart = new Chart(document.getElementById('agent-leaderboard'), {
+    return new Chart(document.getElementById('agent-leaderboard'), {
       type: 'bar',
       data: {
         labels: agents,
@@ -298,7 +303,6 @@ class Dashboard extends HTMLElement {
         responsive:true
       }
     });
-    this.charts.push(agentLeaderboardChart);
   }
 
   createResolvedMonthChart = () => {
@@ -326,7 +330,7 @@ class Dashboard extends HTMLElement {
       }
     })
 
-    const resolvedLeaderboardChart = new Chart(document.getElementById('resolved-leaderboard'), {
+    return new Chart(document.getElementById('resolved-leaderboard'), {
       type: 'bar',
       data: {
         labels: agents,
@@ -361,7 +365,6 @@ class Dashboard extends HTMLElement {
         responsive:true
       }
     });
-    this.charts.push(resolvedLeaderboardChart);
   }
 
   createTagsPieChart = () => {
@@ -372,7 +375,7 @@ class Dashboard extends HTMLElement {
     // find tickets with no tag
     ticketTags[ticketTags.length-1] = this.tickets.filter(ticket => ticket.Tag == null && new Date(ticket.Request_Date) > this.minDate).length
 
-    const tagsPieChart = new Chart(document.getElementById("tags-pie-chart"), {
+    return new Chart(document.getElementById("tags-pie-chart"), {
       type: 'pie',
       data: {
         labels: tags,
@@ -395,16 +398,15 @@ class Dashboard extends HTMLElement {
         responsive:true
       }
     });
-    this.charts.push(tagsPieChart);
   }
 
   createMonthsTicketsGraph = () => {
     const daysList = [];
 
     const date = new Date();
-      date.setDate(date.getDate() - 29);
+      date.setDate(date.getDate() - (this.daysBack-1));
 
-    for (let i = 0; i < 30; i ++) {
+    for (let i = 0; i < this.daysBack; i ++) {
         daysList.push(date.toLocaleDateString());
         date.setDate(date.getDate() + 1);
     }
@@ -413,7 +415,7 @@ class Dashboard extends HTMLElement {
 
     const daysResolvedTickets = daysList.map(day => this.tickets.filter(ticket => new Date(ticket.Resolve_Date).toLocaleDateString() == day && ticket.Status == 3).length)
     
-    const monthsTicketsChart = new Chart(document.getElementById("months-tickets"), {
+    return new Chart(document.getElementById("months-tickets"), {
       type: 'line',
       data: {
         labels: daysList.map(day => new Date(day).toLocaleDateString('en-us', {month: 'short', day: 'numeric'})),
@@ -456,7 +458,6 @@ class Dashboard extends HTMLElement {
         responsive:true
       }
     });
-    this.charts.push(monthsTicketsChart);
   }
 
   countValuesByKey = (arr, key) => arr.reduce((r, c) => {

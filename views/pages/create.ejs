@@ -8,6 +8,7 @@
     <%- include('../partials/loading'); %>
 
     <%- include('../partials/navbar'); %>
+    <%- include('../partials/add-heart-crews'); %> 
     <%- include('../partials/recurring-event-popup'); %> 
     <%- include('../partials/facilities-equipment-popup'); %>
     <%- include('../partials/review-days'); %>
@@ -126,11 +127,18 @@
                         <button type="button" onclick="facilitiesPopupShow()"><i class='fas fa-ellipsis-h'></i></button>
                     </div>
                 </div>
-                <div class="input full-width">
+                <div class="input">
                     <label for="recurring-event">Recurring Event</label>
                     <div id="recurring-event-input">
                         <p id="recurring-label">One Time Event</p>
                         <button type="button" onclick="patternShow()"><i class='fas fa-ellipsis-h'></i></button>
+                    </div>
+                </div>
+                <div class="input">
+                    <label for="adding-group">Add Heart Crew</label>
+                    <div id="group-input">
+                        <p id="add-group">No Heart Crew Added</p>
+                        <button type="button" onclick="heartCrewPopupShow()"><i class='fas fa-ellipsis-h'></i></button>
                     </div>
                 </div>
                 <div class="button-container">

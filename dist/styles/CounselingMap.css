@@ -1,0 +1,189 @@
+html,
+body {
+    margin: 0;
+    padding: 0;
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+}
+
+/* PRIMARY STYLING */
+#counseling-widget {
+    width: 90%;
+    max-width: 1200px;
+    margin-inline: auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+
+    gap: 1rem;
+    margin: 1rem auto;
+}
+
+
+#counseling-widget .btn {
+	background-color: #13aa52;
+	border: 1px solid #13aa52;
+    color: white;
+	border-radius: 4px !important;
+	box-shadow: rgba(0, 0, 0, .1) 0 2px 4px 0;
+	box-sizing: border-box;
+	cursor: pointer;
+	font-size: 16px !important;
+	font-weight: 400 !important;
+	padding: 4px 15px !important;
+	text-align: center;
+	transform: translateY(0);
+	transition: transform 150ms, box-shadow 150ms;
+	user-select: none;
+	aspect-ratio: auto !important;
+	margin-left: auto;
+}
+
+#counseling-widget .btn:hover {
+    box-shadow: rgba(0, 0, 0, .15) 0 3px 9px 0;
+    transform: translateY(-2px);
+}
+
+#counseling-widget .btn:disabled {
+    opacity: .6;
+}
+#counseling-widget .btn:disabled:hover {
+    transform: none;
+}
+@media screen and (max-width: 768px) {
+    #counseling-widget .btn {
+        margin: 1rem auto 0;
+        padding: 10px 30px;
+    }
+}
+/* MAP STYLING */
+#counseling-widget .map-container {
+    width: 100%;
+    height: 600px;
+}
+#counseling-widget .map-container #map {
+    width: 100%;
+    height: 100%;
+}
+
+/* LIST STYLING */
+#counseling-widget .locations {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+}
+#counseling-widget .locations ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    width: 100%;
+}
+#counseling-widget .locations ul li {
+    background-color: #eee;
+    border: 2px solid #ccc;
+    border-radius: 4px;
+    padding: 1rem;
+
+    display: flex;
+    flex-wrap: wrap;
+
+    margin-bottom: 1rem;
+}
+#counseling-widget .locations ul li:last-of-type {
+    margin: 0;
+}
+#counseling-widget .locations ul li .header {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+}
+#counseling-widget .locations ul li h1 {
+    margin: 0;
+    line-height: 1;
+    color: black;
+    padding: 0;
+    text-transform: none;
+}
+#counseling-widget .info-container {
+    width: 33.3334%;
+    min-width: 150px;
+    margin: 1rem 0;
+}
+#counseling-widget .info-container p {
+    margin: 0;
+}
+#counseling-widget .info-container .label {
+    margin: .5rem 0;
+    font-weight: bold;
+    padding: 0;
+}
+@media screen and (max-width: 768px) {
+    #counseling-widget .locations ul li {
+        gap: .5rem;
+    }
+    #counseling-widget .locations ul li div {
+        width: 100%;
+        margin: 0;
+    }
+    #counseling-widget h1, #counseling-widget p, #counseling-widget a {
+        text-align: center;
+    }
+    #counseling-widget a {
+        display: block;
+        margin-inline: auto;
+    }
+    #counseling-widget .header h1 {
+        width: 100%;
+    }
+}
+/* FILTER STYLING */
+#counseling-widget .filter-container {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    font-size: 1.15rem;
+}
+#counseling-widget .filter-container .input {
+    display: flex;
+    flex-direction: column;
+    font-weight: bold;
+    width: 100%;
+}
+#counseling-widget .filter-container .input select {
+    margin: .5rem 0;
+    font-size: inherit;
+    width: 100%;
+    border-color: #ccc;
+    padding: .25rem;
+    border-radius: 4px;
+}
+/* MARKER POPUP STYLING */
+#counseling-widget .marker-title h1 {
+    margin: 0;
+}
+#counseling-widget .marker-title .marker-info {
+    margin-top: .5rem;
+}
+#counseling-widget .marker-title .marker-info-label {
+    margin: 0;
+    font-size: 105%;
+    font-weight: bold;
+}
+#counseling-widget .marker-title p {
+    margin: 0;
+    margin-top: .5rem;
+}
+
+#counseling-widget #note {
+    border: 1px solid black;
+    padding: 1rem;
+}
+#counseling-widget #note p, #counseling-widget #note a {
+    text-align: left;
+    display: inline;
+}

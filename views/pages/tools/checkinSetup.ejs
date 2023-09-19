@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>Create Event Tool</title>
+  <%- include('../../partials/head'); %>
+</head>
+<body>
+  <h1>Checkin Setup</h1>
+
+  <script>
+    (async () => {
+      const data = await axios({
+        method: 'get',
+        url: '/api/tools/mp/userinfo'
+      })
+        .then(response => response.data);
+
+      console.log(data);
+    })()
+  </script>
+</body>
+</html>

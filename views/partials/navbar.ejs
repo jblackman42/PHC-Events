@@ -1,9 +1,9 @@
 <nav class="navBar">
-    <button class="openButton">
+    <button id="openButton">
         <i class="material-icons icon">menu</i>
     </button>
     <div class="navContainer closed">
-        <button class="closeButton">
+        <button id="closeButton">
             <i class="material-icons icon">close</i>
         </button>
         <!-- <div class="image-container">
@@ -16,9 +16,8 @@
             <ul>
                 <li><a href="/">Calendar</a></li>
                 <li id="new-event-btn"><a href="/create">New Event</a></li>
-                <li><a href="/my-tasks" id="tasks-link">My Tasks</a></li>
                 <li id="prayer-wall-btn"><a href="/prayer-wall">Prayer Wall</a></li>
-                <li><a href="/helpdesk">Helpdesk</a></li>
+                <li id="guide-btn"><a href="/upload-guide">New Guide</a></li>
                 <li><a href="/logout">Logout</a></li>
             </ul>
         </div>
@@ -40,11 +39,12 @@
 <script>
     const newEventUserGroupID = 48;
     const prayerWallUserGroupID = 49;
+    const sermonGuideUserGroupID = 66;
 
     const userWelcomeMsg = document.getElementById('userWelcomeMsg');
 
-    const openButtonDOM = document.querySelector('.openButton');
-    const closeButtonDOM = document.querySelector('.closeButton');
+    const openButtonDOM = document.querySelector('#openButton');
+    const closeButtonDOM = document.querySelector('#closeButton');
     const toggleColorSchemeBtn = document.querySelector('#toggle-color-scheme');
 
     const navContainerDOM = document.querySelector('.navContainer');
@@ -55,77 +55,43 @@
     openButtonDOM.addEventListener('click', () => {
         navContainerDOM.classList.toggle('open');
         navContainerDOM.classList.toggle('closed');
-    })
+    });
 
     closeButtonDOM.addEventListener('click', () => {
         navContainerDOM.classList.toggle('open');
         navContainerDOM.classList.toggle('closed');
-    })
+    });
 
-    const getUserTasks = async () => {
+    (async () => {
         const user = await getUser();
-        const userTaskData = await axios({
-            method: 'get',
-            url: `/api/mp/user-tasks?userID=${user.userid}`
-        })
-            .then(response => response.data)
-
-        return userTaskData
-    }
-
-    const checkDuplicates = (arr1, arr2) => [...new Set(arr1.concat(arr2))].length != arr1.concat(arr2).length;
-
-    const welcomeMsg = async () => {
-        const user = await getUser()
-
         userWelcomeMsg.innerHTML = `Welcome, ${user.display_name.split(', ').reverse().join(' ')}`;
-    }
-    welcomeMsg();
+        const { roles, user_groups } = user;
 
-    const tasksLink = document.getElementById('tasks-link')
-    const getTasks = async () => {
-        const user = await getUser();
-        const { userid } = user;
-
-        const tasks = await getUserTasks(userid)
-        
-        if (!tasks.length) { return }
-        
-        const tasksNotification = document.createElement('p');
-        tasksNotification.id = 'tasks-notification';
-        tasksNotification.innerText = tasks.length;
-
-        tasksLink.appendChild(tasksNotification)
-    }
-    getTasks();
-
-    axios({
-        method: 'get',
-        url: '/api/oauth/user'
-    })
-        .then(response => response.data)
-        .then(user => {
-            const { roles, user_groups } = user;
-            if (roles && roles.includes('Administrators')) {
-                const linksDOM = document.querySelector('.links');
-                const linksListDOM = linksDOM.children[0];
-                for (const linkElem of linksListDOM.children) {
-                    linkElem.style.display = 'block';
-                    linkElem.style.visibility = 'visible';
-                }
+        if (roles && roles.includes('Administrators')) {
+            const linksDOM = document.querySelector('.links');
+            const linksListDOM = linksDOM.children[0];
+            for (const linkElem of linksListDOM.children) {
+                linkElem.style.display = 'block';
+                linkElem.style.visibility = 'visible';
             }
+        }
 
-            if (user_groups.length && user_groups.includes(newEventUserGroupID)) {
-                const newEventBtn = document.getElementById('new-event-btn');
-                newEventBtn.style.display = 'block';
-                newEventBtn.style.visibility = 'visible';
-            }
-            if (user_groups.length && user_groups.includes(prayerWallUserGroupID)) {
-                const prayerWallBtn = document.getElementById('prayer-wall-btn');
-                prayerWallBtn.style.display = 'block';
-                prayerWallBtn.style.visibility = 'visible';
-            }
-        })
+        if (user_groups.length && user_groups.includes(newEventUserGroupID)) {
+            const newEventBtn = document.getElementById('new-event-btn');
+            newEventBtn.style.display = 'block';
+            newEventBtn.style.visibility = 'visible';
+        }
+        if (user_groups.length && user_groups.includes(prayerWallUserGroupID)) {
+            const prayerWallBtn = document.getElementById('prayer-wall-btn');
+            prayerWallBtn.style.display = 'block';
+            prayerWallBtn.style.visibility = 'visible';
+        }
+        if (user_groups.length && user_groups.includes(sermonGuideUserGroupID)) {
+            const guideBtn = document.getElementById('guide-btn');
+            guideBtn.style.display = 'block';
+            guideBtn.style.visibility = 'visible';
+        }
+    })();
 
     if (localStorage.getItem('colorScheme') == 'dark') {
         toggleColorSchemeBtn.checked = true;
@@ -135,8 +101,8 @@
         toggleColorScheme();
     })
 
+    
     const root = document.querySelector(':root');
-
     const updateColorScheme = () => {
         var colorScheme = localStorage.getItem('colorScheme');
         if (colorScheme == 'light') {
@@ -192,4 +158,6 @@
         }
         return "";
     }
+
+    const checkDuplicates = (arr1, arr2) => [...new Set(arr1.concat(arr2))].length != arr1.concat(arr2).length;
 </script>

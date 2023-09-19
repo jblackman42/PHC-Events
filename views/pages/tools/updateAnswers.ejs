@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>Update Answers Tool</title>
+  <%- include('../../partials/head'); %>
+</head>
+<body>
+  <%- include('../../partials/loading'); %>
+
+  <div class="container tool-container">
+    <p id="status"></p>
+    <select id="ministry-question-select">
+      <option value="-1">Please Select A Question...</option>
+    </select>
+    <button onclick="refreshAnswers(false)">Refresh Answers</button>
+    <button class="red" onclick="refreshAnswers(true)">Delete & Refresh All Answers</button>
+
+    
+    <button class="close-btn" onclick="window.close()">Close</button>
+  </div>
+
+
+  <script>
+    const urlParams = new URLSearchParams(window.location.search);
+    const statusMessageDOM = document.getElementById('status');
+    const ministryQuestionSelectDOM = document.getElementById('ministry-question-select');
+    const NeverDeleteAnswersDict = {};
+    // loading();
+    (async () => {
+
+      const ministryQuestions = await axios({
+        method: 'get',
+        url: '/api/tools/mp/ministryQuestions'
+      })
+      .then(response => response.data.ministryQuestions);
+
+      ministryQuestionSelectDOM.innerHTML += ministryQuestions.map(question => {
+        const { Ministry_Question_ID, Question_Header, Question_Title, Never_Delete_Answers } = question;
+        NeverDeleteAnswersDict[Ministry_Question_ID] = Never_Delete_Answers;
+        return `
+          <option value="${Ministry_Question_ID}">${Question_Header}</option>
+        `
+      }).join('')
+
+      const currQuestionID = parseInt(urlParams.get('recordID'));
+      if (currQuestionID >= 0) ministryQuestionSelectDOM.value = currQuestionID;
+    })()
+
+    const refreshAnswers = async (deleteAnswers) => {
+      loading();
+        statusMessageDOM.textContent = '';
+
+      const currQuestionID = ministryQuestionSelectDOM.value;
+
+      if (currQuestionID < 0) {
+        statusMessageDOM.textContent = 'Please select a question';
+        statusMessageDOM.classList.add('red');
+        statusMessageDOM.classList.remove('green');
+        return doneLoading();
+      }
+
+      if (deleteAnswers && !NeverDeleteAnswersDict[currQuestionID]) {
+        try {
+          await axios({
+            method: 'delete',
+            url: '/api/tools/mp/deleteAnswers',
+            params: {
+              'MinistryQuestionID': currQuestionID
+            }
+          })
+        } catch (error) {
+          console.error(error);
+          statusMessageDOM.textContent = 'Something went wrong, please try again.';
+          statusMessageDOM.classList.add('red');
+          statusMessageDOM.classList.remove('green');
+        }
+      } else if (deleteAnswers) {
+        statusMessageDOM.textContent = 'Deleting Answers Not Allowed';
+        statusMessageDOM.classList.add('red');
+        statusMessageDOM.classList.remove('green');
+
+        return doneLoading();
+      }
+
+
+      try {
+        await axios({
+          method: 'get',
+          url: '/api/tools/mp/refreshAnswers',
+          params: {
+            'MinistryQuestionID': currQuestionID
+          }
+        })
+
+        statusMessageDOM.textContent = 'Update Successful.';
+        statusMessageDOM.classList.remove('red');
+        statusMessageDOM.classList.add('green');
+      } catch (error) {
+        console.error(error);
+        statusMessageDOM.textContent = 'Something went wrong, please try again.';
+        statusMessageDOM.classList.add('red');
+        statusMessageDOM.classList.remove('green');
+      }
+
+      doneLoading();
+    }
+  </script>
+</body>
+</html>

@@ -7,7 +7,6 @@ let congregations = [];
 let places = [];
 let blockedRooms = [];
 // global html vars
-const heartCrewDefaultRoomID = 1106;
 
 // page 1 inputs
 const eventCreatorDOM = document.querySelector('#event-creator');
@@ -60,7 +59,16 @@ const prevSection = () => {
     warningMsgDOM.innerText = ""
 }
 
-const loadForm = () => {
+const getUserInfo = async () => {
+  return await axios({
+      method: 'get',
+      url: '/api/tools/mp/userinfo'
+  })
+  .then(response => response.data)
+}
+
+const loadForm = async () => {
+  user = await getUserInfo();
   eventCreatorDOM.innerHTML = user.display_name;
   eventLocationDOM.innerHTML = locations.map(location => {
       return `
@@ -147,7 +155,7 @@ const loadRoomOptions = async () => {
 
   blockedRooms = await axios({
     method: 'post',
-    url: '/api/mp/overlapped-rooms',
+    url: '/api/tools/mp/overlapped-rooms',
     data: {
       dates: datesToCheck
       // startDate: scheduleStartTime.toISOString(),
@@ -238,31 +246,31 @@ const hideOverbookPopup = () => {
   
   locations = await axios({
     method: 'get',
-    url: '/api/mp/locations'
+    url: '/api/tools/mp/locations'
   })
   .then(response => response.data);
   
   primaryContacts = await axios({
     method: 'get',
-    url: '/api/mp/primary-contacts'
+    url: '/api/tools/mp/primary-contacts'
   })
   .then(response => response.data);
   
   eventTypes = await axios({
     method: 'get',
-    url: '/api/mp/event-types'
+    url: '/api/tools/mp/event-types'
   })
   .then(response => response.data);
   
   congregations = await axios({
     method: 'get',
-    url: '/api/mp/congregations'
+    url: '/api/tools/mp/congregations'
   })
     .then(response => response.data);
     
   places = await axios({
     method: 'get',
-    url: '/api/mp/places'
+    url: '/api/tools/mp/places'
   })
   .then(response => response.data)
   
@@ -285,15 +293,6 @@ document.getElementById('create-form').addEventListener('submit', (e) => {
   createEvent();
 })
 
-const getProgramFromEvent = async (eventDetails) => {
-  return await axios({
-    method: 'get',
-    url: '/api/openai/get-program',
-    data: eventDetails
-  })
-    .then(response => response.data.Program_ID)
-}
-
 const createEvent = async () => {
   loading();
 
@@ -309,19 +308,7 @@ const createEvent = async () => {
   const eventStartDate = new Date(`${startDateDOM.value}T${startTimeDOM.value}:00`);
   const eventEndDate = new Date(`${startDateDOM.value}T${endTimeDOM.value}:00`);
   const eventLength = eventEndDate.getTime() - eventStartDate.getTime();
-  if (!pattern || !pattern.length) pattern = [eventStartDate.toISOString()];
-
-  // document.getElementById('event-location').options[document.getElementById('event-location').selectedIndex].text
-  const programID = await getProgramFromEvent({
-    Event_Title: eventNameDOM.value,
-    Event_Type: eventTypeDOM.options[eventTypeDOM.selectedIndex].text,
-    Congregation_Name: congregationDOM.options[congregationDOM.selectedIndex].text,
-    Location_Name: eventLocationDOM.options[eventLocationDOM.selectedIndex].text,
-    Description: eventDescDOM.value,
-    Display_Name: primaryContactDOM.options[primaryContactDOM.selectedIndex].text,
-    Visibility_Level: visibilityLevelDOM.options[visibilityLevelDOM.selectedIndex].text
-  })
-
+  if (!pattern || !pattern.length) pattern = [eventStartDate.toISOString()]
   // create event in MP
   const eventsToCreate = pattern.map(startDate => {
     const scheduleStartTime = new Date(startDate)
@@ -334,7 +321,7 @@ const createEvent = async () => {
       Congregation_ID: congregationDOM.value,
       Location_ID: eventLocationDOM.value,
       Description: eventDescDOM.value,
-      Program_ID: programID, //hard coded because i hate everything
+      Program_ID: 1, //hard coded because i hate everything
       Primary_Contact: primaryContactDOM.value,
       Participants_Expected: attendanceDOM.value,
       Minutes_for_Setup: setupTimeDOM.value,
@@ -347,7 +334,7 @@ const createEvent = async () => {
   })
   const createdEvents = await axios({
     method: 'post',
-    url: '/api/mp/events',
+    url: '/api/tools/mp/events',
     data: {
       events: eventsToCreate
     }
@@ -362,14 +349,13 @@ const createEvent = async () => {
   bookServices(createdEvents)
   bookEquipment(createdEvents)
   createSeries(createdEvents)
-  addEventGroups(createdEvents)
-  addEventRoomGroups(createdEvents)
-
  
   doneLoading();
 
   // go back to the calendar
-  window.location = '/';
+  // window.location = '/';
+  confirm('Event Created Successfully');
+  location.reload();
 
 }
 const bookRooms = async (createdEvents) => {
@@ -394,7 +380,7 @@ const bookRooms = async (createdEvents) => {
 
   await axios({
     method: 'post',
-    url: '/api/mp/event-rooms',
+    url: '/api/tools/mp/event-rooms',
     data: {
       roomsToBook: roomsToBook
     }
@@ -430,7 +416,7 @@ const bookServices = async (createdEvents) => {
 
   await axios({
     method: 'post',
-    url: '/api/mp/event-services',
+    url: '/api/tools/mp/event-services',
     data: {
       servicesToBook: servicesToBook
     }
@@ -466,7 +452,7 @@ const bookEquipment = async (createdEvents) => {
 
   await axios({
     method: 'post',
-    url: '/api/mp/event-equipment',
+    url: '/api/tools/mp/event-equipment',
     data: {
       equipmentToBook: equipmentToBook
     }
@@ -486,7 +472,7 @@ const createSeries = async (createdEvents) => {
 
   await axios({
     method: 'post',
-    url: '/api/mp/event-sequences',
+    url: '/api/tools/mp/event-sequences',
     data: {
       Event_IDs: eventIDs,
       Table_Name: 'Events'
@@ -498,57 +484,290 @@ const createSeries = async (createdEvents) => {
   doneLoading();
 }
 
-const addEventGroups = async (createdEvents) => {
-  loading();
+const facilitiesEquipmentContainer = document.getElementById('facilities-equipment-container');
+const equipmentItemsContainer = document.querySelector('.equipment-items-container');
+let equipment = [];
+let selectedEquipment = [];
 
-  if (!selectedHeartCrewID) return;
-
-  const eventIDs = createdEvents.map(event => event.Event_ID);
-
-  const EventGroups = eventIDs.map(id => {
-    return {
-      Event_ID: id,
-      Group_ID: selectedHeartCrewID
-    }
-  })
-
-  await axios({
-    method: 'post',
-    url: '/api/mp/event-groups',
-    data: {
-      eventGroupsToBook: EventGroups
-    }
-  })
-    .then(response => response.data)
-    .catch(err => alert('Something terrible has happened! It looks like we failed to add your Heart Crew to the event group. Please reach out to the IT team.'))
-
-  doneLoading();
+const facilitiesPopupShow = () => {
+    facilitiesEquipmentContainer.classList.add('open')
+}
+const facilitiesPopupHide = () => {
+    facilitiesEquipmentContainer.classList.remove('open')
 }
 
-const addEventRoomGroups = async (createdEvents) => {
-  loading();
+const loadEquipment = async () => {
+    equipment = await axios({
+        method: 'get',
+        url: '/api/tools/mp/equipment'
+    })
+        .then(response => response.data)
 
-  if (!selectedHeartCrewID) return;
+    const equipmentItemsHTML = equipment.map(equipmentItem => {
+        const {Equipment_Name, Quantity, Equipment_ID} = equipmentItem;
+        return `
+            <div class="equipment-item">
+                <label for="${Equipment_ID}-checkbox">${Equipment_Name}</label>
+                <input type="number" id="input-${Equipment_ID}" class="equipment-value-input" value="0" min="0" max="${Quantity}">
+            </div>
+        `
+    }).join('');
+    equipmentItemsContainer.innerHTML = equipmentItemsHTML;
+}
+loadEquipment();
 
-  const eventIDs = createdEvents.map(event => event.Event_ID);
+const equipmentHandleSave = () => {
+    const equipmentLabelDOM = document.getElementById('equipment-label');
+    const numOfEquipments = [...document.querySelectorAll('.equipment-value-input')].filter(elem => elem.value > 0).length;
 
-  const EventRoomGroups = eventIDs.map(id => {
-    return {
-      Event_ID: id,
-      Room_ID: heartCrewDefaultRoomID,
-      Group_ID: selectedHeartCrewID
-    }
-  })
+    equipmentLabelDOM.innerText = `${numOfEquipments} Equipment${numOfEquipments <= 1 ? '' : 's'}`;
+    selectedEquipment.length = 0;
+    equipment.forEach(equipmentItem => {
+        const {Equipment_ID, Equipment_Name, Quantity} = equipmentItem;
+
+        const equipmentInput = document.getElementById(`input-${Equipment_ID}`);
+        const equipmentInputValue = parseInt(equipmentInput.value)
+
+        const equipmentQuantity = equipmentInputValue > Quantity ? Quantity : equipmentInputValue;
+
+        if (equipmentQuantity > 0) {
+            selectedEquipment.push({
+                Equipment_Name: Equipment_Name,
+                Equipment_ID: Equipment_ID,
+                Quantity: equipmentQuantity
+            })
+        }
+    })
+
+    facilitiesPopupHide();
+}
+
+const facilitiesPopupCancel = () => {
+    const equipmentLabelDOM = document.getElementById('equipment-label');
+    equipmentLabelDOM.innerText = '0 Equipment';
     
-  await axios({
-    method: 'post',
-    url: '/api/mp/event-room-groups',
-    data: {
-      eventRoomGroupsToBook: EventRoomGroups
+    for (const elem of document.querySelectorAll('.equipment-value-input')) {
+        elem.value = 0;
     }
-  })
-    .then(response => response.data)
-    .catch(err => alert('Something terrible has happened! It looks like we failed to add your Heart Crew to the event room groups. Please reach out to the IT team.'))
+
+    facilitiesPopupHide();
+}
+
+let pattern = [];
+const eventCreateLimit = 52;
+const recurringEventContainer = document.querySelector('.recurring-event-container');
+
+const dailyTab = document.getElementById('Daily');
+const weeklyTab = document.getElementById('Weekly');
+const monthlyTab = document.getElementById('Monthly');
+const startByDate = document.getElementById('start-by');
+const endByDateDOM = document.getElementById('by-date');
+const endByOccurDOM = document.getElementById('occurrence');
+const byDateInputDOM = document.getElementById('by-date-input');
+const occurrenceNumDOM = document.getElementById('occurrence-num');
+const warningMsg = document.getElementById('recurring-warning-msg');
+
+const patternShow = () => {
+  // check required fields
+  const eventDate = document.getElementById('start-date');
+  const eventStartTime = document.getElementById('start-time');
+
+  if (!eventDate.value || !eventStartTime.value) {
+    alert('Please fill out required Fields:\nEvent Date,\nStart Time')
+    return;
+  }
+
+  recurringEventContainer.classList.add('open')
+
+  if (startDateDOM.value) {
+      const startDateTime = new Date(`${startDateDOM.value}T${startTimeDOM.value}`);
+      startByDate.innerText = startDateTime.toDateString() + ' @ ' + startDateTime.toLocaleTimeString('en-US', {hour: '2-digit', minute: '2-digit'});
+  }
+};
+const patternHide = () => recurringEventContainer.classList.remove('open');
+
+const cancelPattern = () => {
+  const recurringLabel = document.getElementById('recurring-label');
+    recurringLabel.innerText = 'One Time Event';
+    pattern = undefined;
+    patternHide();
+}
+
+const updatePatternOption = () => {
+    const options = ['Daily', 'Weekly', 'Monthly'];
+    const activeOption = document.querySelector('.active').id;
+
+    const hiddenOptions = options.filter(option => option != activeOption);
+    hiddenOptions.forEach(optionName => {
+        const elem = document.getElementById(`${optionName}-options`);
+        elem.style.visibility = 'hidden';
+        elem.style.display = 'none';
+    })
+    const activeElem = document.getElementById(`${activeOption}-options`)
+    activeElem.style.visibility = 'visible';
+    activeElem.style.display = 'block';
+}
+updatePatternOption();
+
+const showDaily = () => {
+  dailyTab.classList.add('active');
+  weeklyTab.classList.remove('active');
+  monthlyTab.classList.remove('active');
+  updatePatternOption();
+}
+
+const showWeekly = () => {
+  dailyTab.classList.remove('active')
+  weeklyTab.classList.add('active');
+  monthlyTab.classList.remove('active');
+  updatePatternOption();
+}
+
+const showMonthly = () => {
+  dailyTab.classList.remove('active')
+  weeklyTab.classList.remove('active');
+  monthlyTab.classList.add('active');
+  updatePatternOption();
+}
+
+const toggleInputs = (disableInputIDs, enableInputIDs) => {
+  for (const id of disableInputIDs) {
+    const elem = document.getElementById(id);
+    elem.disabled = true;
+  }
+  for (const id of enableInputIDs) {
+    const elem = document.getElementById(id);
+    elem.disabled = false;
+  }
+}
+
+const handleSave = async () => {
+  const activeOption = document.querySelector('.active').id;
+  const recurringLabel = document.getElementById('recurring-label');
+
+  loading();
+  patternHide();
+  
+  switch (activeOption) {
+    case 'Daily':
+      await getDailyPattern();
+      break;
+    case 'Weekly':
+      await getWeeklyPattern();
+      break;
+    case 'Monthly':
+      await getMonthlyPattern();
+      break;
+  
+    default:
+      break;
+  }
+
+  if (pattern.length > 52) {
+    pattern.length = 52;
+    alert('Maximum Event Limit Reached\n\nYou Have reached the maximum event limit of 52. You cannot create more than 52 events at once.')
+  }
+
+  recurringLabel.innerText = `${pattern.length} Event${pattern.length == 1 ? '': 's'}`;
 
   doneLoading();
+  reviewShow();
+}
+
+const getDailyPattern = async () => {
+  const eventDate = document.getElementById('start-date');
+  const eventStartTime = document.getElementById('start-time');
+  const dailyIntervalDOM = document.getElementById('days-number-option');
+  const daysPatternOptionDOM = document.getElementById('days');
+  const weekdaysPatternOptionDOM = document.getElementById('weekday');
+
+  const sequence = {
+    "Type": "Daily",
+    "Interval": daysPatternOptionDOM.checked ? parseInt(dailyIntervalDOM.value) : null,
+    "StartDate": new Date(`${eventDate.value}T${eventStartTime.value}`).toISOString(),
+    "EndDate": endByDateDOM.checked ? new Date(`${byDateInputDOM.value}T${eventStartTime.value}`).toISOString() : null,
+    "TotalOccurrences": endByOccurDOM.checked ? parseInt(occurrenceNumDOM.value) : null,
+    "Day": 0,
+    "DayPosition": "Unspecified",
+    "Weekdays": weekdaysPatternOptionDOM ? "Weekday" : "None",
+    "Month": "Unspecified",
+  }
+
+  pattern = await axios({
+    method: 'post',
+    url: '/api/tools/mp/generate-sequence',
+    data: {
+      sequence: sequence
+    }
+  })
+    .then(response => response.data);
+}
+
+const getWeeklyPattern = async () => {
+  const eventDate = document.getElementById('start-date');
+  const eventStartTime = document.getElementById('start-time');
+  const weekPatternDOM = document.getElementById('week-pattern');
+  const checkboxSunday = document.getElementById('week-pattern-sunday');
+  const checkboxMonday = document.getElementById('week-pattern-monday');
+  const checkboxTuesday = document.getElementById('week-pattern-tuesday');
+  const checkboxWednesday = document.getElementById('week-pattern-wednesday');
+  const checkboxThursday = document.getElementById('week-pattern-thursday');
+  const checkboxFriday = document.getElementById('week-pattern-friday');
+  const checkboxSaturday = document.getElementById('week-pattern-saturday');
+  const weekdayOptions = [checkboxSunday, checkboxMonday, checkboxTuesday, checkboxWednesday, checkboxThursday, checkboxFriday, checkboxSaturday];
+  const selectedDays = weekdayOptions.filter(elem => elem.checked).map(elem => elem.value);
+
+  const sequence = {
+    "Type": "Weekly",
+    "Interval": parseInt(weekPatternDOM.value),
+    "StartDate": new Date(`${eventDate.value}T${eventStartTime.value}`).toISOString(),
+    "EndDate": endByDateDOM.checked ? new Date(`${byDateInputDOM.value}T${eventStartTime.value}`).toISOString() : null,
+    "TotalOccurrences": endByOccurDOM.checked ? parseInt(occurrenceNumDOM.value) : null,
+    "Day": 0,
+    "DayPosition": "Unspecified",
+    "Weekdays": selectedDays.join(','),
+    "Month": "Unspecified",
+  }
+
+  pattern = await axios({
+    method: 'post',
+    url: '/api/tools/mp/generate-sequence',
+    data: {
+      sequence: sequence
+    }
+  })
+    .then(response => response.data);
+}
+
+const getMonthlyPattern = async () => {
+  const eventDate = document.getElementById('start-date');
+  const eventStartTime = document.getElementById('start-time');
+  const dayOfMonthOption = document.getElementById('day-of-month');
+    const monthDay = document.getElementById('month-day');
+    const everyMonthNum = document.getElementById('every-month-num');
+  const timesOfMonthOption = document.getElementById('times-of-month');
+    const monthlyDayPattern = document.getElementById('monthly-day-pattern');
+    const weekdayPattern = document.getElementById('weekday-pattern');
+    const everyMonthNum2 = document.getElementById('every-month-num-2');
+
+  const sequence = {
+    "Type": "Monthly",
+    "Interval": dayOfMonthOption.checked ? parseInt(everyMonthNum.value) : parseInt(everyMonthNum2.value),
+    "StartDate": new Date(`${eventDate.value}T${eventStartTime.value}`).toISOString(),
+    "EndDate": endByDateDOM.checked ? new Date(`${byDateInputDOM.value}T${eventStartTime.value}`).toISOString() : null,
+    "TotalOccurrences": endByOccurDOM.checked ? parseInt(occurrenceNumDOM.value) : null,
+    "Day": dayOfMonthOption.checked ? parseInt(monthDay.value) : 0,
+    "DayPosition": timesOfMonthOption.checked ? monthlyDayPattern.value : 'Unspecified',
+    "Weekdays": timesOfMonthOption.checked ? weekdayPattern.value : 'None',
+    "Month": "Unspecified",
+  }
+  
+  pattern = await axios({
+    method: 'post',
+    url: '/api/tools/mp/generate-sequence',
+    data: {
+      sequence: sequence
+    }
+  })
+    .then(response => response.data);
 }
