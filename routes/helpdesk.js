@@ -43,26 +43,14 @@ const MS_GRAPH_API = {
         tomorrow.setMinutes(-tomorrow.getTimezoneOffset());
         tomorrow.setSeconds(0);
         tomorrow.setMilliseconds(0);
-        return await axios({
-            method: 'post',
-            url: 'https://graph.microsoft.com/v1.0/subscriptions',
-            data: {
-                expirationDateTime: tomorrow.toISOString(),
-                changeType: "created",
-                notificationUrl: "https://phc.events/api/helpdesk/teams-notification",
-                resource: `/teams/${process.env.MS_TEAM_ID}/channels/${process.env.MS_CHANNEL_ID}/messages`
-            },
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${await MS_GRAPH_API.getAccessToken()}`
-            }
-        })
-            .then(response => response.data)
         // return await axios({
-        //     method: 'patch',
-        //     url: `https://graph.microsoft.com/v1.0/subscriptions/${process.env.MS_SUBSCRIPTION_ID}`,
+        //     method: 'post',
+        //     url: 'https://graph.microsoft.com/v1.0/subscriptions',
         //     data: {
-        //         "expirationDateTime": tomorrow.toISOString()
+        //         expirationDateTime: tomorrow.toISOString(),
+        //         changeType: "created",
+        //         notificationUrl: "https://phc.events/api/helpdesk/teams-notification",
+        //         resource: `/teams/${process.env.MS_TEAM_ID}/channels/${process.env.MS_CHANNEL_ID}/messages`
         //     },
         //     headers: {
         //         'Content-Type': 'application/json',
@@ -70,7 +58,42 @@ const MS_GRAPH_API = {
         //     }
         // })
         //     .then(response => response.data)
+        return await axios({
+            method: 'patch',
+            url: `https://graph.microsoft.com/v1.0/subscriptions/${process.env.MS_SUBSCRIPTION_ID}`,
+            data: {
+                "expirationDateTime": tomorrow.toISOString()
+            },
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${await MS_GRAPH_API.getAccessToken()}`
+            }
+        })
+            .then(response => response.data);
+    },
+    parseNotification: (body) => {
+        // Check if the body contains the 'value' array
+        if (!body.value || !Array.isArray(body.value) || body.value.length === 0) {
+            throw new Error('Invalid notification payload');
+        }
+    
+        // Extract the first notification (assuming a single notification for simplicity)
+        const notification = body.value[0];
+    
+        // Validate that the notification has required properties
+        if (!notification.subscriptionId || !notification.clientState) {
+            throw new Error('Missing required properties in notification');
+        }
+    
+        return {
+            subscriptionId: notification.subscriptionId,
+            clientState: notification.clientState,
+            lifecycleEvent: notification.lifecycleEvent, // this might be undefined for non-lifecycle notifications
+            resourceData: notification.resourceData, // additional data, might be undefined for lifecycle notifications
+            changeType: notification.changeType // type of change, like "created" or "updated"
+        };
     }
+    
 }
 
 const client = MicrosoftGraph.Client.init({
@@ -183,11 +206,24 @@ app.post('/teams-notification', verifyTeamsNotificationMiddleware, async (req, r
 
 app.post('/renew-subscription', async (req, res) => {
     try {
-        const data = await MS_GRAPH_API.renewSubscription();
-        res.status(200).send(data);
+        const parsedNotification = MS_GRAPH_API.parseNotification(req.body);
+
+        if (parsedNotification.lifecycleEvent === 'subscriptionNearExpiry') {
+            // Renew the subscription
+            renewSubscription(parsedNotification.subscriptionId);
+        }
+
+        res.status(200).send('Received');
     } catch (error) {
-        res.status(500).send(error);
+        console.error('Error handling notification:', error.message);
+        res.status(400).send(error.message);
     }
+    // try {
+    //     const data = await MS_GRAPH_API.renewSubscription();
+    //     res.status(200).send(data);
+    // } catch (error) {
+    //     res.status(500).send(error);
+    // }
 })
 
 
