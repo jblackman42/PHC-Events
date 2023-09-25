@@ -149,6 +149,7 @@ const verifyTeamsNotificationMiddleware = async (req, res, next) => {
 app.post('/teams-notification', verifyTeamsNotificationMiddleware, async (req, res) => {
 
     const messageData = req.body.value[0];
+    console.log(req.body);
     const messageId = messageData.resourceData.id;
 
     if (messageData.resource.includes("/replies")) {
