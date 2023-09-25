@@ -136,7 +136,7 @@ const client = MicrosoftGraph.Client.init({
 const verifyTeamsNotificationMiddleware = async (req, res, next) => {
     const subscription = await MS_GRAPH_API.getSubscription();
 
-    if (req.query && req.query.validationToken) return res.send(req.query.validationToken);
+    if (req.query && req.query.validationToken) return res.status(200).send(req.query.validationToken);
     if (!req.body.value || !req.body.value.length) return res.status(401).send({error: "Invalid req.body"})
     const { subscriptionId, tenantId } = req.body.value[0];
     if (subscriptionId === subscription.id && tenantId === process.env.MS_TENANT_ID) {
@@ -149,7 +149,6 @@ const verifyTeamsNotificationMiddleware = async (req, res, next) => {
 app.post('/teams-notification', verifyTeamsNotificationMiddleware, async (req, res) => {
 
     const messageData = req.body.value[0];
-    console.log(req.body);
     const messageId = messageData.resourceData.id;
 
     if (messageData.resource.includes("/replies")) {
@@ -206,7 +205,7 @@ app.post('/teams-notification', verifyTeamsNotificationMiddleware, async (req, r
     }
 });
 
-app.post('/renew-subscription', async (req, res) => {
+app.post('/renew-subscription', verifyTeamsNotificationMiddleware, async (req, res) => {
     try {
         console.log(req.body)
         const parsedNotification = MS_GRAPH_API.parseNotification(req.body);
