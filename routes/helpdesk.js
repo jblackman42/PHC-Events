@@ -72,6 +72,7 @@ const MS_GRAPH_API = {
             .then(response => response.data);
     },
     parseNotification: (body) => {
+        console.log(body)
         // Check if the body contains the 'value' array
         if (!body.value || !Array.isArray(body.value) || body.value.length === 0) {
             throw new Error('Invalid notification payload');
