@@ -4,8 +4,6 @@ const axios = require('axios');
 const qs = require('qs');
 const MicrosoftGraph = require('@microsoft/microsoft-graph-client');
 
-const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
-
 const MS_GRAPH_API = {
     getAccessToken: async () => {
         const { access_token } = await axios({
@@ -43,21 +41,6 @@ const MS_GRAPH_API = {
         tomorrow.setMinutes(-tomorrow.getTimezoneOffset());
         tomorrow.setSeconds(0);
         tomorrow.setMilliseconds(0);
-        // return await axios({
-        //     method: 'post',
-        //     url: 'https://graph.microsoft.com/v1.0/subscriptions',
-        //     data: {
-        //         expirationDateTime: tomorrow.toISOString(),
-        //         changeType: "created",
-        //         notificationUrl: "https://phc.events/api/helpdesk/teams-notification",
-        //         resource: `/teams/${process.env.MS_TEAM_ID}/channels/${process.env.MS_CHANNEL_ID}/messages`
-        //     },
-        //     headers: {
-        //         'Content-Type': 'application/json',
-        //         'Authorization': `Bearer ${await MS_GRAPH_API.getAccessToken()}`
-        //     }
-        // })
-        //     .then(response => response.data)
         return await axios({
             method: 'patch',
             url: `https://graph.microsoft.com/v1.0/subscriptions/${process.env.MS_SUBSCRIPTION_ID}`,
@@ -207,7 +190,6 @@ app.post('/teams-notification', verifyTeamsNotificationMiddleware, async (req, r
 
 app.post('/renew-subscription', verifyTeamsNotificationMiddleware, async (req, res) => {
     try {
-        console.log(req.body)
         const parsedNotification = MS_GRAPH_API.parseNotification(req.body);
 
         if (parsedNotification.lifecycleEvent === 'subscriptionNearExpiry') {
@@ -220,12 +202,6 @@ app.post('/renew-subscription', verifyTeamsNotificationMiddleware, async (req, r
         console.error('Error handling notification:', error.message);
         res.status(400).send(error.message);
     }
-    // try {
-    //     const data = await MS_GRAPH_API.renewSubscription();
-    //     res.status(200).send(data);
-    // } catch (error) {
-    //     res.status(500).send(error);
-    // }
 })
 
 
