@@ -207,6 +207,7 @@ app.post('/teams-notification', verifyTeamsNotificationMiddleware, async (req, r
 
 app.post('/renew-subscription', async (req, res) => {
     try {
+        console.log(req.body)
         const parsedNotification = MS_GRAPH_API.parseNotification(req.body);
 
         if (parsedNotification.lifecycleEvent === 'subscriptionNearExpiry') {
