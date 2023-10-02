@@ -101,6 +101,7 @@ const pollTeams = async () => {
         return result;
     } catch (error) {
         console.error('Error fetching messages from Teams:', error.message);
+        console.error(error);
         return null;
     }
 }
