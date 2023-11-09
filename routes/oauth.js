@@ -18,7 +18,7 @@ const getAccessToken = async () => {
     const {access_token, expires_in} = data;
     const expiresDate = new Date(new Date().getTime() + (expires_in * 1000)).toISOString()
     return access_token;
-  }
+}
 
 router.post('/login', async (req, res) => {
     //this video explains this axios request
