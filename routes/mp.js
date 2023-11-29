@@ -6,6 +6,7 @@ const fs = require('fs');
 const FormData = require('form-data');
 const multer = require('multer');
 const upload = multer({ dest: 'uploads/' }); // You can change this to save files in the directory you prefer
+const MinistryPlatformAPI = require('ministry-platform-api-wrapper');
 
 
 const { ensureAuthenticated, ensureApiAuthenticated } = require('../middleware/authorization.js')
@@ -745,6 +746,22 @@ router.get('/current-guide', async (req, res) => {
 router.get('/my-ip', async (req, res) => {
   const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
   res.json({ ip });
+})
+
+router.get('/my-contributions/:guid', async (req, res) => {
+  const Contact_GUID = req.params.guid;
+  if (!Contact_GUID) return res.send('Missing Contact_GUID');
+
+  try {
+    const [{Contact_ID}] = await MinistryPlatformAPI.request('get', '/tables/Contacts', {"$select":"Contact_ID","$filter":`Contact_GUID='${Contact_GUID}'`}, {});
+    const [{Statement_ID}] = await MinistryPlatformAPI.request('get', '/tables/Contribution_Statements', {"$select":"Statement_ID","$filter":`Contact_Record=${Contact_ID}`}, {});
+    const [{UniqueFileId}] = await MinistryPlatformAPI.request('get', `/files/Contribution_Statements/${Statement_ID}`, {}, {});
+  
+    res.redirect(`/api/mp/files/${UniqueFileId}`);
+  } catch (error) {
+    res.send('Something went wrong, try again later.')
+  }
+  
 })
 
 module.exports = router;
