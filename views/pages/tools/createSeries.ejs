@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>Create Series Tool</title>
+  <%- include('../../partials/head'); %>
+</head>
+<body>
+  <div class="center-grid">
+    <button class="btn center" id="updateBtn">Update Records</button>
+  </div>
+  
+  <button class="close-btn btn" onclick="window.close()">Close</button>
+
+  <script>
+    const urlParams = new URLSearchParams(window.location.search);
+
+    (async ()=>{
+      const pageID = urlParams.get('pageID');
+      const recordID = urlParams.get('recordID');
+      const selectionID = urlParams.get('s');
+      const selectionCount = urlParams.get('sc');
+
+      const selectedEvents = [];
+      if (recordID == -1 && selectionCount > 0) {
+        const records = await axios({
+          method: 'get',
+          url: '/api/tools/mp/selection',
+          params: {
+            SelectionID: selectionID,
+            PageID: pageID
+          }
+        })
+          .then(response => response.data)
+
+        records.forEach(record => selectedEvents.push(record.Record_ID))
+      } else if (recordID >= 0) {
+        selectedEvents.push(parseInt(recordID));
+      } else {
+        alert('you did it wrong')
+        return;
+      }
+
+      const updateBtnDOM = document.getElementById('updateBtn');
+      updateBtnDOM.textContent = `Update ${selectedEvents.length} Records`
+      updateBtnDOM.onclick = () => turnEventsIntoSeries(selectedEvents);
+    })()
+
+    const turnEventsIntoSeries = async (selectedEvents) => {
+      try {
+        await axios({
+          method: 'post',
+          url: '/api/tools/mp/PHCCreateEventSequence',
+          data: {
+            EventIDs: selectedEvents.join(',')
+          }
+        })
+
+        alert(`successfully updated ${selectedEvents.length} events`)
+      } catch (error) {
+        alert(`something went wrong please try again`)
+      }
+    }
+  </script>
+</body>
+</html>

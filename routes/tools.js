@@ -6,6 +6,7 @@ tools.set('updateAnswers', 'pages/tools/updateAnswers');
 tools.set('createEvent', 'pages/tools/createEvent');
 tools.set('checkinSetup', 'pages/tools/checkinSetup');
 tools.set('childrenCheckin', 'pages/tools/childrenCheckin');
+tools.set('createSeries', 'pages/tools/createSeries');
 
 
 
