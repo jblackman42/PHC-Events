@@ -3,15 +3,15 @@ class LicenseRenewal extends HTMLElement {
     super();
 
     const urlParams = new URLSearchParams(window.location.search);
-    this.guid = urlParams.get('guid');
-    
-    const invalidURLRedirectURL = this.getAttribute('invalidURLRedirectURL')
+    this.guid = urlParams.get("guid");
+
+    const invalidURLRedirectURL = this.getAttribute("invalidURLRedirectURL");
     if (!this.guid) {
       window.location = invalidURLRedirectURL;
     }
 
     // this.fetchURL = 'https://phc.events';
-    this.fetchURL = this.getAttribute('fetchURL') || 'https://phc.events';
+    this.fetchURL = this.getAttribute("fetchURL") || "https://phc.events";
     // this.fetchURL = this.getAttribute('fetchURL') || 'http://localhost:3000';
     this.draw();
   }
@@ -95,33 +95,33 @@ class LicenseRenewal extends HTMLElement {
       </div>
     `;
 
-    const updateLicenseFormDOM = document.getElementById('update-license-form');
-    updateLicenseFormDOM.addEventListener('submit', this.handleSubmit)
-  }
+    const updateLicenseFormDOM = document.getElementById("update-license-form");
+    updateLicenseFormDOM.addEventListener("submit", this.handleSubmit);
+  };
 
   showError = (error) => {
-    const formMessage = document.getElementById('form-message');
-    formMessage.classList.add('error');
-    formMessage.textContent  = error;
-    formMessage.style.display = 'block';
-    formMessage.style.visibility = 'visible';
-  }
+    const formMessage = document.getElementById("form-message");
+    formMessage.classList.add("error");
+    formMessage.textContent = error;
+    formMessage.style.display = "block";
+    formMessage.style.visibility = "visible";
+  };
 
   showMessage = (message) => {
-    const formMessage = document.getElementById('form-message');
-    formMessage.classList.remove('error');
-    formMessage.textContent  = message;
-    formMessage.style.display = 'block';
-    formMessage.style.visibility = 'visible';
-  }
-  
+    const formMessage = document.getElementById("form-message");
+    formMessage.classList.remove("error");
+    formMessage.textContent = message;
+    formMessage.style.display = "block";
+    formMessage.style.visibility = "visible";
+  };
+
   hideMessage = () => {
-    const formMessage = document.getElementById('form-message');
-    formMessage.classList.remove('error');
-    formMessage.textContent = '';
-    formMessage.style.display = 'none';
-    formMessage.style.visibility = 'hidden';
-  }
+    const formMessage = document.getElementById("form-message");
+    formMessage.classList.remove("error");
+    formMessage.textContent = "";
+    formMessage.style.display = "none";
+    formMessage.style.visibility = "hidden";
+  };
 
   handleSubmit = async (e) => {
     e.preventDefault();
@@ -131,99 +131,109 @@ class LicenseRenewal extends HTMLElement {
     const draw = this.draw;
 
     const requestURL = this.fetchURL;
-    const licenseInputDOM = document.getElementById('license');
-    const exoDateInputDOM = document.getElementById('exp-date');
-    const stateInputDOM = document.getElementById('state');
-    
-    this.fileInput1 = document.getElementById('fileInput1');
-    this.fileInput2 = document.getElementById('fileInput2');
+    const licenseInputDOM = document.getElementById("license");
+    const exoDateInputDOM = document.getElementById("exp-date");
+    const stateInputDOM = document.getElementById("state");
 
-    
+    this.fileInput1 = document.getElementById("fileInput1");
+    this.fileInput2 = document.getElementById("fileInput2");
+
     try {
       // get record info from guid
       // --------------------------------------------------------------------------------------------------
       const { Expiration_ID } = await axios({
-        method: 'get', //put means update
+        method: "get", //put means update
         url: `${requestURL}/api/widgets/expirations`, //get from swagger
         params: {
-          guid: this.guid
+          guid: this.guid,
         },
-      })
-        .then(response => response.data)
-        
+      }).then((response) => response.data);
+
       // update record in MP
       // --------------------------------------------------------------------------------------------------
       const newLicense = {
-        'Expiration_ID': Expiration_ID,
-        'Driver_License_#': licenseInputDOM.value,
-        'License_Expiration': new Date(exoDateInputDOM.value).toISOString(),
-        'State_Issuing_Authority': stateInputDOM.value
-      }
+        Expiration_ID: Expiration_ID,
+        "Driver_License_#": licenseInputDOM.value,
+        License_Expiration: new Date(exoDateInputDOM.value).toISOString(),
+        State_Issuing_Authority: stateInputDOM.value,
+      };
 
       await axios({
-        method: 'put', //put means update
+        method: "put", //put means update
         url: `${requestURL}/api/widgets/expirations`, //get from swagger
         data: newLicense,
-      })
-        .then(response => response.data)
-  
+      }).then((response) => response.data);
+
       // upload license files to mp
       // --------------------------------------------------------------------------------------------------
       // Create two FileReader instances
       let reader1 = new FileReader();
       let reader2 = new FileReader();
-    
+
       // Define a function to be called when both files have been read
       let filesRead = 0;
       function fileRead(uploadFunc) {
-          filesRead++;
-          if (filesRead === 2) {
-              // Both files have been read - upload them
-              uploadFunc(Expiration_ID);
-          }
+        filesRead++;
+        if (filesRead === 2) {
+          // Both files have been read - upload them
+          uploadFunc(Expiration_ID);
+        }
       }
-    
+
       // Define the onload function for both readers
       reader1.onload = () => fileRead(this.uploadFiles);
       reader2.onload = () => fileRead(this.uploadFiles);
-    
+
       // Start reading the files
       if (this.fileInput1.files.length > 0) {
-          reader1.readAsText(this.fileInput1.files[0]);
+        reader1.readAsText(this.fileInput1.files[0]);
       }
       if (this.fileInput2.files.length > 0) {
-          reader2.readAsText(this.fileInput2.files[0]);
+        reader2.readAsText(this.fileInput2.files[0]);
       }
 
       draw();
-      showMessage('Record Updated Successfully. You can now close this page!')
+      showMessage("Record Updated Successfully. You can now close this page!");
     } catch (err) {
       console.error(err);
-      showError('Something went wrong. Please try again or contact IT');
+      showError("Something went wrong. Please try again or contact IT");
     }
-  }
+  };
 
   uploadFiles = async (Expiration_ID) => {
     // Create the FormData instance
     const formData = new FormData();
 
-    const todayString = `${new Date().getFullYear()}-${new Date().getMonth()+1}-${new Date().getDate()}`;
-    const renamedFile1 = new File([this.fileInput1.files[0]], `(License Front - ${todayString}) ${this.fileInput1.files[0].name}`, {type: this.fileInput1.files[0].type});
-    const renamedFile2 = new File([this.fileInput2.files[0]], `(License Back - ${todayString}) ${this.fileInput2.files[0].name}`, {type: this.fileInput2.files[0].type});
+    const todayString = `${new Date().getFullYear()}-${
+      new Date().getMonth() + 1
+    }-${new Date().getDate()}`;
+    const renamedFile1 = new File(
+      [this.fileInput1.files[0]],
+      `(License Front - ${todayString}) ${this.fileInput1.files[0].name}`,
+      { type: this.fileInput1.files[0].type }
+    );
+    const renamedFile2 = new File(
+      [this.fileInput2.files[0]],
+      `(License Back - ${todayString}) ${this.fileInput2.files[0].name}`,
+      { type: this.fileInput2.files[0].type }
+    );
 
     // Append the two files
-    formData.append('file1', renamedFile1);
-    formData.append('file2', renamedFile2);
+    formData.append("file1", renamedFile1);
+    formData.append("file2", renamedFile2);
 
     // Make the axios request
     await axios({
-        method: 'post',
-        url: `${this.fetchURL}/api/widgets/files/expirations?id=${Expiration_ID}`, //get from swagger
-        data: formData,
-        headers: { 'Content-Type': 'multipart/form-data' }
+      method: "post",
+      url: `${this.fetchURL}/api/widgets/files/expirations?id=${Expiration_ID}`, //get from swagger
+      data: formData,
+      headers: { "Content-Type": "multipart/form-data" },
     })
-      .then(response => response.data)
-  }
+      .then((response) => response.data)
+      .catch((err) => {
+        this.showError("Something went wrong. Please try again or contact IT");
+      });
+  };
 }
 
-customElements.define('phc-license-renewal', LicenseRenewal);
+customElements.define("phc-license-renewal", LicenseRenewal);
