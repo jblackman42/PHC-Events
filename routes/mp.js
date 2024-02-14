@@ -5,7 +5,7 @@ const axios = require("axios");
 const fs = require("fs");
 const FormData = require("form-data");
 const multer = require("multer");
-const upload = multer({ dest: "uploads/" }); // You can change this to save files in the directory you prefer
+const upload = multer(); // You can change this to save files in the directory you prefer
 const MinistryPlatformAPI = require("ministry-platform-api-wrapper");
 
 const {
@@ -656,24 +656,21 @@ router.get("/sermon-link-types", ensureApiAuthenticated, async (req, res) => {
   }
 });
 // router.post('/sermon-file/:id', ensureApiAuthenticated, upload.any(), async (req, res) => {
-router.post("/sermon-file/:id", ensureApiAuthenticated, async (req, res) => {
-  const { id } = req.params;
+router.post("/sermon-file", ensureApiAuthenticated, upload.any(), async (req, res) => {
+  const { id } = req.query;
 
   if (!req.files || Object.keys(req.files).length === 0) {
     return res.status(400).send("No files were uploaded.");
   }
 
-  // The name of the input field (i.e., "file") is used to retrieve the uploaded file
-  const file = req.files.file;
   const formData = new FormData();
-  formData.append("file", file.data, {
-    filename: file.name,
-    knownLength: file.size,
+  req.files.forEach((file) => {
+    formData.append(file.originalname, file.buffer, file.originalname);
   });
-
+  
   const formHeaders = formData.getHeaders();
   try {
-    const response = await axios({
+    const data = await axios({
       method: "post",
       url: `https://my.pureheart.org/ministryplatformapi/files/Pocket_Platform_Sermons/${id}`,
       data: formData,
@@ -683,9 +680,9 @@ router.post("/sermon-file/:id", ensureApiAuthenticated, async (req, res) => {
       },
       maxContentLength: Infinity,
       maxBodyLength: Infinity,
-    });
+    }).then((response) => response.data);
 
-    res.status(200).send(response.data).end();
+    res.status(200).send(data).end();
   } catch (error) {
     console.log(error);
     res.status(500).send(error).end();

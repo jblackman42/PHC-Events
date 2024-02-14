@@ -1,17 +1,19 @@
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <%- include('../partials/head'); %>
-    </head>
+
+<head>
+    <%- include('../partials/head'); %>
+</head>
+
 <body>
     <%- include('../partials/loading'); %>
 
-    <%- include('../partials/navbar'); %>
+        <%- include('../partials/navbar'); %>
 
-    <upload-sermon-guide currentURL="https://phc.events">
-    </upload-sermon-guide>
+            <upload-sermon-guide currentURL="https://phc.events">
+            </upload-sermon-guide>
 
-    <%- include('../partials/footer'); %>
+            <%- include('../partials/footer'); %>
 </body>
 <script>
     class uploadSermonGuide extends HTMLElement {
@@ -69,7 +71,7 @@
             `
 
             const uploadFormDOM = document.getElementById('upload-guide');
-            
+
             const sermonSelectDOM = document.getElementById('sermon');
             const linkTypesSelectDOM = document.getElementById('link-type');
             const fileInputDOM = document.getElementById('file');
@@ -99,7 +101,7 @@
 
                 const currSermon = this.sermons.find(sermon => sermon.Sermon_ID == sermonSelectDOM.value);
                 const currLinkType = this.linkTypes.find(linkType => linkType.Sermon_Link_Type_ID == linkTypesSelectDOM.value);
-                
+
                 const endDate = new Date(currSermon.Sermon_Date);
                 endDate.setHours(0);
                 endDate.setMinutes(0);
@@ -164,8 +166,8 @@
                     <option value="${Sermon_ID}">${labels.join(' - ')}</option>
                 `
             })
-            
-            
+
+
             // get link types
             this.linkTypes = await axios({
                 method: 'get',
@@ -212,16 +214,18 @@
 
             try {
                 const formData = new FormData();
-                const file = fileInputDOM.files[0];
+                const file = new File([fileInputDOM.files[0]], "Heart Crew Guide", { type: fileInputDOM.files[0].type });
                 formData.append('file', file);
+                console.log(formData);
 
                 const { UniqueFileId } = await axios({
                     method: 'post',
-                    url: `/api/mp/sermon-file/${sermonSelectDOM.value}`,
-                    data: formData
+                    url: `/api/mp/sermon-file?id=${sermonSelectDOM.value}`,
+                    data: formData,
+                    headers: { "Content-Type": "multipart/form-data" }
                 })
                     .then(response => response.data[0]);
-                    
+
                 // cerate link to email
                 const mediaLink = `${this.currentURL}/api/mp/files/${UniqueFileId}`
                 // create sermon link
@@ -234,7 +238,7 @@
                 await axios({
                     method: 'post',
                     url: `/api/mp/sermon-link`,
-                    data: {sermon_links: [sermon_link]}
+                    data: { sermon_links: [sermon_link] }
                 })
                     .then(response => response.data);
 
@@ -246,7 +250,7 @@
 
                 const End_Date = new Date(announcementEndDateDOM.value);
                 End_Date.setMinutes(End_Date.getMinutes() + End_Date.getTimezoneOffset())
-                End_Date.setMilliseconds((1000*60*60*24)-1);
+                End_Date.setMilliseconds((1000 * 60 * 60 * 24) - 1);
 
                 const announcement = {
                     Announcement_Title: announcementTitleInputDOM.value,
@@ -259,7 +263,7 @@
                 await axios({
                     method: 'post',
                     url: `/api/mp/announcements`,
-                    data: {announcements: [announcement]}
+                    data: { announcements: [announcement] }
                 })
                     .then(response => response.data);
 
@@ -274,4 +278,5 @@
     }
     customElements.define('upload-sermon-guide', uploadSermonGuide);
 </script>
+
 </html>
