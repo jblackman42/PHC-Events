@@ -214,7 +214,7 @@
 
             try {
                 const formData = new FormData();
-                const file = new File([fileInputDOM.files[0]], "Heart Crew Guide", { type: fileInputDOM.files[0].type });
+                const file = new File([fileInputDOM.files[0]], fileInputDOM.files[0].name, { type: fileInputDOM.files[0].type });
                 formData.append('file', file);
                 console.log(formData);
 
