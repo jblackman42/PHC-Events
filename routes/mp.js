@@ -296,10 +296,11 @@ router.get("/primary-contacts", ensureApiAuthenticated, async (req, res) => {
     method: "get",
     url: "https://my.pureheart.org/ministryplatformapi/tables/dp_User_User_Groups",
     params: {
-      $filter: `dp_User_User_Groups.[User_ID] NOT IN (16138,16129,14881,14746,10925,9709,9504,9429,9229,9092,6908,6800,6799,6798,6797,6796,6795,6745,6580,1276,7,6,5,2,1)`,
+      $filter: `User_Group_ID=76`,
       $select:
         "User_ID_Table.[Contact_ID], User_ID_Table_Contact_ID_Table.[Display_Name]",
       $distinct: true,
+      $orderby: "Display_Name"
     },
     headers: {
       "content-type": "application/json",
