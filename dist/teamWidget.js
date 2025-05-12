@@ -188,7 +188,7 @@ class TeamWidget extends HTMLElement {
                             <p style="text-align: center"><strong>REPLY TO: <a href="mailto:${email}">${email}</a></strong></p>
                         </div>
                         <div style="margin: 1rem auto; max-width: 350px;">
-                            <img style="width: 100%;" src="https://www.pureheart.org/wp-content/uploads/2022/12/PH_Logo_BLACK-1.png" alt="Pure Heart Church Logo">
+                            <img style="width: 100%;" src="https://www.pureheart.org/wp-content/uploads/2023/04/PHC-Black-Transparent.png" alt="Pure Heart Church Logo">
                             <p style="display: flex; gap: .5rem; justify-content: center; margin: 0;">Got Questions? <a style="display: block;" href="mailto:helpdesk@pureheart.org">helpdesk@pureheart.org</a></p>
                         </div>
                     </body>`,
