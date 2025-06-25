@@ -106,7 +106,7 @@ router.post('/overlapped-rooms', async (req, res) => {
 
   const filterDateString = dates.map(date => {
     const { startDate, endDate } = date;
-    return `(DateAdd(n,Event_ID_Table.Minutes_For_Setup*-1,Event_ID_Table.Event_Start_Date) < '${endDate}') AND (DateAdd(n,Event_ID_Table.Minutes_For_Cleanup,Event_ID_Table.Event_End_Date) > '${startDate}')`
+    return `(DateAdd(n,Event_ID_Table.Minutes_for_Setup*-1,Event_ID_Table.Event_Start_Date) < '${endDate}') AND (DateAdd(n,Event_ID_Table.Minutes_for_Cleanup,Event_ID_Table.Event_End_Date) > '${startDate}')`
   }).join(' OR ')
 
   const eventRooms = await axios({
@@ -115,7 +115,7 @@ router.post('/overlapped-rooms', async (req, res) => {
     data: {
       // $filter: `Event_Rooms.[Cancelled]=0 AND Room_ID_Table.[Bookable]=1 AND ((Event_ID_Table.[Event_Start_Date] < '${endDate}') AND (Event_ID_Table.[Event_End_Date] > '${startDate}'))`,
       "Filter": `Event_Rooms.[Cancelled]=0 AND Room_ID_Table.[Bookable]=1 AND (${filterDateString})`,
-      "Select": `DateAdd(n,Event_ID_Table.Minutes_For_Setup*-1,Event_ID_Table.Event_Start_Date) AS [Reservation_Start], DateAdd(n,Event_ID_Table.Minutes_For_Cleanup,Event_ID_Table.Event_End_Date) AS [Reservation_End], Event_Rooms.[Event_ID], Event_ID_Table.[Event_Title], Event_Rooms.[Room_ID], Room_ID_Table.[Room_Name], Event_ID_Table.[Event_Start_Date], Event_ID_Table.[Event_End_Date], Event_ID_Table.[Minutes_for_Setup], Event_ID_Table.[Minutes_for_Cleanup]`,
+      "Select": `DateAdd(n,Event_ID_Table.Minutes_for_Setup*-1,Event_ID_Table.Event_Start_Date) AS [Reservation_Start], DateAdd(n,Event_ID_Table.Minutes_for_Cleanup,Event_ID_Table.Event_End_Date) AS [Reservation_End], Event_Rooms.[Event_ID], Event_ID_Table.[Event_Title], Event_Rooms.[Room_ID], Room_ID_Table.[Room_Name], Event_ID_Table.[Event_Start_Date], Event_ID_Table.[Event_End_Date], Event_ID_Table.[Minutes_for_Setup], Event_ID_Table.[Minutes_for_Cleanup]`,
       "Distinct": true
     },
     headers: {
